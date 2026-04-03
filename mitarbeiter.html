@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mitarbeiter Übersicht</title>
+<style>
+body{
+  font-family:Arial,sans-serif;
+  background:#111;
+  color:white;
+  margin:0;
+  padding:20px;
+}
+h1{text-align:center;margin-bottom:30px;font-size:48px;}
+.top-bar{display:flex;justify-content:center;gap:15px;margin-bottom:30px;flex-wrap:wrap;}
+.admin-btn{
+  background:#2563eb;
+  color:white;
+  border:none;
+  padding:12px 20px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:16px;
+  font-weight:bold;
+  text-decoration:none;
+}
+.delete-btn{background:#dc2626;}
+.container{max-width:1200px;margin:auto;}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:25px;}
+.card{
+  background:#1c1c1f;
+  border-radius:22px;
+  padding:20px;
+  display:flex;
+  gap:20px;
+  align-items:center;
+  cursor:pointer;
+  position:relative;
+  transition:0.2s;
+}
+.card:hover{transform:scale(1.02);}
+.card img{
+  width:110px;
+  height:140px;
+  object-fit:cover;
+  border-radius:16px;
+  border:2px solid #444;
+}
+.card h2{margin-bottom:10px;font-size:32px;}
+.card p{color:#ccc;margin-bottom:8px;font-size:18px;}
+.remove-btn{
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:#dc2626;
+  color:white;
+  border:none;
+  border-radius:8px;
+  padding:5px 8px;
+  cursor:pointer;
+}
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+.modal-content{
+  background:#f5f5f5;
+  color:#333;
+  width:90%;
+  max-width:600px;
+  border-radius:25px;
+  overflow:hidden;
+  position:relative;
+}
+.modal-content img{
+  width:100%;
+  max-height:260px;
+  object-fit:cover;
+}
+.details{padding:25px;}
+.details h2{margin-bottom:20px;font-size:32px;}
+.details p{margin-bottom:12px;font-size:18px;}
+.close{
+  position:absolute;
+  top:10px;
+  right:20px;
+  font-size:34px;
+  color:black;
+  cursor:pointer;
+}
+.form-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  justify-content:center;
+  align-items:center;
+  z-index:1000;
+}
+.form-content{
+  background:#1c1c1f;
+  width:90%;
+  max-width:600px;
+  border-radius:20px;
+  padding:25px;
+  max-height:90vh;
+  overflow-y:auto;
+}
+.form-content input{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:10px;
+  border:1px solid #444;
+  background:#111;
+  color:white;
+}
+@media(max-width:800px){
+  .grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<h1>Mitarbeiter Übersicht</h1>
+
+<div class="top-bar">
+  <a href="startseite.html" class="admin-btn">Zurück</a>
+  <button class="admin-btn" onclick="oeffneFormular()">+ Mitarbeiter hinzufügen</button>
+</div>
+
+<div class="container">
+  <div class="grid" id="mitarbeiterContainer"></div>
+</div>
+
+<div class="modal" id="detailModal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <img id="detailBild" src="">
+    <div class="details">
+      <h2 id="detailName"></h2>
+      <p><strong>Alter:</strong> <span id="detailAlter"></span></p>
+      <p><strong>Wann bei NK angefangen:</strong> <span id="detailWannNK"></span></p>
+      <p><strong>Geburtsdatum:</strong> <span id="detailGeburtsdatum"></span></p>
+      <p><strong>Funktion:</strong> <span id="detailFunktion"></span></p>
+      <p><strong>Erlernter Beruf:</strong> <span id="detailBeruf"></span></p>
+      <p><strong>Ausbildung:</strong> <span id="detailAusbildung"></span></p>
+      <p><strong>Sicherheitsdienst:</strong> <span id="detailSicherheit"></span></p>
+      <p><strong>Ersthelfer/in:</strong> <span id="detailErsthelfer"></span></p>
+      <p><strong>Brandschutzhelfer/in:</strong> <span id="detailBrandschutz"></span></p>
+      <p><strong>Datenschutzbeauftragter/in:</strong> <span id="detailDatenschutz"></span></p>
+      <p><strong>Detektivschein:</strong> <span id="detailDetektivschein"></span></p>
+      <p><strong>Funktion innerhalb der Firma:</strong> <span id="detailFirma"></span></p>
+      <p><strong>Führerschein:</strong> <span id="detailFuehrerschein"></span></p>
+      <p><strong>Vorgesetzter:</strong> <span id="detailChef"></span></p>
+    </div>
+  </div>
+</div>
+
+<div class="form-modal" id="formularModal">
+  <div class="form-content">
+    <h2>Neuen Mitarbeiter anlegen</h2>
+    <input type="text" id="formName" placeholder="Name">
+    <input type="text" id="formGeburtsdatum" placeholder="Geburtsdatum">
+    <input type="text" id="formWannNK" placeholder="Wann bei NK angefangen">
+    <input type="text" id="formAlter" placeholder="Alter">
+    <input type="text" id="formFunktion" placeholder="Funktion">
+    <input type="text" id="formBeruf" placeholder="Erlernter Beruf">
+    <input type="text" id="formAusbildung" placeholder="Ausbildung">
+    <input type="text" id="formSicherheit" placeholder="Sicherheitsdienst">
+    <input type="text" id="formErsthelfer" placeholder="Ersthelfer/in">
+    <input type="text" id="formBrandschutz" placeholder="Brandschutzhelfer/in">
+    <input type="text" id="formDatenschutz" placeholder="Datenschutzbeauftragter/in">
+    <input type="text" id="formDetektivschein" placeholder="Detektivschein">
+    <input type="text" id="formFirma" placeholder="Funktion innerhalb der Firma">
+    <input type="text" id="formFuehrerschein" placeholder="Führerschein">
+    <input type="text" id="formChef" placeholder="Vorgesetzter">
+    <input type="file" id="formBild" accept="image/*">
+    <button class="admin-btn" onclick="speichereMitarbeiter()">Speichern</button>
+    <button class="admin-btn delete-btn" onclick="schliesseFormular()">Abbrechen</button>
+  </div>
+</div>
+
+<script>
+const adminPasswort = "Admin2026";
+
+let mitarbeiterListe = [
+  {
+    name:"Nicole Küttner",
+    geburtsdatum:"17.08.1989",
+    alter:"37",
+    wannNK:"Gründung 01.11.2019",
+    funktion:"Geschäftsführerin, Mitarbeiterin",
+    beruf:"Geschäftsführerin",
+    ausbildung:"Staatlich geprüfte Kosmetikerin",
+    sicherheit:"Sachkunde §34a geprüft",
+    ersthelfer:"Ja",
+    brandschutz:"Nein",
+    datenschutz:"Ja",
+    detektivschein:"Ja",
+    firma:"Mitarbeiterverwaltung, Finanzbeauftragte, Einsatzleitung",
+    fuehrerschein:"B",
+    chef:"-",
+    bild:"bilder/nicole,k.jpg"
+  },
+  {
+    name:"Marcel Maczeyzik",
+    geburtsdatum:"15.05.1987",
+    alter:"38",
+    wannNK:"Gründung 01.11.2019",
+    funktion:"Stellvertreter, Mitarbeiter",
+    beruf:"Feuerwehrmann",
+    ausbildung:"Schlosser",
+    sicherheit:"Sachkunde §34a geprüft, GSSK, Fachkraft für Schutz und Sicherheit",
+    ersthelfer:"Ja",
+    brandschutz:"Ja",
+    datenschutz:"Ja",
+    detektivschein:"Ja",
+    firma:"Ausbildungsverantwortlicher, Gefahrenbeurteilung, Einsatzleitung",
+    fuehrerschein:"B, C",
+    chef:"Nicole Küttner",
+    bild:"bilder/marcel,m.jpg"
+  },
+  {
+    name:"Ronny Winkler",
+    geburtsdatum:"30.05.1992",
+    alter:"33",
+    wannNK:"Gründung 01.11.2019",
+    funktion:"IT und Dokumentation, Mitarbeiter",
+    beruf:"Feuerwehrmann",
+    ausbildung:"Tischler",
+    sicherheit:"Sachkunde §34a",
+    ersthelfer:"Ja",
+    brandschutz:"Ja",
+    datenschutz:"Nein",
+    detektivschein:"Nein",
+    firma:"IT Weiterentwicklung",
+    fuehrerschein:"B, C",
+    chef:"Nicole Küttner, Marcel Maczeyzik",
+    bild:"bilder/ronny,w.jpg"
+  }
+];
+
+function renderMitarbeiter(){
+  const container = document.getElementById("mitarbeiterContainer");
+  container.innerHTML = "";
+
+  mitarbeiterListe.forEach((m,index)=>{
+    container.innerHTML += `
+      <div class="card" onclick="showDetails(${index})">
+        <button class="remove-btn" onclick="event.stopPropagation(); loescheMitarbeiter(${index})">X</button>
+        <img src="${m.bild}">
+        <div>
+          <h2>${m.name}</h2>
+          <p>${m.alter} Jahre</p>
+          <p>${m.funktion}</p>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function showDetails(index){
+  const m = mitarbeiterListe[index];
+  document.getElementById("detailBild").src = m.bild;
+  document.getElementById("detailName").innerText = m.name;
+  document.getElementById("detailAlter").innerText = m.alter;
+  document.getElementById("detailWannNK").innerText = m.wannNK;
+  document.getElementById("detailGeburtsdatum").innerText = m.geburtsdatum;
+  document.getElementById("detailFunktion").innerText = m.funktion;
+  document.getElementById("detailBeruf").innerText = m.beruf;
+  document.getElementById("detailAusbildung").innerText = m.ausbildung;
+  document.getElementById("detailSicherheit").innerText = m.sicherheit;
+  document.getElementById("detailErsthelfer").innerText = m.ersthelfer;
+  document.getElementById("detailBrandschutz").innerText = m.brandschutz;
+  document.getElementById("detailDatenschutz").innerText = m.datenschutz;
+  document.getElementById("detailDetektivschein").innerText = m.detektivschein;
+  document.getElementById("detailFirma").innerText = m.firma;
+  document.getElementById("detailFuehrerschein").innerText = m.fuehrerschein;
+  document.getElementById("detailChef").innerText = m.chef;
+  document.getElementById("detailModal").style.display = "flex";
+}
+
+function closeModal(){
+  document.getElementById("detailModal").style.display = "none";
+}
+
+function oeffneFormular(){
+  const pw = prompt("Admin Passwort eingeben");
+  if(pw !== adminPasswort){
+    alert("Falsches Passwort");
+    return;
+  }
+  document.getElementById("formularModal").style.display = "flex";
+}
+
+function schliesseFormular(){
+  document.getElementById("formularModal").style.display = "none";
+}
+
+function speichereMitarbeiter(){
+  const bildDatei = document.getElementById("formBild").files[0];
+  if(!bildDatei){
+    alert("Bitte Bild auswählen");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    mitarbeiterListe.push({
+      name: document.getElementById("formName").value,
+      geburtsdatum: document.getElementById("formGeburtsdatum").value,
+      alter: document.getElementById("formAlter").value,
+      wannNK: document.getElementById("formWannNK").value,
+      funktion: document.getElementById("formFunktion").value,
+      beruf: document.getElementById("formBeruf").value,
+      ausbildung: document.getElementById("formAusbildung").value,
+      sicherheit: document.getElementById("formSicherheit").value,
+      ersthelfer: document.getElementById("formErsthelfer").value,
+      brandschutz: document.getElementById("formBrandschutz").value,
+      datenschutz: document.getElementById("formDatenschutz").value,
+      detektivschein: document.getElementById("formDetektivschein").value,
+      firma: document.getElementById("formFirma").value,
+      fuehrerschein: document.getElementById("formFuehrerschein").value,
+      chef: document.getElementById("formChef").value,
+      bild: e.target.result
+    });
+    renderMitarbeiter();
+    schliesseFormular();
+  };
+  reader.readAsDataURL(bildDatei);
+}
+
+function loescheMitarbeiter(index){
+  const pw = prompt("Admin Passwort eingeben");
+  if(pw !== adminPasswort){
+    alert("Falsches Passwort");
+    return;
+  }
+  mitarbeiterListe.splice(index,1);
+  renderMitarbeiter();
+}
+
+window.onclick = function(event){
+  if(event.target === document.getElementById("detailModal")){
+    closeModal();
+  }
+  if(event.target === document.getElementById("formularModal")){
+    schliesseFormular();
+  }
+}
+
+renderMitarbeiter();
+</script>
+
+</body>
+</html>
