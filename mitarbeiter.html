@@ -187,6 +187,7 @@ h1{
     <div class="details">
       <h2 id="detailName"></h2>
       <p><strong>Alter:</strong> <span id="detailAlter"></span></p>
+      <p><strong>wann bei NK angefangen:</strong> <span id="detailwann bei NK angefangen"></span></p>
       <p><strong>Geburtsdatum:</strong> <span id="detailGeburtsdatum"></span></p>
       <p><strong>Funktion:</strong> <span id="detailFunktion"></span></p>
       <p><strong>Erlernter Beruf:</strong> <span id="detailBeruf"></span></p>
@@ -194,8 +195,9 @@ h1{
       <p><strong>Sicherheitsdienst:</strong> <span id="detailSicherheit"></span></p>
       <p><strong>Ersthelfer/in:</strong> <span id="detailErsthelfer"></span></p>
       <p><strong>Brandschutzhelfer/in:</strong> <span id="detailBrandschutz"></span></p>
+      <p><strong>Datenschutzbeauftragter/in:</strong> <span id="detailDatenschutzbeauftragter/in"></span></p>
       <p><strong>Führerschein:</strong> <span id="detailFuehrerschein"></span></p>
-      <p><strong>Vorgesetzter:</strong> <span id="detailChef"></span></p>
+      <p><strong>Vorgesetzter:</strong> <span id="detailChef"></span></p> 
     </div>
   </div>
 </div>
@@ -205,6 +207,7 @@ h1{
     <h2>Neuen Mitarbeiter anlegen</h2>
     <input type="text" id="formName" placeholder="Name">
     <input type="text" id="formGeburtsdatum" placeholder="Geburtsdatum">
+    <input type="text" id="formwann bei NK angefangen" placeholder="wann bei NK angefangen">
     <input type="text" id="formAlter" placeholder="Alter">
     <input type="text" id="formFunktion" placeholder="Funktion">
     <input type="text" id="formBeruf" placeholder="Erlernter Beruf">
@@ -212,6 +215,7 @@ h1{
     <input type="text" id="formSicherheit" placeholder="Sicherheitsdienst">
     <input type="text" id="formErsthelfer" placeholder="Ersthelfer/in">
     <input type="text" id="formBrandschutz" placeholder="Brandschutzhelfer/in">
+    <input type="text" id="formDatenschutzbeauftragter/in" placeholder="Datenschutzbeauftragter/in">
     <input type="text" id="formFuehrerschein" placeholder="Führerschein">
     <input type="text" id="formChef" placeholder="Vorgesetzter">
     <input type="file" id="formBild" accept="image/*">
@@ -228,26 +232,30 @@ let mitarbeiterListe = [
     name:"Nicole Küttner",
     geburtsdatum:"17.08.1989",
     alter:"37",
+    wann_bei_NK_angefangen:"Gründung 01.11.2019",
     funktion:"Geschäftsführerin, Mitarbeiterin",
     beruf:"Geschäftsführerin",
     ausbildung:"Staatlich geprüfte Kosmetikerin",
     sicherheit:"Sachkunde §34a geprüft",
     ersthelfer:"Ja",
     brandschutz:"nein",
+    datenschutzbeauftragter/in:"Ja",
     fuehrerschein:"B,",
     chef:"-",
-    bild:"bilder/nicole,k.jpg"
+    bild:"bilder/nicole,k.jpg
   },
   {
     name:"Marcel Maczeyzik",
     geburtsdatum:"15.05.1987",
     alter:"38",
+    wann_bei_NK_angefangen:"Gründung 01.11.2019",
     funktion:"Stellvertreter, Mitarbeiter",
     beruf:"Feuerwehrmann",
     ausbildung:"Schlosser",
     sicherheit:"Sachkunde §34a geprüft, GSSK, Fachkraft für Schutz und Sicherheit",
     ersthelfer:"Ja",
     brandschutz:"Ja",
+    datenschutzbeauftragter/in:"Ja",
     fuehrerschein:"B, C",
     chef:"Nicole Küttner",
     bild:"bilder/marcel,m.jpg"
@@ -256,12 +264,14 @@ let mitarbeiterListe = [
     name:"Ronny Winkler",
     geburtsdatum:"30.05.1992",
     alter:"33",
+    wann_bei_NK_angefangen:"Gründung 01.11.2019",
     funktion:"IT und Dokumentation, Mitarbeiter",
     beruf:"Feuerwehrmann",
     ausbildung:"Tischler",
     sicherheit:"Sachkunde §34a",
     ersthelfer:"Ja",
     brandschutz:"Ja",
+    datenschutzbeauftragter/in:"Nein",
     fuehrerschein:"B, C",
     chef:"Nicole Küttner, Marcel Maczeyzik",
     bild:"bilder/ronny,w.jpg"
@@ -293,12 +303,14 @@ function showDetails(index){
   document.getElementById("detailName").innerText = m.name;
   document.getElementById("detailGeburtsdatum").innerText = m.geburtsdatum;
   document.getElementById("detailAlter").innerText = m.alter;
+  document.getElementById("detailWann_bei_NK_angefangen").innerText = m.wann_bei_NK_angefangen;
   document.getElementById("detailFunktion").innerText = m.funktion;
   document.getElementById("detailBeruf").innerText = m.beruf;
   document.getElementById("detailAusbildung").innerText = m.ausbildung;
   document.getElementById("detailSicherheit").innerText = m.sicherheit;
   document.getElementById("detailErsthelfer").innerText = m.ersthelfer;
   document.getElementById("detailBrandschutz").innerText = m.brandschutz;
+  document.getElementById("detailDatenschutzbeauftragter/in").innerText = m.datenschutzbeauftragter/in;
   document.getElementById("detailFuehrerschein").innerText = m.fuehrerschein;
   document.getElementById("detailChef").innerText = m.chef;
   document.getElementById("detailModal").style.display = "flex";
@@ -335,12 +347,14 @@ function speichereMitarbeiter(){
       name: document.getElementById("formName").value,
       geburtsdatum: document.getElementById("formGeburtsdatum").value,
       alter: document.getElementById("formAlter").value,
+      wann_bei_NK_angefangen: document.getElementById("formwann_bei_NK_angefangen").value,
       funktion: document.getElementById("formFunktion").value,
       beruf: document.getElementById("formBeruf").value,
       ausbildung: document.getElementById("formAusbildung").value,
       sicherheit: document.getElementById("formSicherheit").value,
       ersthelfer: document.getElementById("formErsthelfer").value,
       brandschutz: document.getElementById("formBrandschutz").value,
+      datenschutzbeauftragter/in: document.getElementById("formDatenschutzbeauftragter/in").value,
       fuehrerschein: document.getElementById("formFuehrerschein").value,
       chef: document.getElementById("formChef").value,
       bild: e.target.result
