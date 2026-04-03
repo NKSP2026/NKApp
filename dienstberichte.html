@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dienstberichte</title>
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+}
+body{
+  background:#111;
+  color:white;
+  padding:20px;
+}
+h1{
+  text-align:center;
+  font-size:48px;
+  margin-bottom:30px;
+}
+.top-bar{
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  margin-bottom:30px;
+  flex-wrap:wrap;
+}
+.admin-btn{
+  background:#2563eb;
+  color:white;
+  border:none;
+  padding:12px 20px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:16px;
+  font-weight:bold;
+  text-decoration:none;
+}
+.delete-btn{
+  background:#dc2626;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:25px;
+  max-width:1200px;
+  margin:auto;
+}
+.card{
+  background:#1c1c1f;
+  border-radius:22px;
+  padding:20px;
+  position:relative;
+}
+.remove-btn{
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:#dc2626;
+  color:white;
+  border:none;
+  border-radius:8px;
+  padding:5px 8px;
+  cursor:pointer;
+}
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  justify-content:center;
+  align-items:center;
+}
+.modal-content{
+  background:#1c1c1f;
+  padding:20px;
+  border-radius:20px;
+  width:90%;
+  max-width:500px;
+}
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:10px;
+  border:1px solid #444;
+  background:#111;
+  color:white;
+}
+.button-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+</style>
+</head>
+<body>
+
+<h1>Dienstberichte</h1>
+
+<div class="top-bar">
+  <a href="startseite.html" class="admin-btn">Zurück</a>
+  <button class="admin-btn" onclick="document.getElementById('modal').style.display='flex'">+ Dienstbericht hochladen</button>
+</div>
+
+<div class="grid" id="container"></div>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <input id="titel" placeholder="Titel des Berichtes">
+    <input id="dienst" placeholder="Dienst">
+    <input id="mitarbeiter" placeholder="Mitarbeiter">
+    <input type="file" id="datei" accept="application/pdf">
+
+    <div class="button-row">
+      <button class="admin-btn" onclick="speichern()">Speichern</button>
+      <button class="admin-btn delete-btn" onclick="schliessen()">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let liste=[];
+
+function speichern(){
+  const titel=document.getElementById('titel').value;
+  const dienst=document.getElementById('dienst').value;
+  const mitarbeiter=document.getElementById('mitarbeiter').value;
+  const datei=document.getElementById('datei').files[0];
+
+  if(!titel||!dienst||!mitarbeiter||!datei)return;
+
+  const r=new FileReader();
+  r.onload=e=>{
+    liste.push({titel,dienst,mitarbeiter,datei:e.target.result});
+    render();
+    schliessen();
+  };
+  r.readAsDataURL(datei);
+}
+
+function render(){
+  const c=document.getElementById('container');
+  c.innerHTML='';
+
+  liste.forEach((x,i)=>{
+    c.innerHTML+=`
+    <div class="card">
+      <button class="remove-btn" onclick="loeschen(${i})">X</button>
+      <h2>${x.titel}</h2>
+      <p>Dienst: ${x.dienst}</p>
+      <p>Mitarbeiter: ${x.mitarbeiter}</p>
+      <br>
+      <a href="${x.datei}" download="${x.titel}.pdf" class="admin-btn">Herunterladen</a>
+    </div>`;
+  });
+}
+
+function loeschen(i){
+  liste.splice(i,1);
+  render();
+}
+
+function schliessen(){
+  document.getElementById('modal').style.display='none';
+}
+</script>
+
+</body>
+</html>
