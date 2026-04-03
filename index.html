@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - NKSP Sicherheitsdienst</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#111111">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
   <style>
     * {
       box-sizing: border-box;
@@ -106,6 +111,18 @@ function login() {
   } else {
     alert('Falsches Passwort');
   }
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(registration => {
+        console.log('Service Worker registriert:', registration);
+      })
+      .catch(error => {
+        console.log('Service Worker Fehler:', error);
+      });
+  });
 }
 </script>
 
