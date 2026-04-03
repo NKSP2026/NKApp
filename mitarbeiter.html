@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mitarbeiter</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #111;
+      padding: 20px;
+      color: white;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 48px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .admin-btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .row, .employee-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 25px;
+    }
+
+    .card {
+      background: #1c1c1f;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 18px;
+      min-height: 180px;
+      border: 1px solid rgba(255,255,255,0.05);
+      position: relative;
+    }
+
+    .card img {
+      width: 110px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 16px;
+      border: 2px solid #444;
+    }
+
+    .card-content h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .card-content p {
+      color: #bbb;
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .role-badge {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .chef { background: #7c3aed; }
+    .stv { background: #2563eb; }
+    .mitarbeiter { background: #3f3f46; }
+
+    .remove-card-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 5px 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    @media (max-width: 800px) {
+      .row, .employee-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Eine Übersicht unserer Mitarbeiter</h1>
+
+<div class="top-bar">
+  <a href="index.html" class="admin-btn">Zurück</a>
+  <button class="admin-btn" onclick="oeffneFormular()">+ Mitarbeiter hinzufügen</button>
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="card">
+      <img src="bilder/nicole,k.jpg" alt="Nicole Küttner">
+      <div class="card-content">
+        <h2>Nicole Küttner</h2>
+        <p>Geb. 17.08.1989</p>
+        <p>Geschäftsführer</p>
+        <span class="role-badge chef">Chef</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="bilder/stellvertreter.jpg" alt="Marcel Maczeyzik">
+      <div class="card-content">
+        <h2>Marcel Maczeyzik</h2>
+        <p>Geb. 15.05.1987</p>
+        <p>Stellvertreter</p>
+        <span class="role-badge stv">Stellvertreter</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="employee-grid" id="mitarbeiterContainer"></div>
+</div>
+
+<script>
+const adminPasswort = "Admin2026";
+
+let mitarbeiterListe = [
+  {
+    name: 'Ronny Winkler',
+    geburt: '30.05.1992',
+    funktion: 'Mitarbeiter',
+    bild: 'bilder/ronny,w.jpg'
+  }
+];
+
+function renderMitarbeiter() {
+  const container = document.getElementById('mitarbeiterContainer');
+  container.innerHTML = '';
+
+  mitarbeiterListe.forEach((m, index) => {
+    container.innerHTML += `
+      <div class="card">
+        <button class="remove-card-btn" onclick="loescheMitarbeiter(${index})">X</button>
+        <img src="${m.bild}" alt="${m.name}">
+        <div class="card-content">
+          <h2>${m.name}</h2>
+          <p>Geb. ${m.geburt}</p>
+          <p>${m.funktion}</p>
+          <span class="role-badge mitarbeiter">${m.funktion}</span>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function oeffneFormular() {
+  const passwort = prompt('Admin Passwort eingeben');
+  if(passwort !== adminPasswort) {
+    alert('Falsches Passwort');
+    return;
+  }
+
+  const name = prompt('Name des Mitarbeiters');
+  const geburt = prompt('Geburtsdatum');
+  const funktion = prompt('Funktion');
+  const bild = prompt('Bildpfad z.B. bilder/neu.jpg');
+
+  if(name && geburt && funktion && bild) {
+    mitarbeiterListe.push({
+      name: name,
+      geburt: geburt,
+      funktion: funktion,
+      bild: bild
+    });
+
+    renderMitarbeiter();
+  }
+}
+
+function loescheMitarbeiter(index) {
+  const passwort = prompt('Admin Passwort zum Löschen eingeben');
+  if(passwort !== adminPasswort) {
+    alert('Falsches Passwort');
+    return;
+  }
+
+  mitarbeiterListe.splice(index, 1);
+  renderMitarbeiter();
+}
+
+renderMitarbeiter();
+</script>
+
+</body>
+</html>
