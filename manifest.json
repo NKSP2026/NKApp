@@ -1,12 +1,23 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
+  "name": "NKSP Sicherheitsdienst",
+  "short_name": "NKSP",
+  "description": "Interne Verwaltungs- und Einsatz-App für den NKSP Sicherheitsdienst.",
+  "start_url": "/NKApp/",
+  "scope": "/NKApp/",
   "display": "standalone",
-  "name": "nksp2026.github",
-  "orientation": "any",
-  "scope": "https://nksp2026.github.io/NKApp//",
-  "short_name": "nksp2026.github",
-  "start_url": "/https://nksp2026.github.io/NKApp/",
-  "theme_color": "#ffffff",
-  "lang": "de"
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "app-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
