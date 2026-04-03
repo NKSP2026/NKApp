@@ -6,8 +6,63 @@
   <title>Eine Übersicht unserer Mitarbeiter</title>
 </head>
 <body>
-  <h1>Eine Übersicht unserer Mitarbeiter</h1>
-  <p>Hier kommt dein kompletter Mitarbeiter-Code hinein.</p>
-  <p>Nicole Küttner, Marcel Maczeyzik und Ronny Winkler sind bereits eingetragen.</p>
+ <h1>Mitarbeiter Übersicht</h1>
+
+  <div class="container">
+
+    <div class="card" onclick="showDetails('Max Mustermann', '32', 'Teamleiter', 'Elektriker', 'Elektroniker für Energie- und Gebäudetechnik', 'Sachkunde §34a', 'Ja', 'Ja', 'B, C', 'Thomas Müller', 'bilder/max.jpg')">
+      <img src="bilder/max.jpg" alt="Max Mustermann">
+      <div class="card-content">
+        <h2>Max Mustermann</h2>
+        <p>32 Jahre</p>
+        <p>Teamleiter</p>
+      </div>
+    </div>
+
+    <div class="card" onclick="showDetails('Lisa Becker', '28', 'Mitarbeiterin', 'Kauffrau', 'Büromanagement', 'Unterweisung §34a', 'Nein', 'Ja', 'B', 'Max Mustermann', 'bilder/max.jpg')">
+      <img src="bilder/lisa.jpg" alt="Lisa Becker">
+      <div class="card-content">
+        <h2>Lisa Becker</h2>
+        <p>28 Jahre</p>
+        <p>Mitarbeiterin</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal" id="detailModal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <img id="detailImage" src="" alt="Bild">
+      <div class="details">
+        <h2 id="detailName"></h2>
+        <p><strong>Alter:</strong> <span id="detailAge"></span></p>
+        <p><strong>Funktion:</strong> <span id="detailRole"></span></p>
+        <p><strong>Erlernter Beruf:</strong> <span id="detailJob"></span></p>
+        <p><strong>Ausbildung:</strong> <span id="detailTraining"></span></p>
+        <p><strong>Sicherheitsdienst:</strong> <span id="detailSecurity"></span></p>
+        <p><strong>Ersthelfer/in:</strong> <span id="detailFirstAid"></span></p>
+        <p><strong>Brandschutzhelfer/in:</strong> <span id="detailFire"></span></p>
+        <p><strong>Führerschein:</strong> <span id="detailLicense"></span></p>
+        <p><strong>Vorgesetzter:</strong> <span id="detailBoss"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showDetails(name, age, role, job, training, security, firstAid, fire, license, boss, image) {
+      document.getElementById('detailName').innerText = name;
+      document.getElementById('detailAge').innerText = age;
+      document.getElementById('detailRole').innerText = role;
+      document.getElementById('detailJob').innerText = job;
+      document.getElementById('detailTraining').innerText = training;
+      document.getElementById('detailSecurity').innerText = security;
+      document.getElementById('detailFirstAid').innerText = firstAid;
+      document.getElementById('detailFire').innerText = fire;
+      document.getElementById('detailLicense').innerText = license;
+      document.getElementById('detailBoss').innerText = boss;
+      document.getElementById('detailImage').src = image;
+
+
 </body>
 </html>
