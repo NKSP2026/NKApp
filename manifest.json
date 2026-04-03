@@ -2,10 +2,11 @@
   "background_color": "#ffffff",
   "dir": "ltr",
   "display": "standalone",
-  "name": "nksp2026.github",
+  "name": "NK Security",
   "orientation": "any",
   "scope": "/",
-  "short_name": "nksp2026.github",
+  "short_name": "NKS",
   "start_url": "/",
-  "theme_color": "#ffffff"
+  "theme_color": "#ffffff",
+  "id": "Ronny"
 }
