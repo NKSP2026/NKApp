@@ -1,0 +1,11 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "nksp2026.github",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "nksp2026.github",
+  "start_url": "/",
+  "theme_color": "#ffffff"
+}
