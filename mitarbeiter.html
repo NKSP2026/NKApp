@@ -198,7 +198,7 @@ h1{text-align:center;margin-bottom:30px;font-size:48px;}
 <script>
 const adminPasswort = "Admin2026";
 
-const standardMitarbeiter = [
+let mitarbeiterListe = [
   {
     name:"Nicole Küttner",
     geburtsdatum:"17.08.1989",
@@ -252,140 +252,134 @@ const standardMitarbeiter = [
     fuehrerschein:"B, C",
     chef:"Nicole Küttner, Marcel Maczeyzik",
     bild:"bilder/ronny,w.jpg"
+  }, 
+ {
+    name:"Raphael Kunert",
+    geburtsdatum:"25.02.2000",
+    alter:"26",
+    wannNK:"Mai 2022",
+    funktion:"Mitarbeiter",
+    beruf:"Berufskraftfahrer",
+    ausbildung:"Fachkraft Lagerlogistik, Berufskraftfahrer",
+    sicherheit:"-",
+    ersthelfer:"Ja",
+    brandschutz:"Nein",
+    datenschutz:"Nein",
+    detektivschein:"Nein",
+    firma:"-",
+    fuehrerschein:"B, C",
+    chef:"Nicole Küttner, Marcel Maczeyzik",
+    bild:"bilder/raphael,k.jpg"
+  }, 
+  {
+    name:"Mariell Kunert",
+    geburtsdatum:"12.03.2003",
+    alter:"23",
+    wannNK:"01.04.2026",
+    funktion:"Mitarbeiter",
+    beruf:"Krankenpflegerin",
+    ausbildung:"Krankenpflegerin",
+    sicherheit:"-",
+    ersthelfer:"Ja",
+    brandschutz:"Nein",
+    datenschutz:"Nein",
+    detektivschein:"Nein",
+    firma:"-",
+    fuehrerschein:"-",
+    chef:"Nicole Küttner, Marcel Maczeyzik",
+    bild:"bilder/mariell,k.jpg"
   },
   {
-    name:"Test 1",
-    geburtsdatum:"15.05.1987",
-    alter:"38",
-    wannNK:"Gründung 01.11.2019",
-    funktion:"Stellvertreter, Mitarbeiter",
-    beruf:"Feuerwehrmann",
-    ausbildung:"Schlosser",
-    sicherheit:"Sachkunde §34a geprüft, GSSK, Fachkraft für Schutz und Sicherheit",
+    name:"Janine Dunger",
+    geburtsdatum:"08.12.1992",
+    alter:"33",
+    wannNK:"01.01.2026",
+    funktion:"Mitarbeiter",
+    beruf:"Student",
+    ausbildung:"KFZ Michatronikerin",
+    sicherheit:"-",
     ersthelfer:"Ja",
     brandschutz:"Ja",
-    datenschutz:"Ja",
-    detektivschein:"Ja",
-    firma:"Ausbildungsverantwortlicher, Gefahrenbeurteilung, Einsatzleitung",
+    datenschutz:"Nein",
+    detektivschein:"Nein",
+    firma:"-",
     fuehrerschein:"B, C",
-    chef:"Nicole Küttner",
-    bild:"bilder/marcel,m.jpg"
+    chef:"Nicole Küttner, Marcel Maczeyzik",
+    bild:"bilder/janine,d.jpg"
   },
   {
-    name:"Test 2",
-    geburtsdatum:"15.05.1987",
-    alter:"38",
-    wannNK:"Gründung 01.11.2019",
-    funktion:"Stellvertreter, Mitarbeiter",
-    beruf:"Feuerwehrmann",
-    ausbildung:"Schlosser",
-    sicherheit:"Sachkunde §34a geprüft, GSSK, Fachkraft für Schutz und Sicherheit",
+    name:"Rebacca Rothe",
+    geburtsdatum:"03.01.2004",
+    alter:"23",
+    wannNK:"01.01.2025",
+    funktion:"Mitarbeiter",
+    beruf:"-",
+    ausbildung:"-",
+    sicherheit:"Unterweisung §34a geprüft",
     ersthelfer:"Ja",
-    brandschutz:"Ja",
-    datenschutz:"Ja",
-    detektivschein:"Ja",
-    firma:"Ausbildungsverantwortlicher, Gefahrenbeurteilung, Einsatzleitung",
-    fuehrerschein:"B, C",
-    chef:"Nicole Küttner",
-    bild:"bilder/marcel,m.jpg"
+    brandschutz:"Nein",
+    datenschutz:"Nein",
+    detektivschein:"Nein",
+    firma:"-",
+    fuehrerschein:"-",
+    chef:"Nicole Küttner, Marcel Maczeyzik",
+    bild:"bilder/rebecca,r.jpg"
   },
   {
-    name:"Test 3",
-    geburtsdatum:"15.05.1987",
-    alter:"38",
-    wannNK:"Gründung 01.11.2019",
-    funktion:"Stellvertreter, Mitarbeiter",
-    beruf:"Feuerwehrmann",
-    ausbildung:"Schlosser",
-    sicherheit:"Sachkunde §34a geprüft, GSSK, Fachkraft für Schutz und Sicherheit",
+    name:"Janine Braunsteiner",
+    geburtsdatum:"30.11.1989",
+    alter:"36",
+    wannNK:"01.02.2026",
+    funktion:"Mitarbeiter",
+    beruf:"Produktionsmitarbeiterin",
+    ausbildung:"Köchin",
+    sicherheit:"Unterweisung §34a geprüft",
     ersthelfer:"Ja",
-    brandschutz:"Ja",
-    datenschutz:"Ja",
-    detektivschein:"Ja",
-    firma:"Ausbildungsverantwortlicher, Gefahrenbeurteilung, Einsatzleitung",
-    fuehrerschein:"B, C",
-    chef:"Nicole Küttner",
-    bild:"bilder/marcel,m.jpg"
+    brandschutz:"Nein",
+    datenschutz:"Nein",
+    detektivschein:"Nein",
+    firma:"-",
+    fuehrerschein:"B",
+    chef:"Nicole Küttner, Marcel Maczeyzik",
+    bild:"bilder/janine,b.jpg"
   },
   {
-    name:"Test 4",
-    geburtsdatum:"15.05.1987",
-    alter:"38",
-    wannNK:"Gründung 01.11.2019",
-    funktion:"Stellvertreter, Mitarbeiter",
-    beruf:"Feuerwehrmann",
-    ausbildung:"Schlosser",
-    sicherheit:"Sachkunde §34a geprüft, GSSK, Fachkraft für Schutz und Sicherheit",
-    ersthelfer:"Ja",
-    brandschutz:"Ja",
-    datenschutz:"Ja",
-    detektivschein:"Ja",
-    firma:"Ausbildungsverantwortlicher, Gefahrenbeurteilung, Einsatzleitung",
+    name:"Daniel Neumann",
+    geburtsdatum:"30.11.1984",
+    alter:"42",
+    wannNK:"01.05.2026",
+    funktion:"Mitarbeiter",
+    beruf:"facility manager",
+    ausbildung:"Mauer",
+    sicherheit:"-",
+    ersthelfer:"Nein",
+    brandschutz:"Nein",
+    datenschutz:"Nein",
+    detektivschein:"Nein",
+    firma:"-",
     fuehrerschein:"B, C",
-    chef:"Nicole Küttner",
-    bild:"bilder/marcel,m.jpg"
+    chef:"Nicole Küttner, Marcel Maczeyzik",
+    bild:"bilder/daniel,n.jpg"
   },
   {
-    name:"Test 5",
-    geburtsdatum:"15.05.1987",
-    alter:"38",
-    wannNK:"Gründung 01.11.2019",
-    funktion:"Stellvertreter, Mitarbeiter",
-    beruf:"Feuerwehrmann",
-    ausbildung:"Schlosser",
-    sicherheit:"Sachkunde §34a geprüft, GSSK, Fachkraft für Schutz und Sicherheit",
+    name:"Monique Rühlemann",
+    geburtsdatum:"17.10.1996",
+    alter:"29",
+    wannNK:"01.02.2026",
+    funktion:"Mitarbeiter",
+    beruf:"Bäckereifachverkäuferin",
+    ausbildung:"-",
+    sicherheit:"-",
     ersthelfer:"Ja",
     brandschutz:"Ja",
-    datenschutz:"Ja",
-    detektivschein:"Ja",
-    firma:"Ausbildungsverantwortlicher, Gefahrenbeurteilung, Einsatzleitung",
-    fuehrerschein:"B, C",
-    chef:"Nicole Küttner",
-    bild:"bilder/marcel,m.jpg"
-  },
-  {
-    name:"Test 6",
-    geburtsdatum:"15.05.1987",
-    alter:"38",
-    wannNK:"Gründung 01.11.2019",
-    funktion:"Stellvertreter, Mitarbeiter",
-    beruf:"Feuerwehrmann",
-    ausbildung:"Schlosser",
-    sicherheit:"Sachkunde §34a geprüft, GSSK, Fachkraft für Schutz und Sicherheit",
-    ersthelfer:"Ja",
-    brandschutz:"Ja",
-    datenschutz:"Ja",
-    detektivschein:"Ja",
-    firma:"Ausbildungsverantwortlicher, Gefahrenbeurteilung, Einsatzleitung",
-    fuehrerschein:"B, C",
-    chef:"Nicole Küttner",
-    bild:"bilder/marcel,m.jpg"
-  },
-  {
-    name:"Test 7",
-    geburtsdatum:"15.05.1987",
-    alter:"38",
-    wannNK:"Gründung 01.11.2019",
-    funktion:"Stellvertreter, Mitarbeiter",
-    beruf:"Feuerwehrmann",
-    ausbildung:"Schlosser",
-    sicherheit:"Sachkunde §34a geprüft, GSSK, Fachkraft für Schutz und Sicherheit",
-    ersthelfer:"Ja",
-    brandschutz:"Ja",
-    datenschutz:"Ja",
-    detektivschein:"Ja",
-    firma:"Ausbildungsverantwortlicher, Gefahrenbeurteilung, Einsatzleitung",
-    fuehrerschein:"B, C",
-    chef:"Nicole Küttner",
-    bild:"bilder/marcel,m.jpg"
+    datenschutz:"Nein",
+    detektivschein:"Nein",
+    firma:"-",
+    fuehrerschein:"-",
+    chef:"Nicole Küttner, Marcel Maczeyzik",
+    bild:"bilder/monique,r.jpg"
   }
 ];
-
-let mitarbeiterListe = JSON.parse(localStorage.getItem("mitarbeiterListe")) || standardMitarbeiter;
-
-function speichereLocalStorage(){
-  localStorage.setItem("mitarbeiterListe", JSON.stringify(mitarbeiterListe));
-}
 
 function renderMitarbeiter(){
   const container = document.getElementById("mitarbeiterContainer");
@@ -471,8 +465,6 @@ function speichereMitarbeiter(){
       chef: document.getElementById("formChef").value,
       bild: e.target.result
     });
-
-    speichereLocalStorage();
     renderMitarbeiter();
     schliesseFormular();
   };
@@ -485,9 +477,7 @@ function loescheMitarbeiter(index){
     alert("Falsches Passwort");
     return;
   }
-
   mitarbeiterListe.splice(index,1);
-  speichereLocalStorage();
   renderMitarbeiter();
 }
 
