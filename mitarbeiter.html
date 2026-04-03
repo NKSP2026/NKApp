@@ -198,7 +198,7 @@ h1{text-align:center;margin-bottom:30px;font-size:48px;}
 <script>
 const adminPasswort = "Admin2026";
 
-let mitarbeiterListe = [
+const standardMitarbeiter = [
   {
     name:"Nicole Küttner",
     geburtsdatum:"17.08.1989",
@@ -226,7 +226,7 @@ let mitarbeiterListe = [
     beruf:"Feuerwehrmann",
     ausbildung:"Schlosser",
     sicherheit:"Sachkunde §34a geprüft, GSSK, Fachkraft für Schutz und Sicherheit",
-    ersthelfer:"Ja (RettSan)",
+    ersthelfer:"Ja",
     brandschutz:"Ja",
     datenschutz:"Ja",
     detektivschein:"Ja",
@@ -244,7 +244,7 @@ let mitarbeiterListe = [
     beruf:"Feuerwehrmann",
     ausbildung:"Tischler",
     sicherheit:"Sachkunde §34a",
-    ersthelfer:"Ja (RettSan)",
+    ersthelfer:"Ja",
     brandschutz:"Ja",
     datenschutz:"Nein",
     detektivschein:"Nein",
@@ -254,6 +254,12 @@ let mitarbeiterListe = [
     bild:"bilder/ronny,w.jpg"
   }
 ];
+
+let mitarbeiterListe = JSON.parse(localStorage.getItem("mitarbeiterListe")) || standardMitarbeiter;
+
+function speichereLocalStorage(){
+  localStorage.setItem("mitarbeiterListe", JSON.stringify(mitarbeiterListe));
+}
 
 function renderMitarbeiter(){
   const container = document.getElementById("mitarbeiterContainer");
@@ -339,6 +345,8 @@ function speichereMitarbeiter(){
       chef: document.getElementById("formChef").value,
       bild: e.target.result
     });
+
+    speichereLocalStorage();
     renderMitarbeiter();
     schliesseFormular();
   };
@@ -351,7 +359,9 @@ function loescheMitarbeiter(index){
     alert("Falsches Passwort");
     return;
   }
+
   mitarbeiterListe.splice(index,1);
+  speichereLocalStorage();
   renderMitarbeiter();
 }
 

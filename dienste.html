@@ -127,7 +127,12 @@ input{
 
 <script>
 const adminPasswort='Admin2026';
-let liste=[];
+
+let liste = JSON.parse(localStorage.getItem('diensteListe')) || [];
+
+function speichereLocalStorage(){
+  localStorage.setItem('diensteListe', JSON.stringify(liste));
+}
 
 function oeffne(){
   const p=prompt('Admin Passwort eingeben');
@@ -144,9 +149,13 @@ function speichern(){
   const auftraggeber=document.getElementById('auftraggeber').value;
   const verantwortlich=document.getElementById('verantwortlich').value;
 
-  if(!datum)return;
+  if(!datum || !von || !bis || !ort || !art){
+    alert('Bitte alle wichtigen Felder ausfüllen');
+    return;
+  }
 
   liste.push({datum,von,bis,ort,art,auftraggeber,verantwortlich});
+  speichereLocalStorage();
   render();
   schliessen();
 }
@@ -172,13 +181,30 @@ function render(){
 function loeschen(i){
   const p=prompt('Admin Passwort eingeben');
   if(p!==adminPasswort)return;
+
   liste.splice(i,1);
+  speichereLocalStorage();
   render();
 }
 
 function schliessen(){
   document.getElementById('modal').style.display='none';
+  document.getElementById('datum').value='';
+  document.getElementById('von').value='';
+  document.getElementById('bis').value='';
+  document.getElementById('ort').value='';
+  document.getElementById('art').value='';
+  document.getElementById('auftraggeber').value='';
+  document.getElementById('verantwortlich').value='';
 }
+
+window.onclick = function(event){
+  if(event.target === document.getElementById('modal')){
+    schliessen();
+  }
+}
+
+render();
 </script>
 
 </body>

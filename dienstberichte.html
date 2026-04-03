@@ -123,7 +123,11 @@ input{
 </div>
 
 <script>
-let liste=[];
+let liste = JSON.parse(localStorage.getItem('dienstberichteListe')) || [];
+
+function speichereLocalStorage(){
+  localStorage.setItem('dienstberichteListe', JSON.stringify(liste));
+}
 
 function speichern(){
   const titel=document.getElementById('titel').value;
@@ -131,11 +135,15 @@ function speichern(){
   const mitarbeiter=document.getElementById('mitarbeiter').value;
   const datei=document.getElementById('datei').files[0];
 
-  if(!titel||!dienst||!mitarbeiter||!datei)return;
+  if(!titel||!dienst||!mitarbeiter||!datei){
+    alert('Bitte alle Felder ausfüllen');
+    return;
+  }
 
   const r=new FileReader();
   r.onload=e=>{
     liste.push({titel,dienst,mitarbeiter,datei:e.target.result});
+    speichereLocalStorage();
     render();
     schliessen();
   };
@@ -161,12 +169,25 @@ function render(){
 
 function loeschen(i){
   liste.splice(i,1);
+  speichereLocalStorage();
   render();
 }
 
 function schliessen(){
   document.getElementById('modal').style.display='none';
+  document.getElementById('titel').value='';
+  document.getElementById('dienst').value='';
+  document.getElementById('mitarbeiter').value='';
+  document.getElementById('datei').value='';
 }
+
+window.onclick = function(event){
+  if(event.target === document.getElementById('modal')){
+    schliessen();
+  }
+}
+
+render();
 </script>
 
 </body>

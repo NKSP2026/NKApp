@@ -122,7 +122,12 @@ input{
 
 <script>
 const adminPasswort='Admin2026';
-let liste=[];
+
+let liste = JSON.parse(localStorage.getItem('dokumenteListe')) || [];
+
+function speichereLocalStorage(){
+  localStorage.setItem('dokumenteListe', JSON.stringify(liste));
+}
 
 function oeffneModal(){
   const p=prompt('Admin Passwort eingeben');
@@ -134,11 +139,15 @@ function speichern(){
   const n=document.getElementById('name').value;
   const d=document.getElementById('datei').files[0];
 
-  if(!n||!d)return;
+  if(!n||!d){
+    alert('Bitte alle Felder ausfüllen');
+    return;
+  }
 
   const r=new FileReader();
   r.onload=e=>{
     liste.push({name:n,datei:e.target.result});
+    speichereLocalStorage();
     render();
     schliessen();
   };
@@ -163,13 +172,25 @@ function render(){
 function loeschen(i){
   const p=prompt('Admin Passwort eingeben');
   if(p!==adminPasswort)return;
+
   liste.splice(i,1);
+  speichereLocalStorage();
   render();
 }
 
 function schliessen(){
   document.getElementById('modal').style.display='none';
+  document.getElementById('name').value='';
+  document.getElementById('datei').value='';
 }
+
+window.onclick = function(event){
+  if(event.target === document.getElementById('modal')){
+    schliessen();
+  }
+}
+
+render();
 </script>
 
 </body>
