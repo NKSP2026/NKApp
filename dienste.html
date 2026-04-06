@@ -126,7 +126,7 @@ input{
 </div>
 
 <script type="module">
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
@@ -149,8 +149,11 @@ const adminPasswort = 'Admin2026';
 let liste = [];
 
 window.oeffne = function(){
-  const p = prompt('Admin Passwort eingeben');
-  if(p !== adminPasswort) return;
+  if(!auth.currentUser){
+    alert('Bitte zuerst einloggen');
+    return;
+  }
+
   document.getElementById('modal').style.display = 'flex';
 }
 
@@ -221,8 +224,10 @@ function render(){
 }
 
 window.loeschen = async function(i){
-  const p = prompt('Admin Passwort eingeben');
-  if(p !== adminPasswort) return;
+  if(!auth.currentUser){
+    alert('Bitte zuerst einloggen');
+    return;
+  }
 
   try{
     await remove(ref(db, 'dienste/' + liste[i].id));
