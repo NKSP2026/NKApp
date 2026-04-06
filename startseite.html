@@ -67,6 +67,7 @@
   <a class="admin-btn" href="dokumente.html">Dokumente</a>
   <a class="admin-btn" href="dienstberichte.html">Dienstberichte</a>
   <a class="admin-btn" href="dienste.html">Dienste</a>
+  <a class="admin-btn" href="benutzerverwaltung.html" id="adminBereichBtn" style="display:none;">Benutzerverwaltung</a>
 </div>
 
 <button onclick="logout()">Logout</button>
@@ -97,7 +98,8 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";;
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -111,9 +113,50 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getDatabase(app);
+const benutzerRef = ref(db, 'benutzer');
 
-window.logout = async function(){
+onAuthStateChanged(auth, (user) => {
+  if(!user){
+    window.location.href = 'index.html';
+    return;
+  }
+
+  onValue(benutzerRef, (snapshot) => {
+    snapshot.forEach((child) => {
+      const daten = child.val();
+
+      if(daten.uid === user.uid){
+        update(ref(db, 'benutzer/' + child.key), {
+          online: true
+        });
+
+        if(daten.rolle === 'admin'){
+          document.getElementById('adminBereichBtn').style.display = 'inline-block';
+        }
+      }
+    });
+  });
+});
+
+ window.logout = async function(){
   try{
+    const user = auth.currentUser;
+
+    if(user){
+      onValue(benutzerRef, (snapshot) => {
+        snapshot.forEach((child) => {
+          const daten = child.val();
+
+          if(daten.uid === user.uid){
+            update(ref(db, 'benutzer/' + child.key), {
+              online: false
+            });
+          }
+        });
+      });
+    }
+
     await signOut(auth);
     window.location.href = 'index.html';
   }catch(error){
