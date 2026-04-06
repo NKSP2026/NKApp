@@ -121,8 +121,8 @@ input{
 </div>
 
 <script type="module">
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
@@ -142,12 +142,38 @@ const storage = getStorage(app);
 const auth = getAuth(app);
 const dokumenteRef = ref(db, 'dokumente');
 
-const adminPasswort = 'Admin2026';
 let liste = [];
+let userRolle = '';
+
+onAuthStateChanged(auth, (user) => {
+  if(!user){
+    window.location.href = 'index.html';
+    return;
+  }
+
+  onValue(ref(db, 'benutzer'), (snapshot) => {
+    snapshot.forEach((child) => {
+      const daten = child.val();
+
+      if(daten.uid === user.uid){
+        userRolle = daten.rolle;
+
+        if(userRolle !== 'admin'){
+          const addBtn = document.querySelector('.top-bar button');
+          if(addBtn){
+            addBtn.style.display = 'none';
+          }
+        }
+      }
+    });
+  }, {
+    onlyOnce: true
+  });
+});
 
 window.oeffne = function(){
-  if(!auth.currentUser){
-    alert('Bitte zuerst einloggen');
+  if(userRolle !== 'admin'){
+    alert('Nur Admins dürfen Dokumente hinzufügen');
     return;
   }
 
@@ -155,6 +181,11 @@ window.oeffne = function(){
 }
 
 window.speichern = async function(){
+  if(userRolle !== 'admin'){
+    alert('Nur Admins dürfen Dokumente hochladen');
+    return;
+  }
+
   const n = document.getElementById('name').value;
   const d = document.getElementById('datei').files[0];
 
@@ -178,6 +209,10 @@ window.speichern = async function(){
     });
 
     alert('Dokument gespeichert');
+
+    document.getElementById('name').value = '';
+    document.getElementById('datei').value = '';
+
     schliessen();
   }catch(error){
     console.error(error);
@@ -192,7 +227,7 @@ function render(){
   liste.forEach((x, i) => {
     c.innerHTML += `
     <div class="card">
-      <button class="remove-btn" onclick="loeschen(${i})">X</button>
+      ${userRolle === 'admin' ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ''}
       <h2>${x.name}</h2>
       <br>
       <a href="${x.datei}" download="${x.name}.pdf" class="admin-btn">Herunterladen</a>
@@ -201,12 +236,17 @@ function render(){
 }
 
 window.loeschen = async function(i){
-  if(!auth.currentUser){
-    alert('Bitte zuerst einloggen');
+  if(userRolle !== 'admin'){
+    alert('Nur Admins dürfen Dokumente löschen');
     return;
   }
 
   try{
+    if(liste[i].storagePath){
+      const fileRef = storageRef(storage, liste[i].storagePath);
+      await deleteObject(fileRef);
+    }
+
     await remove(ref(db, 'dokumente/' + liste[i].id));
   }catch(error){
     console.error(error);
