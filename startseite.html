@@ -69,6 +69,8 @@
   <a class="admin-btn" href="dienste.html">Dienste</a>
 </div>
 
+<button onclick="logout()">Logout</button>
+  
 <div class="footer-text">
   <p>Die Verantwortlichen sind zu erreichen unter</p>
   
@@ -93,5 +95,33 @@
   <p>© 2026 NKSP Sicherheitsdienst</p>
 </div>
 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.logout = async function(){
+  try{
+    await signOut(auth);
+    window.location.href = 'index.html';
+  }catch(error){
+    console.error(error);
+    alert('Fehler beim Logout');
+  }
+}
+</script>
+  
 </body>
 </html>
