@@ -122,7 +122,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-const benutzerRef = ref(db, 'benutzer');
 
 onAuthStateChanged(auth, (user) => {
   if(!user){
@@ -130,11 +129,14 @@ onAuthStateChanged(auth, (user) => {
     return;
   }
 
+  const benutzerRef = ref(db, 'benutzer');
+
   onValue(benutzerRef, (snapshot) => {
     snapshot.forEach((child) => {
       const daten = child.val();
 
       if(daten.uid === user.uid){
+
         update(ref(db, 'benutzer/' + child.key), {
           online: true
         });
@@ -144,6 +146,8 @@ onAuthStateChanged(auth, (user) => {
         }
       }
     });
+  }, {
+    onlyOnce: true
   });
 });
 
@@ -152,6 +156,8 @@ window.logout = async function(){
     const user = auth.currentUser;
 
     if(user){
+      const benutzerRef = ref(db, 'benutzer');
+
       onValue(benutzerRef, (snapshot) => {
         snapshot.forEach((child) => {
           const daten = child.val();
