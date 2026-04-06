@@ -195,191 +195,59 @@ h1{text-align:center;margin-bottom:30px;font-size:48px;}
   </div>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const mitarbeiterRef = ref(db, 'mitarbeiter');
+
 const adminPasswort = "Admin2026";
 
-let mitarbeiterListe = [
-  {
-    name:"Nicole Küttner",
-    geburtsdatum:"17.08.1989",
-    alter:"37",
-    wannNK:"Gründung 01.11.2019",
-    funktion:"Geschäftsführerin, Mitarbeiterin",
-    beruf:"Geschäftsführerin",
-    ausbildung:"Staatlich geprüfte Kosmetikerin",
-    sicherheit:"Sachkunde §34a geprüft",
-    ersthelfer:"Ja",
-    brandschutz:"Nein",
-    datenschutz:"Ja",
-    detektivschein:"Ja",
-    firma:"Mitarbeiterverwaltung, Finanzbeauftragte, Einsatzleitung",
-    fuehrerschein:"B",
-    chef:"-",
-    bild:"bilder/nicole,k.jpg"
-  },
-  {
-    name:"Marcel Maczeyzik",
-    geburtsdatum:"15.05.1987",
-    alter:"38",
-    wannNK:"Gründung 01.11.2019",
-    funktion:"Stellvertreter, Mitarbeiter",
-    beruf:"Feuerwehrmann",
-    ausbildung:"Schlosser",
-    sicherheit:"Sachkunde §34a geprüft, GSSK, Fachkraft für Schutz und Sicherheit",
-    ersthelfer:"Ja",
-    brandschutz:"Ja",
-    datenschutz:"Ja",
-    detektivschein:"Ja",
-    firma:"Ausbildungsverantwortlicher, Gefahrenbeurteilung, Einsatzleitung",
-    fuehrerschein:"B, C",
-    chef:"Nicole Küttner",
-    bild:"bilder/marcel,m.jpg"
-  },
-  {
-    name:"Ronny Winkler",
-    geburtsdatum:"30.05.1992",
-    alter:"33",
-    wannNK:"01.02.2025",
-    funktion:"IT und Dokumentation, Mitarbeiter",
-    beruf:"Feuerwehrmann",
-    ausbildung:"Tischler",
-    sicherheit:"Sachkunde §34a geprüft",
-    ersthelfer:"Ja",
-    brandschutz:"Ja",
-    datenschutz:"Nein",
-    detektivschein:"Nein",
-    firma:"IT Weiterentwicklung, Qualifizierter Ansprechpartner nach der Firmenleitung",
-    fuehrerschein:"B, C",
-    chef:"Nicole Küttner, Marcel Maczeyzik",
-    bild:"bilder/ronny,w.jpg"
-  }, 
- {
-    name:"Raphael Kunert",
-    geburtsdatum:"25.02.2000",
-    alter:"26",
-    wannNK:"Mai 2022",
-    funktion:"Mitarbeiter",
-    beruf:"Berufskraftfahrer",
-    ausbildung:"Fachkraft Lagerlogistik, Berufskraftfahrer",
-    sicherheit:"-",
-    ersthelfer:"Ja",
-    brandschutz:"Nein",
-    datenschutz:"Nein",
-    detektivschein:"Nein",
-    firma:"-",
-    fuehrerschein:"B, C",
-    chef:"Nicole Küttner, Marcel Maczeyzik",
-    bild:"bilder/raphael,k.jpg"
-  }, 
-  {
-    name:"Mariell Kunert",
-    geburtsdatum:"12.03.2003",
-    alter:"23",
-    wannNK:"01.04.2026",
-    funktion:"Mitarbeiter",
-    beruf:"Krankenpflegerin",
-    ausbildung:"Krankenpflegerin",
-    sicherheit:"-",
-    ersthelfer:"Ja",
-    brandschutz:"Nein",
-    datenschutz:"Nein",
-    detektivschein:"Nein",
-    firma:"-",
-    fuehrerschein:"-",
-    chef:"Nicole Küttner, Marcel Maczeyzik",
-    bild:"bilder/mariell,k.jpg"
-  },
-  {
-    name:"Janine Dunger",
-    geburtsdatum:"08.12.1992",
-    alter:"33",
-    wannNK:"01.01.2026",
-    funktion:"Mitarbeiter",
-    beruf:"Student",
-    ausbildung:"KFZ Michatronikerin",
-    sicherheit:"-",
-    ersthelfer:"Ja",
-    brandschutz:"Ja",
-    datenschutz:"Nein",
-    detektivschein:"Nein",
-    firma:"-",
-    fuehrerschein:"B, C",
-    chef:"Nicole Küttner, Marcel Maczeyzik",
-    bild:"bilder/janine,d.jpg"
-  },
-  {
-    name:"Rebacca Rothe",
-    geburtsdatum:"03.01.2004",
-    alter:"23",
-    wannNK:"01.01.2025",
-    funktion:"Mitarbeiter",
-    beruf:"-",
-    ausbildung:"-",
-    sicherheit:"Unterweisung §34a geprüft",
-    ersthelfer:"Ja",
-    brandschutz:"Nein",
-    datenschutz:"Nein",
-    detektivschein:"Nein",
-    firma:"-",
-    fuehrerschein:"-",
-    chef:"Nicole Küttner, Marcel Maczeyzik",
-    bild:"bilder/rebecca,r.jpg"
-  },
-  {
-    name:"Janine Braunsteiner",
-    geburtsdatum:"30.11.1989",
-    alter:"36",
-    wannNK:"01.02.2026",
-    funktion:"Mitarbeiter",
-    beruf:"Produktionsmitarbeiterin",
-    ausbildung:"Köchin",
-    sicherheit:"Unterweisung §34a geprüft",
-    ersthelfer:"Ja",
-    brandschutz:"Nein",
-    datenschutz:"Nein",
-    detektivschein:"Nein",
-    firma:"-",
-    fuehrerschein:"B",
-    chef:"Nicole Küttner, Marcel Maczeyzik",
-    bild:"bilder/janine,b.jpg"
-  },
-  {
-    name:"Daniel Neumann",
-    geburtsdatum:"30.11.1984",
-    alter:"42",
-    wannNK:"01.05.2026",
-    funktion:"Mitarbeiter",
-    beruf:"facility manager",
-    ausbildung:"Mauer",
-    sicherheit:"-",
-    ersthelfer:"Nein",
-    brandschutz:"Nein",
-    datenschutz:"Nein",
-    detektivschein:"Nein",
-    firma:"-",
-    fuehrerschein:"B, C",
-    chef:"Nicole Küttner, Marcel Maczeyzik",
-    bild:"bilder/daniel,n.jpg"
-  },
-  {
-    name:"Monique Rühlemann",
-    geburtsdatum:"17.10.1996",
-    alter:"29",
-    wannNK:"01.02.2026",
-    funktion:"Mitarbeiter",
-    beruf:"Bäckereifachverkäuferin",
-    ausbildung:"-",
-    sicherheit:"-",
-    ersthelfer:"Ja",
-    brandschutz:"Ja",
-    datenschutz:"Nein",
-    detektivschein:"Nein",
-    firma:"-",
-    fuehrerschein:"-",
-    chef:"Nicole Küttner, Marcel Maczeyzik",
-    bild:"bilder/monique,r.jpg"
+let mitarbeiterListe = [];
+
+function berechneAlter(geburtsdatum){
+  if(!geburtsdatum || geburtsdatum.includes("?")) return "?";
+
+  let teile;
+
+  if(geburtsdatum.includes(".")){
+    teile = geburtsdatum.split(".");
+    const tag = parseInt(teile[0]);
+    const monat = parseInt(teile[1]) - 1;
+    const jahr = parseInt(teile[2]);
+
+    if(isNaN(tag) || isNaN(monat) || isNaN(jahr)) return "?";
+
+    const geburt = new Date(jahr, monat, tag);
+    const heute = new Date();
+
+    let alter = heute.getFullYear() - geburt.getFullYear();
+
+    const hatGeburtstagSchonGehabt =
+      heute.getMonth() > geburt.getMonth() ||
+      (heute.getMonth() === geburt.getMonth() && heute.getDate() >= geburt.getDate());
+
+    if(!hatGeburtstagSchonGehabt){
+      alter--;
+    }
+
+    return alter;
   }
-];
+
+  return "?";
+}
 
 function renderMitarbeiter(){
   const container = document.getElementById("mitarbeiterContainer");
@@ -392,7 +260,7 @@ function renderMitarbeiter(){
         <img src="${m.bild}">
         <div>
           <h2>${m.name}</h2>
-          <p>${m.alter} Jahre</p>
+          <p>${berechneAlter(m.geburtsdatum)} Jahre</p>
           <p>${m.funktion}</p>
         </div>
       </div>
@@ -400,11 +268,11 @@ function renderMitarbeiter(){
   });
 }
 
-function showDetails(index){
+window.showDetails = function(index){
   const m = mitarbeiterListe[index];
   document.getElementById("detailBild").src = m.bild;
   document.getElementById("detailName").innerText = m.name;
-  document.getElementById("detailAlter").innerText = m.alter;
+  document.getElementById("detailAlter").innerText = berechneAlter(m.geburtsdatum);
   document.getElementById("detailWannNK").innerText = m.wannNK;
   document.getElementById("detailGeburtsdatum").innerText = m.geburtsdatum;
   document.getElementById("detailFunktion").innerText = m.funktion;
@@ -421,11 +289,11 @@ function showDetails(index){
   document.getElementById("detailModal").style.display = "flex";
 }
 
-function closeModal(){
+window.closeModal = function(){
   document.getElementById("detailModal").style.display = "none";
 }
 
-function oeffneFormular(){
+window.oeffneFormular = function(){
   const pw = prompt("Admin Passwort eingeben");
   if(pw !== adminPasswort){
     alert("Falsches Passwort");
@@ -434,11 +302,11 @@ function oeffneFormular(){
   document.getElementById("formularModal").style.display = "flex";
 }
 
-function schliesseFormular(){
+window.schliesseFormular = function(){
   document.getElementById("formularModal").style.display = "none";
 }
 
-function speichereMitarbeiter(){
+window.speichereMitarbeiter = function(){
   const bildDatei = document.getElementById("formBild").files[0];
   if(!bildDatei){
     alert("Bitte Bild auswählen");
@@ -447,10 +315,9 @@ function speichereMitarbeiter(){
 
   const reader = new FileReader();
   reader.onload = function(e){
-    mitarbeiterListe.push({
+    push(mitarbeiterRef, {
       name: document.getElementById("formName").value,
       geburtsdatum: document.getElementById("formGeburtsdatum").value,
-      alter: document.getElementById("formAlter").value,
       wannNK: document.getElementById("formWannNK").value,
       funktion: document.getElementById("formFunktion").value,
       beruf: document.getElementById("formBeruf").value,
@@ -465,20 +332,22 @@ function speichereMitarbeiter(){
       chef: document.getElementById("formChef").value,
       bild: e.target.result
     });
-    renderMitarbeiter();
+
     schliesseFormular();
   };
+
   reader.readAsDataURL(bildDatei);
 }
 
-function loescheMitarbeiter(index){
+window.loescheMitarbeiter = function(index){
   const pw = prompt("Admin Passwort eingeben");
   if(pw !== adminPasswort){
     alert("Falsches Passwort");
     return;
   }
-  mitarbeiterListe.splice(index,1);
-  renderMitarbeiter();
+
+  const id = mitarbeiterListe[index].id;
+  remove(ref(db, 'mitarbeiter/' + id));
 }
 
 window.onclick = function(event){
@@ -490,8 +359,16 @@ window.onclick = function(event){
   }
 }
 
-renderMitarbeiter();
-</script>
+onValue(mitarbeiterRef, (snapshot) => {
+  mitarbeiterListe = [];
 
-</body>
-</html>
+  snapshot.forEach((child) => {
+    mitarbeiterListe.push({
+      id: child.key,
+      ...child.val()
+    });
+  });
+
+  renderMitarbeiter();
+});
+</script>
