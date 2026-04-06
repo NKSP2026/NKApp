@@ -241,14 +241,7 @@ onAuthStateChanged(auth, (user) => {
   }
 
   renderMitarbeiter();
-}
-      }
-    });
-  }, {
-    onlyOnce: true
-  });
-});
-
+        
 function berechneAlter(geburtsdatum){
   if(!geburtsdatum || geburtsdatum.includes("?")) return "?";
 
