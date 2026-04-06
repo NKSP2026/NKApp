@@ -8,53 +8,66 @@
   <link rel="icon" type="image/png" href="bilder/app-icon.png">
 
   <style>
-    body {
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      text-align: center;
-      min-height: 100vh;
+    body{
+      background:#111;
+      color:white;
+      font-family:Arial,sans-serif;
+      padding:20px;
+      text-align:center;
+      min-height:100vh;
+      margin:0;
     }
 
-    .logo {
-      width: 100%;
-      max-width: 900px;
-      margin-top: 40px;
-      margin-bottom: 50px;
-      border-radius: 20px;
+    .logo{
+      width:100%;
+      max-width:900px;
+      margin-top:40px;
+      margin-bottom:50px;
+      border-radius:20px;
     }
 
-    .top-bar {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      flex-wrap: wrap;
-      margin-bottom: 60px;
+    .top-bar{
+      display:flex;
+      justify-content:center;
+      gap:15px;
+      flex-wrap:wrap;
+      margin-bottom:30px;
     }
 
-    .admin-btn {
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 16px 28px;
-      border-radius: 14px;
-      cursor: pointer;
-      font-size: 18px;
-      font-weight: bold;
-      text-decoration: none;
-      display: inline-block;
+    .admin-btn{
+      background:#2563eb;
+      color:white;
+      border:none;
+      padding:16px 28px;
+      border-radius:14px;
+      cursor:pointer;
+      font-size:18px;
+      font-weight:bold;
+      text-decoration:none;
+      display:inline-block;
     }
 
-    .footer-text {
-      max-width: 900px;
-      margin: 80px auto 0 auto;
-      color: #888;
-      font-size: 15px;
-      line-height: 1.9;
-      background: #1c1c1f;
-      border-radius: 20px;
-      padding: 30px;
+    .admin-btn:hover{
+      background:#1d4ed8;
+    }
+
+    .logout-btn{
+      background:#dc2626;
+    }
+
+    .logout-btn:hover{
+      background:#b91c1c;
+    }
+
+    .footer-text{
+      max-width:900px;
+      margin:80px auto 0 auto;
+      color:#888;
+      font-size:15px;
+      line-height:1.9;
+      background:#1c1c1f;
+      border-radius:20px;
+      padding:30px;
     }
   </style>
 </head>
@@ -63,30 +76,24 @@
 <img src="bilder/logo.png" alt="NKSP Logo" class="logo">
 
 <div class="top-bar">
-  <a onclick="logout()">Logout</a>
   <a class="admin-btn" href="mitarbeiter.html">Mitarbeiter</a>
   <a class="admin-btn" href="dokumente.html">Dokumente</a>
   <a class="admin-btn" href="dienstberichte.html">Dienstberichte</a>
   <a class="admin-btn" href="dienste.html">Dienste</a>
   <a class="admin-btn" href="benutzerverwaltung.html" id="adminBereichBtn" style="display:none;">Benutzerverwaltung</a>
+  <button class="admin-btn logout-btn" onclick="logout()">Logout</button>
 </div>
 
-
-  
 <div class="footer-text">
   <p>Die Verantwortlichen sind zu erreichen unter</p>
-  
-  <p>Nicole, Küttner Tel. 01721858651</p>
-  <p>E-Mail: </p>
-  <p></p>
-  <p>Marcel, Maczeyzik Tel. 015223256910</p>
-  <p>E-Mail: </p>
-  <p></p>
-  <p>Ronny, Winkler Tel. 017630770237</p>
+
+  <p>Nicole Küttner Tel. 01721858651</p>
+  <p>Marcel Maczeyzik Tel. 015223256910</p>
+  <p>Ronny Winkler Tel. 017630770237</p>
   <p>E-Mail: winklerronny10@gmail.com</p>
-  <p></p>
-  <p></p>
-  <p></p>
+
+  <br>
+
   <p>Diese Seite wurde erstellt von Ronny Winkler.</p>
   <p>Pflege und Aktualisierung durch Nicole Küttner, Marcel Maczeyzik und Ronny Winkler.</p>
   <p>Alle dargestellten Mitarbeiterdaten dienen ausschließlich internen Zwecken.</p>
@@ -100,7 +107,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";;
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -118,24 +125,29 @@ const db = getDatabase(app);
 const benutzerRef = ref(db, 'benutzer');
 
 onAuthStateChanged(auth, (user) => {
-  if(user){
-  const snapshotCallback = (snapshot) => {
+  if(!user){
+    window.location.href = 'index.html';
+    return;
+  }
+
+  onValue(benutzerRef, (snapshot) => {
     snapshot.forEach((child) => {
       const daten = child.val();
 
       if(daten.uid === user.uid){
         update(ref(db, 'benutzer/' + child.key), {
-          online: false
+          online: true
         });
+
+        if(daten.rolle === 'admin'){
+          document.getElementById('adminBereichBtn').style.display = 'inline-block';
+        }
       }
     });
-  };
-
-  onValue(benutzerRef, snapshotCallback, {
-    onlyOnce: true
   });
-}
- window.logout = async function(){
+});
+
+window.logout = async function(){
   try{
     const user = auth.currentUser;
 
@@ -150,6 +162,8 @@ onAuthStateChanged(auth, (user) => {
             });
           }
         });
+      }, {
+        onlyOnce: true
       });
     }
 
@@ -161,6 +175,6 @@ onAuthStateChanged(auth, (user) => {
   }
 }
 </script>
-  
+
 </body>
 </html>
