@@ -125,6 +125,7 @@ input{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -138,6 +139,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const storage = getStorage(app);
 const dienstberichteRef = ref(db, 'dienstberichte');
 
 const adminPasswort = 'Admin2026';
@@ -149,27 +151,38 @@ window.oeffneModal = function(){
   document.getElementById('modal').style.display = 'flex';
 }
 
-window.speichern = function(){
+window.speichern = async function(){
   const titel = document.getElementById('titel').value;
   const dienst = document.getElementById('dienst').value;
   const mitarbeiter = document.getElementById('mitarbeiter').value;
   const datei = document.getElementById('datei').files[0];
 
-  if(!titel || !dienst || !mitarbeiter || !datei) return;
+  if(!titel || !dienst || !mitarbeiter || !datei){
+    alert('Bitte alles ausfüllen');
+    return;
+  }
 
-  const r = new FileReader();
-  r.onload = e => {
-    push(dienstberichteRef, {
+  try{
+    const dateiname = Date.now() + "_" + datei.name;
+    const dateiRef = storageRef(storage, "dienstberichte/" + dateiname);
+
+    await uploadBytes(dateiRef, datei);
+
+    const downloadURL = await getDownloadURL(dateiRef);
+
+    await push(dienstberichteRef, {
       titel,
       dienst,
       mitarbeiter,
-      datei: e.target.result
+      datei: downloadURL
     });
 
+    alert('Dienstbericht gespeichert');
     schliessen();
-  };
-
-  r.readAsDataURL(datei);
+  }catch(error){
+    console.error(error);
+    alert('Fehler beim Hochladen');
+  }
 }
 
 function render(){
