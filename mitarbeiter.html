@@ -198,6 +198,7 @@ h1{text-align:center;margin-bottom:30px;font-size:48px;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -211,6 +212,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const storage = getStorage(app);
 const mitarbeiterRef = ref(db, 'mitarbeiter');
 
 const adminPasswort = "Admin2026";
@@ -306,16 +308,23 @@ window.schliesseFormular = function(){
   document.getElementById("formularModal").style.display = "none";
 }
 
-window.speichereMitarbeiter = function(){
+async function speichereMitarbeiter(){
   const bildDatei = document.getElementById("formBild").files[0];
+
   if(!bildDatei){
     alert("Bitte Bild auswählen");
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = function(e){
-    push(mitarbeiterRef, {
+  try{
+    const dateiname = Date.now() + "_" + bildDatei.name;
+    const bildRef = storageRef(storage, "mitarbeiterbilder/" + dateiname);
+
+    await uploadBytes(bildRef, bildDatei);
+
+    const bildURL = await getDownloadURL(bildRef);
+
+    await push(mitarbeiterRef, {
       name: document.getElementById("formName").value,
       geburtsdatum: document.getElementById("formGeburtsdatum").value,
       wannNK: document.getElementById("formWannNK").value,
@@ -330,14 +339,18 @@ window.speichereMitarbeiter = function(){
       firma: document.getElementById("formFirma").value,
       fuehrerschein: document.getElementById("formFuehrerschein").value,
       chef: document.getElementById("formChef").value,
-      bild: e.target.result
+      bild: bildURL
     });
 
-    schliesseFormular();
-  };
+    alert("Mitarbeiter gespeichert");
 
-  reader.readAsDataURL(bildDatei);
+    document.getElementById("formularModal").style.display = "none";
+  }catch(error){
+    console.error(error);
+    alert("Fehler beim Hochladen");
+  }
 }
+
 
 window.loescheMitarbeiter = function(index){
   const pw = prompt("Admin Passwort eingeben");
