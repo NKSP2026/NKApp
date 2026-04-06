@@ -140,9 +140,8 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  import { setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
-await setPersistence(auth, browserSessionPersistence);
+  await setPersistence(auth, browserSessionPersistence);
 
   window.login = async function(){
     const email = document.getElementById('email').value;
