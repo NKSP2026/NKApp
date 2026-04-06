@@ -196,7 +196,7 @@ h1{text-align:center;margin-bottom:30px;font-size:48px;}
 </div>
 
 <script type="module">
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
@@ -213,8 +213,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const storage = getStorage(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 const mitarbeiterRef = ref(db, 'mitarbeiter');
 
 const adminPasswort = "Admin2026";
@@ -297,13 +297,13 @@ window.closeModal = function(){
   document.getElementById("detailModal").style.display = "none";
 }
 
-window.oeffneFormular = function(){
-  const pw = prompt("Admin Passwort eingeben");
-  if(pw !== adminPasswort){
-    alert("Falsches Passwort");
+window.oeffne = function(){
+  if(!auth.currentUser){
+    alert('Bitte zuerst einloggen');
     return;
   }
-  document.getElementById("formularModal").style.display = "flex";
+
+  document.getElementById('modal').style.display = 'flex';
 }
 
 window.schliesseFormular = function(){
@@ -355,15 +355,18 @@ window.schliesseFormular = function(){
 }
 
 
-window.loescheMitarbeiter = function(index){
-  const pw = prompt("Admin Passwort eingeben");
-  if(pw !== adminPasswort){
-    alert("Falsches Passwort");
+window.loeschen = async function(i){
+  if(!auth.currentUser){
+    alert('Bitte zuerst einloggen');
     return;
   }
 
-  const id = mitarbeiterListe[index].id;
-  remove(ref(db, 'mitarbeiter/' + id));
+  try{
+    await remove(ref(db, 'mitarbeiterliste/' + liste[i].id));
+  }catch(error){
+    console.error(error);
+    alert('Fehler beim Löschen');
+  }
 }
 
 window.onclick = function(event){
