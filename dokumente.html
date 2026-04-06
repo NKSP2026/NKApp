@@ -168,7 +168,8 @@ window.speichern = async function(){
 
     await push(dokumenteRef, {
       name: n,
-      datei: downloadURL
+      datei: downloadURL,
+      storagePath: "dokumente/" + dateiname
     });
 
     alert('Dokument gespeichert');
@@ -194,11 +195,21 @@ function render(){
   });
 }
 
-window.loeschen = function(i){
+window.loeschen = async function(i){
   const p = prompt('Admin Passwort eingeben');
   if(p !== adminPasswort) return;
 
-  remove(ref(db, 'dokumente/' + liste[i].id));
+  try{
+    if(liste[i].storagePath){
+      const fileRef = storageRef(storage, liste[i].storagePath);
+      await deleteObject(fileRef);
+    }
+
+    await remove(ref(db, 'dokumente/' + liste[i].id));
+  }catch(error){
+    console.error(error);
+    alert('Fehler beim Löschen');
+  }
 }
 
 window.schliessen = function(){
