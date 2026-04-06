@@ -260,6 +260,13 @@ onValue(diensteRef, (snapshot) => {
     });
   });
 
+  liste.sort((a, b) => {
+    const datumA = new Date(a.datum);
+    const datumB = new Date(b.datum);
+
+    return datumA - datumB;
+  });
+
   render();
   alteDiensteEntfernen();
 });
