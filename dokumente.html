@@ -120,46 +120,58 @@ input{
   </div>
 </div>
 
-<script>
-const adminPasswort='Admin2026';
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
-let liste = JSON.parse(localStorage.getItem('dokumenteListe')) || [];
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
 
-function speichereLocalStorage(){
-  localStorage.setItem('dokumenteListe', JSON.stringify(liste));
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const dokumenteRef = ref(db, 'dokumente');
+
+const adminPasswort = 'Admin2026';
+let liste = [];
+
+window.oeffneModal = function(){
+  const p = prompt('Admin Passwort eingeben');
+  if(p !== adminPasswort) return;
+  document.getElementById('modal').style.display = 'flex';
 }
 
-function oeffneModal(){
-  const p=prompt('Admin Passwort eingeben');
-  if(p!==adminPasswort)return;
-  document.getElementById('modal').style.display='flex';
-}
+window.speichern = function(){
+  const n = document.getElementById('name').value;
+  const d = document.getElementById('datei').files[0];
 
-function speichern(){
-  const n=document.getElementById('name').value;
-  const d=document.getElementById('datei').files[0];
+  if(!n || !d) return;
 
-  if(!n||!d){
-    alert('Bitte alle Felder ausfüllen');
-    return;
-  }
+  const r = new FileReader();
+  r.onload = e => {
+    push(dokumenteRef, {
+      name: n,
+      datei: e.target.result
+    });
 
-  const r=new FileReader();
-  r.onload=e=>{
-    liste.push({name:n,datei:e.target.result});
-    speichereLocalStorage();
-    render();
     schliessen();
   };
+
   r.readAsDataURL(d);
 }
 
 function render(){
-  const c=document.getElementById('container');
-  c.innerHTML='';
+  const c = document.getElementById('container');
+  c.innerHTML = '';
 
-  liste.forEach((x,i)=>{
-    c.innerHTML+=`
+  liste.forEach((x, i) => {
+    c.innerHTML += `
     <div class="card">
       <button class="remove-btn" onclick="loeschen(${i})">X</button>
       <h2>${x.name}</h2>
@@ -169,29 +181,27 @@ function render(){
   });
 }
 
-function loeschen(i){
-  const p=prompt('Admin Passwort eingeben');
-  if(p!==adminPasswort)return;
+window.loeschen = function(i){
+  const p = prompt('Admin Passwort eingeben');
+  if(p !== adminPasswort) return;
 
-  liste.splice(i,1);
-  speichereLocalStorage();
+  remove(ref(db, 'dokumente/' + liste[i].id));
+}
+
+window.schliessen = function(){
+  document.getElementById('modal').style.display = 'none';
+}
+
+onValue(dokumenteRef, (snapshot) => {
+  liste = [];
+
+  snapshot.forEach((child) => {
+    liste.push({
+      id: child.key,
+      ...child.val()
+    });
+  });
+
   render();
-}
-
-function schliessen(){
-  document.getElementById('modal').style.display='none';
-  document.getElementById('name').value='';
-  document.getElementById('datei').value='';
-}
-
-window.onclick = function(event){
-  if(event.target === document.getElementById('modal')){
-    schliessen();
-  }
-}
-
-render();
+});
 </script>
-
-</body>
-</html>
