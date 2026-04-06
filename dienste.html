@@ -126,8 +126,8 @@ input{
 </div>
 
 <script type="module">
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -145,12 +145,38 @@ const db = getDatabase(app);
 const auth = getAuth(app);
 const diensteRef = ref(db, 'dienste');
 
-const adminPasswort = 'Admin2026';
 let liste = [];
+let userRolle = '';
+
+onAuthStateChanged(auth, (user) => {
+  if(!user){
+    window.location.href = 'index.html';
+    return;
+  }
+
+  onValue(ref(db, 'benutzer'), (snapshot) => {
+    snapshot.forEach((child) => {
+      const daten = child.val();
+
+      if(daten.uid === user.uid){
+        userRolle = daten.rolle;
+
+        if(userRolle !== 'admin'){
+          const addBtn = document.querySelector('.top-bar button');
+          if(addBtn){
+            addBtn.style.display = 'none';
+          }
+        }
+      }
+    });
+  }, {
+    onlyOnce: true
+  });
+});
 
 window.oeffne = function(){
-  if(!auth.currentUser){
-    alert('Bitte zuerst einloggen');
+  if(userRolle !== 'admin'){
+    alert('Nur Admins dürfen Dienste hinzufügen');
     return;
   }
 
@@ -158,6 +184,11 @@ window.oeffne = function(){
 }
 
 window.speichern = async function(){
+  if(userRolle !== 'admin'){
+    alert('Nur Admins dürfen Dienste speichern');
+    return;
+  }
+
   const datum = document.getElementById('datum').value;
   const von = document.getElementById('von').value;
   const bis = document.getElementById('bis').value;
@@ -196,7 +227,8 @@ window.speichern = async function(){
     alert('Fehler beim Speichern');
   }
 }
-  function formatDatum(datum){
+
+function formatDatum(datum){
   if(!datum) return '';
 
   const teile = datum.split('-');
@@ -205,6 +237,7 @@ window.speichern = async function(){
 
   return `${teile[2]}.${teile[1]}.${teile[0]}`;
 }
+
 function render(){
   const c = document.getElementById('container');
   c.innerHTML = '';
@@ -212,7 +245,7 @@ function render(){
   liste.forEach((x, i) => {
     c.innerHTML += `
     <div class="card">
-      <button class="remove-btn" onclick="loeschen(${i})">X</button>
+      ${userRolle === 'admin' ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ''}
       <h2>${formatDatum(x.datum)}</h2>
       <p>${x.von} - ${x.bis}</p>
       <p>${x.ort}</p>
@@ -224,8 +257,8 @@ function render(){
 }
 
 window.loeschen = async function(i){
-  if(!auth.currentUser){
-    alert('Bitte zuerst einloggen');
+  if(userRolle !== 'admin'){
+    alert('Nur Admins dürfen Dienste löschen');
     return;
   }
 
@@ -237,7 +270,7 @@ window.loeschen = async function(i){
   }
 }
 
-  async function alteDiensteEntfernen(){
+async function alteDiensteEntfernen(){
   const jetzt = new Date();
 
   for(const dienst of liste){
@@ -256,12 +289,12 @@ window.loeschen = async function(i){
     }
   }
 }
-  
+
 window.schliessen = function(){
   document.getElementById('modal').style.display = 'none';
 }
-  
-  onValue(diensteRef, (snapshot) => {
+
+onValue(diensteRef, (snapshot) => {
   liste = [];
 
   snapshot.forEach((child) => {
