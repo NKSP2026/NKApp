@@ -308,7 +308,8 @@ window.schliesseFormular = function(){
   document.getElementById("formularModal").style.display = "none";
 }
 
-async function speichereMitarbeiter(){
+
+  window.speichereMitarbeiter = async function(){
   const bildDatei = document.getElementById("formBild").files[0];
 
   if(!bildDatei){
