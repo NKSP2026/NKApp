@@ -126,7 +126,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+  import { getAuth, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -140,6 +140,9 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  import { setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+await setPersistence(auth, browserSessionPersistence);
 
   window.login = async function(){
     const email = document.getElementById('email').value;
