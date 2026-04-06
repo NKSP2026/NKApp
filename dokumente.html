@@ -123,6 +123,7 @@ input{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -136,6 +137,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const storage = getStorage(app);
 const dokumenteRef = ref(db, 'dokumente');
 
 const adminPasswort = 'Admin2026';
@@ -147,23 +149,34 @@ window.oeffneModal = function(){
   document.getElementById('modal').style.display = 'flex';
 }
 
-window.speichern = function(){
+window.speichern = async function(){
   const n = document.getElementById('name').value;
   const d = document.getElementById('datei').files[0];
 
-  if(!n || !d) return;
+  if(!n || !d){
+    alert('Bitte alles ausfüllen');
+    return;
+  }
 
-  const r = new FileReader();
-  r.onload = e => {
-    push(dokumenteRef, {
+  try{
+    const dateiname = Date.now() + "_" + d.name;
+    const dateiRef = storageRef(storage, "dokumente/" + dateiname);
+
+    await uploadBytes(dateiRef, d);
+
+    const downloadURL = await getDownloadURL(dateiRef);
+
+    await push(dokumenteRef, {
       name: n,
-      datei: e.target.result
+      datei: downloadURL
     });
 
+    alert('Dokument gespeichert');
     schliessen();
-  };
-
-  r.readAsDataURL(d);
+  }catch(error){
+    console.error(error);
+    alert('Fehler beim Hochladen');
+  }
 }
 
 function render(){
