@@ -156,20 +156,17 @@ onAuthStateChanged(auth, (user) => {
       const daten = child.val();
 
       if(daten.uid === user.uid){
-        userRolle = daten.rolle;
+  userRolle = daten.rolle;
 
-        if(userRolle !== 'admin'){
-          const addBtn = document.querySelector('.top-bar button');
-          if(addBtn){
-            addBtn.style.display = 'none';
-          }
-        }
-      }
-    });
-  }, {
-    onlyOnce: true
-  });
-});
+  if(userRolle !== 'admin'){
+    const addBtn = document.querySelector('.top-bar button');
+    if(addBtn){
+      addBtn.style.display = 'none';
+    }
+  }
+
+  render();
+}
 
 window.oeffne = function(){
   if(userRolle !== 'admin'){
