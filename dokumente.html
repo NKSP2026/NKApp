@@ -155,18 +155,21 @@ onAuthStateChanged(auth, (user) => {
     snapshot.forEach((child) => {
       const daten = child.val();
 
-           if(daten.uid === user.uid){
-  userRolle = daten.rolle;
+      if(daten.uid === user.uid){
+        userRolle = daten.rolle;
 
-  if(userRolle !== 'admin'){
-    const addBtn = document.querySelector('.top-bar button');
-    if(addBtn){
-      addBtn.style.display = 'none';
-    }
-  }
-
-  render();
-
+        if(userRolle !== 'admin'){
+          const addBtn = document.querySelector('.top-bar button');
+          if(addBtn){
+            addBtn.style.display = 'none';
+          }
+        }
+      }
+    });
+  }, {
+    onlyOnce: true
+  });
+});
 
 window.oeffne = function(){
   if(userRolle !== 'admin'){
