@@ -178,6 +178,14 @@ window.speichern = async function(){
     });
 
     alert('Dienst gespeichert');
+
+    document.getElementById('datum').value = '';
+    document.getElementById('von').value = '';
+    document.getElementById('bis').value = '';
+    document.getElementById('ort').value = '';
+    document.getElementById('art').value = '';
+    document.getElementById('auftraggeber').value = '';
+    document.getElementById('verantwortlich').value = '';
   }catch(error){
     console.error(error);
     alert('Fehler beim Speichern');
@@ -222,6 +230,26 @@ window.loeschen = async function(i){
   }
 }
 
+  async function alteDiensteEntfernen(){
+  const jetzt = new Date();
+
+  for(const dienst of liste){
+    if(!dienst.datum) continue;
+
+    const dienstDatum = new Date(dienst.datum);
+    dienstDatum.setDate(dienstDatum.getDate() + 2);
+    dienstDatum.setHours(23, 59, 59, 999);
+
+    if(jetzt > dienstDatum){
+      try{
+        await remove(ref(db, 'dienste/' + dienst.id));
+      }catch(error){
+        console.error('Fehler beim automatischen Löschen:', error);
+      }
+    }
+  }
+}
+  
 onValue(diensteRef, (snapshot) => {
   liste = [];
 
@@ -233,5 +261,6 @@ onValue(diensteRef, (snapshot) => {
   });
 
   render();
+  alteDiensteEntfernen();
 });
 </script>
