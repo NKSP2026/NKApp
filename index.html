@@ -10,73 +10,91 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
     }
 
-    body {
-      background: #111;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
+    body{
+      background:#111;
+      color:white;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+      padding:20px;
     }
 
-    .login-box {
-      width: 100%;
-      max-width: 500px;
-      background: #1c1c1f;
-      padding: 40px;
-      border-radius: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      text-align: center;
+    .login-box{
+      width:100%;
+      max-width:500px;
+      background:#1c1c1f;
+      padding:40px;
+      border-radius:24px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.5);
+      text-align:center;
     }
 
-    h1 {
-      font-size: 42px;
-      margin-bottom: 20px;
+    h1{
+      font-size:42px;
+      margin-bottom:20px;
     }
 
-    p {
-      color: #bbb;
-      margin-bottom: 20px;
-      line-height: 1.7;
+    p{
+      color:#bbb;
+      margin-bottom:20px;
+      line-height:1.7;
     }
 
-    input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #444;
-      background: #111;
-      color: white;
-      margin-bottom: 20px;
-      font-size: 16px;
+    input{
+      width:100%;
+      padding:14px;
+      border-radius:12px;
+      border:1px solid #444;
+      background:#111;
+      color:white;
+      margin-bottom:20px;
+      font-size:16px;
     }
 
-    button {
-      width: 100%;
-      padding: 14px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-bottom: 25px;
+    button{
+      width:100%;
+      padding:14px;
+      background:#2563eb;
+      color:white;
+      border:none;
+      border-radius:12px;
+      font-size:18px;
+      font-weight:bold;
+      cursor:pointer;
+      margin-bottom:15px;
     }
 
-    .footer-text {
-      color: #777;
-      font-size: 14px;
-      line-height: 1.8;
-      margin-top: 20px;
+    button:hover{
+      background:#1d4ed8;
+    }
+
+    .register-btn{
+      background:#374151;
+    }
+
+    .register-btn:hover{
+      background:#4b5563;
+    }
+
+    .error{
+      color:#ef4444;
+      margin-bottom:15px;
+      font-size:14px;
+    }
+
+    .footer-text{
+      color:#777;
+      font-size:14px;
+      line-height:1.8;
+      margin-top:20px;
     }
   </style>
 </head>
@@ -87,9 +105,13 @@
 
   <p>Zugriff nur für autorisierte Personen.</p>
 
-  <input type="password" id="passwort" placeholder="Passwort eingeben">
+  <input type="email" id="email" placeholder="E-Mail">
+  <input type="password" id="passwort" placeholder="Passwort">
+
+  <div class="error" id="fehler"></div>
 
   <button onclick="login()">Anmelden</button>
+  <button class="register-btn" onclick="window.location.href='registrierung.html'">Noch nicht registriert?</button>
 
   <div class="footer-text">
     <p>Diese Seite wurde erstellt von Ronny Winkler.</p>
@@ -102,28 +124,70 @@
   </div>
 </div>
 
-<script>
-function login() {
-  const passwort = document.getElementById('passwort').value;
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
-  if (passwort === 'NKSP2026') {
-    window.location.href = 'startseite.html';
-  } else {
-    alert('Falsches Passwort');
-  }
-}
+  const firebaseConfig = {
+    apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+    authDomain: "nksp-app.firebaseapp.com",
+    databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "nksp-app",
+    storageBucket: "nksp-app.firebasestorage.app",
+    messagingSenderId: "328702502215",
+    appId: "1:328702502215:web:080148f3e768bfafc29862"
+  };
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js')
-      .then(registration => {
-        console.log('Service Worker registriert:', registration);
-      })
-      .catch(error => {
-        console.log('Service Worker Fehler:', error);
-      });
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  onAuthStateChanged(auth, (user) => {
+    if(user){
+      window.location.href = "startseite.html";
+    }
   });
-}
+
+  window.login = async function(){
+    const email = document.getElementById('email').value;
+    const passwort = document.getElementById('passwort').value;
+    const fehler = document.getElementById('fehler');
+
+    fehler.innerText = '';
+
+    if(!email || !passwort){
+      fehler.innerText = 'Bitte E-Mail und Passwort eingeben';
+      return;
+    }
+
+    try{
+      await signInWithEmailAndPassword(auth, email, passwort);
+      window.location.href = 'startseite.html';
+    }catch(error){
+      console.error(error);
+
+      if(error.code === 'auth/invalid-credential'){
+        fehler.innerText = 'E-Mail oder Passwort falsch';
+      }else if(error.code === 'auth/user-not-found'){
+        fehler.innerText = 'Benutzer nicht gefunden';
+      }else if(error.code === 'auth/wrong-password'){
+        fehler.innerText = 'Passwort falsch';
+      }else{
+        fehler.innerText = 'Anmeldung fehlgeschlagen';
+      }
+    }
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(registration => {
+          console.log('Service Worker registriert:', registration);
+        })
+        .catch(error => {
+          console.log('Service Worker Fehler:', error);
+        });
+    });
+  }
 </script>
 
 </body>
