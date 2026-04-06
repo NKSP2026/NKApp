@@ -152,7 +152,7 @@ window.oeffne = function(){
   document.getElementById('modal').style.display = 'flex';
 }
 
-window.speichern = function(){
+window.speichern = async function(){
   const datum = document.getElementById('datum').value;
   const von = document.getElementById('von').value;
   const bis = document.getElementById('bis').value;
@@ -161,21 +161,29 @@ window.speichern = function(){
   const auftraggeber = document.getElementById('auftraggeber').value;
   const verantwortlich = document.getElementById('verantwortlich').value;
 
-  if(!datum) return;
+  if(!datum){
+    alert('Bitte Datum auswählen');
+    return;
+  }
 
-  push(dienstRef, {
-    datum,
-    von,
-    bis,
-    ort,
-    art,
-    auftraggeber,
-    verantwortlich
-  });
+  try{
+    await push(diensteRef, {
+      datum,
+      von,
+      bis,
+      ort,
+      art,
+      auftraggeber,
+      verantwortlich
+    });
 
-  schliessen();
+    alert('Dienst gespeichert');
+    schliessen();
+  }catch(error){
+    console.error(error);
+    alert('Fehler beim Speichern');
+  }
 }
-
 function render(){
   const c = document.getElementById('container');
   c.innerHTML = '';
@@ -194,18 +202,23 @@ function render(){
   });
 }
 
-window.loeschen = function(i){
+window.loeschen = async function(i){
   const p = prompt('Admin Passwort eingeben');
   if(p !== adminPasswort) return;
 
-  remove(ref(db, 'dienste/' + liste[i].id));
+  try{
+    await remove(ref(db, 'dienste/' + liste[i].id));
+  }catch(error){
+    console.error(error);
+    alert('Fehler beim Löschen');
+  }
 }
 
 window.schliessen = function(){
   document.getElementById('modal').style.display = 'none';
 }
 
-onValue(dienstRef, (snapshot) => {
+onValue(diensteRef, (snapshot) => {
   liste = [];
 
   snapshot.forEach((child) => {
