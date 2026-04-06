@@ -67,6 +67,14 @@
       background:#1d4ed8;
     }
 
+    .back-btn{
+      background:#374151;
+    }
+
+    .back-btn:hover{
+      background:#4b5563;
+    }
+
     .info{
       margin-top:20px;
       color:#aaa;
@@ -103,6 +111,7 @@
     <input type="text" id="code" placeholder="Verifizierungscode">
 
     <button onclick="registrieren()">Registrieren</button>
+    <button class="back-btn" onclick="window.location.href='index.html'">Zurück zum Login</button>
 
     <div class="error" id="fehler"></div>
     <div class="success" id="erfolg"></div>
@@ -204,7 +213,7 @@
         erfolg.innerText = 'Registrierung erfolgreich';
 
         setTimeout(() => {
-          window.location.href = 'login.html';
+          window.location.href = 'index.html';
         }, 1500);
       }catch(error){
         console.error(error);
