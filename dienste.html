@@ -158,7 +158,7 @@ onAuthStateChanged(auth, (user) => {
     snapshot.forEach((child) => {
       const daten = child.val();
 
-      if(daten.uid === user.uid){
+            if(daten.uid === user.uid){
   userRolle = daten.rolle;
 
   if(userRolle !== 'admin'){
@@ -168,8 +168,15 @@ onAuthStateChanged(auth, (user) => {
     }
   }
 
-  render();
+  renderDienste();
 }
+      }
+    });
+  }, {
+    onlyOnce: true
+  });
+});
+
 
 window.oeffne = function(){
   if(userRolle !== 'admin'){
