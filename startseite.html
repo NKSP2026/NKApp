@@ -117,28 +117,23 @@ const db = getDatabase(app);
 const benutzerRef = ref(db, 'benutzer');
 
 onAuthStateChanged(auth, (user) => {
-  if(!user){
-    window.location.href = 'index.html';
-    return;
-  }
-
-  onValue(benutzerRef, (snapshot) => {
+  if(user){
+  const snapshotCallback = (snapshot) => {
     snapshot.forEach((child) => {
       const daten = child.val();
 
       if(daten.uid === user.uid){
         update(ref(db, 'benutzer/' + child.key), {
-          online: true
+          online: false
         });
-
-        if(daten.rolle === 'admin'){
-          document.getElementById('adminBereichBtn').style.display = 'inline-block';
-        }
       }
     });
-  });
-});
+  };
 
+  onValue(benutzerRef, snapshotCallback, {
+    onlyOnce: true
+  });
+}
  window.logout = async function(){
   try{
     const user = auth.currentUser;
