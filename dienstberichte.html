@@ -122,40 +122,62 @@ input{
   </div>
 </div>
 
-<script>
-let liste = JSON.parse(localStorage.getItem('dienstberichteListe')) || [];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
-function speichereLocalStorage(){
-  localStorage.setItem('dienstberichteListe', JSON.stringify(liste));
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const dienstberichteRef = ref(db, 'dienstberichte');
+
+const adminPasswort = 'Admin2026';
+let liste = [];
+
+window.oeffneModal = function(){
+  const p = prompt('Admin Passwort eingeben');
+  if(p !== adminPasswort) return;
+  document.getElementById('modal').style.display = 'flex';
 }
 
-function speichern(){
-  const titel=document.getElementById('titel').value;
-  const dienst=document.getElementById('dienst').value;
-  const mitarbeiter=document.getElementById('mitarbeiter').value;
-  const datei=document.getElementById('datei').files[0];
+window.speichern = function(){
+  const titel = document.getElementById('titel').value;
+  const dienst = document.getElementById('dienst').value;
+  const mitarbeiter = document.getElementById('mitarbeiter').value;
+  const datei = document.getElementById('datei').files[0];
 
-  if(!titel||!dienst||!mitarbeiter||!datei){
-    alert('Bitte alle Felder ausfüllen');
-    return;
-  }
+  if(!titel || !dienst || !mitarbeiter || !datei) return;
 
-  const r=new FileReader();
-  r.onload=e=>{
-    liste.push({titel,dienst,mitarbeiter,datei:e.target.result});
-    speichereLocalStorage();
-    render();
+  const r = new FileReader();
+  r.onload = e => {
+    push(dienstberichteRef, {
+      titel,
+      dienst,
+      mitarbeiter,
+      datei: e.target.result
+    });
+
     schliessen();
   };
+
   r.readAsDataURL(datei);
 }
 
 function render(){
-  const c=document.getElementById('container');
-  c.innerHTML='';
+  const c = document.getElementById('container');
+  c.innerHTML = '';
 
-  liste.forEach((x,i)=>{
-    c.innerHTML+=`
+  liste.forEach((x, i) => {
+    c.innerHTML += `
     <div class="card">
       <button class="remove-btn" onclick="loeschen(${i})">X</button>
       <h2>${x.titel}</h2>
@@ -167,27 +189,29 @@ function render(){
   });
 }
 
-function loeschen(i){
-  liste.splice(i,1);
-  speichereLocalStorage();
+window.loeschen = function(i){
+  const p = prompt('Admin Passwort eingeben');
+  if(p !== adminPasswort) return;
+
+  remove(ref(db, 'dienstberichte/' + liste[i].id));
+}
+
+window.schliessen = function(){
+  document.getElementById('modal').style.display = 'none';
+}
+
+onValue(dienstberichteRef, (snapshot) => {
+  liste = [];
+
+  snapshot.forEach((child) => {
+    liste.push({
+      id: child.key,
+      ...child.val()
+    });
+  });
+
   render();
-}
-
-function schliessen(){
-  document.getElementById('modal').style.display='none';
-  document.getElementById('titel').value='';
-  document.getElementById('dienst').value='';
-  document.getElementById('mitarbeiter').value='';
-  document.getElementById('datei').value='';
-}
-
-window.onclick = function(event){
-  if(event.target === document.getElementById('modal')){
-    schliessen();
-  }
-}
-
-render();
+});
 </script>
 
 </body>
