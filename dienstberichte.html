@@ -126,6 +126,7 @@ input{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -171,11 +172,12 @@ window.speichern = async function(){
     const downloadURL = await getDownloadURL(dateiRef);
 
     await push(dienstberichteRef, {
-      titel,
-      dienst,
-      mitarbeiter,
-      datei: downloadURL
-    });
+  titel,
+  dienst,
+  mitarbeiter,
+  datei: downloadURL,
+  storagePath: "dienstberichte/" + dateiname
+});
 
     alert('Dienstbericht gespeichert');
     schliessen();
@@ -202,11 +204,21 @@ function render(){
   });
 }
 
-window.loeschen = function(i){
+window.loeschen = async function(i){
   const p = prompt('Admin Passwort eingeben');
   if(p !== adminPasswort) return;
 
-  remove(ref(db, 'dienstberichte/' + liste[i].id));
+  try{
+    if(liste[i].storagePath){
+      const fileRef = storageRef(storage, liste[i].storagePath);
+      await deleteObject(fileRef);
+    }
+
+    await remove(ref(db, 'dienstberichte/' + liste[i].id));
+  }catch(error){
+    console.error(error);
+    alert('Fehler beim Löschen');
+  }
 }
 
 window.schliessen = function(){
