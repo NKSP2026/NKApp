@@ -3,225 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registrierung - NKSP</title>
+  <title>Login - NKSP Sicherheitsdienst</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#111111">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
   <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Arial,sans-serif;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
     }
 
-    body{
-      background:#111;
-      color:white;
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      padding:20px;
+    body {
+      background: #111;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
     }
 
-    .register-box{
-      width:100%;
-      max-width:500px;
-      background:#1c1c1f;
-      border-radius:25px;
-      padding:35px;
-      box-shadow:0 0 25px rgba(0,0,0,0.4);
+    .login-box {
+      width: 100%;
+      max-width: 500px;
+      background: #1c1c1f;
+      padding: 40px;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      text-align: center;
     }
 
-    h1{
-      text-align:center;
-      margin-bottom:25px;
-      font-size:34px;
+    h1 {
+      font-size: 42px;
+      margin-bottom: 20px;
     }
 
-    input{
-      width:100%;
-      padding:14px;
-      margin-bottom:14px;
-      border:none;
-      border-radius:12px;
-      background:#111;
-      color:white;
-      border:1px solid #333;
-      font-size:15px;
+    p {
+      color: #bbb;
+      margin-bottom: 20px;
+      line-height: 1.7;
     }
 
-    button{
-      width:100%;
-      padding:14px;
-      border:none;
-      border-radius:12px;
-      background:#2563eb;
-      color:white;
-      font-size:16px;
-      font-weight:bold;
-      cursor:pointer;
-      margin-top:10px;
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #444;
+      background: #111;
+      color: white;
+      margin-bottom: 20px;
+      font-size: 16px;
     }
 
-    button:hover{
-      background:#1d4ed8;
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 25px;
     }
 
-    .info{
-      margin-top:20px;
-      color:#aaa;
-      font-size:14px;
-      line-height:1.6;
-      text-align:center;
-    }
-
-    .error{
-      margin-top:15px;
-      color:#ef4444;
-      text-align:center;
-      font-size:14px;
-    }
-
-    .success{
-      margin-top:15px;
-      color:#22c55e;
-      text-align:center;
-      font-size:14px;
+    .footer-text {
+      color: #777;
+      font-size: 14px;
+      line-height: 1.8;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
 
-  <div class="register-box">
-    <h1>Registrierung</h1>
+<div class="login-box">
+  <h1>NKSP Sicherheitsdienst</h1>
 
-    <input type="text" id="vorname" placeholder="Vorname">
-    <input type="text" id="nachname" placeholder="Nachname">
-    <input type="email" id="email" placeholder="E-Mail">
-    <input type="password" id="passwort" placeholder="Passwort">
-    <input type="password" id="passwort2" placeholder="Passwort wiederholen">
-    <input type="text" id="code" placeholder="Verifizierungscode">
+  <p>Zugriff nur für autorisierte Personen.</p>
 
-    <button onclick="registrieren()">Registrieren</button>
-    <button onclick="window.location.href='registrierung.html'" style="background:#374151; margin-top:12px;">
-  Noch nicht registriert?
-</button>
-    
-    <div class="error" id="fehler"></div>
-    <div class="success" id="erfolg"></div>
+  <input type="password" id="passwort" placeholder="Passwort eingeben">
 
-    <div class="info">
-      Code 2026 = Mitarbeiterrechte<br>
-      Code 1992 = Adminrechte
-    </div>
+  <button onclick="login()">Anmelden</button>
+
+  <div class="footer-text">
+    <p>Diese Seite wurde erstellt von Ronny Winkler.</p>
+    <p>Pflege und Aktualisierung durch Nicole Küttner, Marcel Maczeyzik und Ronny Winkler.</p>
+    <p>Alle dargestellten Mitarbeiterdaten dienen ausschließlich internen Zwecken.</p>
+    <p>Unbefugte Weitergabe, Speicherung oder Veröffentlichung der Daten ist untersagt.</p>
+    <p>Der Zugriff auf diese Seite ist nur autorisierten Personen gestattet.</p>
+    <p>Personenbezogene Daten sind vertraulich zu behandeln und gemäß DSGVO nur intern zu verwenden.</p>
+    <p>© 2026 NKSP Sicherheitsdienst</p>
   </div>
+</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+<script>
+function login() {
+  const passwort = document.getElementById('passwort').value;
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
-      authDomain: "nksp-app.firebaseapp.com",
-      databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "nksp-app",
-      storageBucket: "nksp-app.firebasestorage.app",
-      messagingSenderId: "328702502215",
-      appId: "1:328702502215:web:080148f3e768bfafc29862"
-    };
+  if (passwort === 'NKSP2026') {
+    window.location.href = 'startseite.html';
+  } else {
+    alert('Falsches Passwort');
+  }
+}
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
-    const benutzerRef = ref(db, 'benutzer');
-
-    const mitarbeiterCode = '2026';
-    const adminCode = '1992';
-
-    window.registrieren = async function(){
-      const vorname = document.getElementById('vorname').value;
-      const nachname = document.getElementById('nachname').value;
-      const email = document.getElementById('email').value;
-      const passwort = document.getElementById('passwort').value;
-      const passwort2 = document.getElementById('passwort2').value;
-      const code = document.getElementById('code').value;
-
-      const fehler = document.getElementById('fehler');
-      const erfolg = document.getElementById('erfolg');
-
-      fehler.innerText = '';
-      erfolg.innerText = '';
-
-      if(!vorname || !nachname || !email || !passwort || !passwort2 || !code){
-        fehler.innerText = 'Bitte alle Felder ausfüllen';
-        return;
-      }
-
-      if(passwort !== passwort2){
-        fehler.innerText = 'Passwörter stimmen nicht überein';
-        return;
-      }
-
-      let rolle = '';
-      let rechte = {};
-
-      if(code === mitarbeiterCode){
-        rolle = 'mitarbeiter';
-        rechte = {
-          mitarbeiter_lesen: true,
-          dokumente_download: true,
-          dienstberichte_upload: true,
-          mitarbeiter_hinzufuegen: false,
-          dokumente_hinzufuegen: false,
-          dienste_hinzufuegen: false
-        };
-      }else if(code === adminCode){
-        rolle = 'admin';
-        rechte = {
-          mitarbeiter_lesen: true,
-          dokumente_download: true,
-          dienstberichte_upload: true,
-          mitarbeiter_hinzufuegen: true,
-          dokumente_hinzufuegen: true,
-          dienste_hinzufuegen: true
-        };
-      }else{
-        fehler.innerText = 'Ungültiger Verifizierungscode';
-        return;
-      }
-
-      try{
-        const userCredential = await createUserWithEmailAndPassword(auth, email, passwort);
-
-        await push(benutzerRef, {
-          uid: userCredential.user.uid,
-          vorname,
-          nachname,
-          email,
-          rolle,
-          rechte
-        });
-
-        erfolg.innerText = 'Registrierung erfolgreich';
-
-        setTimeout(() => {
-          window.location.href = 'login.html';
-        }, 1500);
-      }catch(error){
-        console.error(error);
-
-        if(error.code === 'auth/email-already-in-use'){
-          fehler.innerText = 'E-Mail wird bereits verwendet';
-        }else if(error.code === 'auth/weak-password'){
-          fehler.innerText = 'Passwort muss mindestens 6 Zeichen haben';
-        }else{
-          fehler.innerText = 'Registrierung fehlgeschlagen';
-        }
-      }
-    }
-  </script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(registration => {
+        console.log('Service Worker registriert:', registration);
+      })
+      .catch(error => {
+        console.log('Service Worker Fehler:', error);
+      });
+  });
+}
+</script>
 
 </body>
 </html>
