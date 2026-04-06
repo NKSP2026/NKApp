@@ -123,6 +123,7 @@ input{
 </div>
 
 <script type="module">
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
@@ -139,15 +140,19 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
 const storage = getStorage(app);
 const dienstberichteRef = ref(db, 'dienstberichte');
 
 const adminPasswort = 'Admin2026';
 let liste = [];
 
-window.oeffneModal = function(){
-  const p = prompt('Admin Passwort eingeben');
-  if(p !== adminPasswort) return;
+window.oeffne = function(){
+  if(!auth.currentUser){
+    alert('Bitte zuerst einloggen');
+    return;
+  }
+
   document.getElementById('modal').style.display = 'flex';
 }
 
@@ -204,16 +209,13 @@ function render(){
 }
 
 window.loeschen = async function(i){
-  const p = prompt('Admin Passwort eingeben');
-  if(p !== adminPasswort) return;
+  if(!auth.currentUser){
+    alert('Bitte zuerst einloggen');
+    return;
+  }
 
   try{
-    if(liste[i].storagePath){
-      const fileRef = storageRef(storage, liste[i].storagePath);
-      await deleteObject(fileRef);
-    }
-
-    await remove(ref(db, 'dienstberichte/' + liste[i].id));
+    await remove(ref(db, 'dienste/' + liste[i].id));
   }catch(error){
     console.error(error);
     alert('Fehler beim Löschen');
