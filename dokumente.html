@@ -207,7 +207,7 @@ window.loeschen = async function(i){
   }
 
   try{
-    await remove(ref(db, 'dienste/' + liste[i].id));
+    await remove(ref(db, 'dokumente/' + liste[i].id));
   }catch(error){
     console.error(error);
     alert('Fehler beim Löschen');
