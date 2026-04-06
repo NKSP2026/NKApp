@@ -184,6 +184,15 @@ window.speichern = async function(){
     alert('Fehler beim Speichern');
   }
 }
+  function formatDatum(datum){
+  if(!datum) return '';
+
+  const teile = datum.split('-');
+
+  if(teile.length !== 3) return datum;
+
+  return `${teile[2]}.${teile[1]}.${teile[0]}`;
+}
 function render(){
   const c = document.getElementById('container');
   c.innerHTML = '';
@@ -192,7 +201,7 @@ function render(){
     c.innerHTML += `
     <div class="card">
       <button class="remove-btn" onclick="loeschen(${i})">X</button>
-      <h2>${x.datum}</h2>
+      <h2>${formatDatum(x.datum)}</h2>
       <p>${x.von} - ${x.bis}</p>
       <p>${x.ort}</p>
       <p>${x.art}</p>
