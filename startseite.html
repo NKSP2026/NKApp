@@ -125,24 +125,25 @@ const db = getDatabase(app);
 
 onAuthStateChanged(auth, (user) => {
   if(!user){
-    window.location.href = 'index.html';
+    window.location.href = "index.html";
     return;
   }
 
-  const benutzerRef = ref(db, 'benutzer');
+  const benutzerRef = ref(db, "benutzer");
 
-  onValue(benutzerRef, (snapshot) => {
-    snapshot.forEach((child) => {
+  onValue(benutzerRef, async (snapshot) => {
+    snapshot.forEach(async (child) => {
       const daten = child.val();
 
       if(daten.uid === user.uid){
 
-        update(ref(db, 'benutzer/' + child.key), {
-          online: true
+        await update(ref(db, "benutzer/" + child.key), {
+          online: true,
+          letzteAktivitaet: new Date().toISOString()
         });
 
-        if(daten.rolle === 'admin'){
-          document.getElementById('adminBereichBtn').style.display = 'inline-block';
+        if(daten.rolle === "admin"){
+          document.getElementById("adminBereichBtn").style.display = "inline-block";
         }
       }
     });
@@ -156,31 +157,38 @@ window.logout = async function(){
     const user = auth.currentUser;
 
     if(user){
-      const benutzerRef = ref(db, 'benutzer');
+      const benutzerRef = ref(db, "benutzer");
 
-      onValue(benutzerRef, (snapshot) => {
-        snapshot.forEach((child) => {
-          const daten = child.val();
+      await new Promise((resolve) => {
+        onValue(benutzerRef, async (snapshot) => {
+          const updates = [];
 
-          if(daten.uid === user.uid){
-            update(ref(db, 'benutzer/' + child.key), {
-              online: false
-            });
-          }
+          snapshot.forEach((child) => {
+            const daten = child.val();
+
+            if(daten.uid === user.uid){
+              updates.push(
+                update(ref(db, "benutzer/" + child.key), {
+                  online: false,
+                  letzteAktivitaet: new Date().toISOString()
+                })
+              );
+            }
+          });
+
+          await Promise.all(updates);
+          resolve();
+        }, {
+          onlyOnce: true
         });
-      }, {
-        onlyOnce: true
       });
     }
 
     await signOut(auth);
-    window.location.href = 'index.html';
+    window.location.href = "index.html";
   }catch(error){
     console.error(error);
-    alert('Fehler beim Logout');
+    alert("Fehler beim Logout");
   }
 }
 </script>
-
-</body>
-</html>
