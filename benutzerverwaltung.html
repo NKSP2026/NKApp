@@ -220,24 +220,20 @@ window.addEventListener("beforeunload", async () => {
 });
 
 document.addEventListener("visibilitychange", async () => {
-  if(!eigenerEintragKey) return;
+if(!eigenerEintragKey) return;
 
-  try{
-    if(document.visibilityState === "visible"){
-      await update(ref(db, "benutzer/" + eigenerEintragKey), {
-        online: true,
-        letzteAktivitaet: new Date().toISOString()
-      });
-    }else{
-      await update(ref(db, "benutzer/" + eigenerEintragKey), {
-        online: false,
-        letzteAktivitaet: new Date().toISOString()
-      });
-    }
-  }catch(error){
-    console.error(error);
-  }
+try{
+if(document.visibilityState === "visible"){
+await update(ref(db, "benutzer/" + eigenerEintragKey), {
+online: true,
+letzteAktivitaet: new Date().toISOString()
 });
+}
+}catch(error){
+console.error(error);
+}
+});
+
 
 function render(){
   const container = document.getElementById("container");
