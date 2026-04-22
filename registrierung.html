@@ -105,7 +105,6 @@
 
     <input type="text" id="vorname" placeholder="Vorname">
     <input type="text" id="nachname" placeholder="Nachname">
-    <input type="text" id="benutzername" placeholder="Benutzername">
     <input type="email" id="email" placeholder="E-Mail">
     <input type="password" id="passwort" placeholder="Passwort">
     <input type="password" id="passwort2" placeholder="Passwort wiederholen">
@@ -150,7 +149,6 @@
   window.registrieren = async function(){
     const vorname = document.getElementById('vorname').value.trim();
     const nachname = document.getElementById('nachname').value.trim();
-    const benutzername = document.getElementById('benutzername').value.trim();
     const email = document.getElementById('email').value.trim();
     const passwort = document.getElementById('passwort').value;
     const passwort2 = document.getElementById('passwort2').value;
@@ -162,14 +160,9 @@
     fehler.innerText = '';
     erfolg.innerText = '';
 
-    if(!vorname || !nachname || !benutzername || !email || !passwort || !passwort2 || !code){
-    fehler.innerText = 'Bitte alle Felder ausfüllen';
-    return;
-    }
-
-    if(benutzername.length < 3){
-    fehler.innerText = 'Benutzername muss mindestens 3 Zeichen haben';
-    return;
+    if(!vorname || !nachname || !email || !passwort || !passwort2 || !code){
+      fehler.innerText = 'Bitte alle Felder ausfüllen';
+      return;
     }
 
     if(passwort !== passwort2){
@@ -209,22 +202,20 @@
       const userCredential = await createUserWithEmailAndPassword(auth, email, passwort);
 
       await push(benutzerRef, {
-      uid: userCredential.user.uid,
-      vorname: vorname,
-      nachname: nachname,
-      benutzername: benutzername,
-      email: email,
-      rolle: rolle,
-      rechte: rechte,
-      online: false,
-      erstelltAm: new Date().toISOString()
-    });
+        uid: userCredential.user.uid,
+        vorname: vorname,
+        nachname: nachname,
+        email: email,
+        rolle: rolle,
+        rechte: rechte,
+        online: false,
+        erstelltAm: new Date().toISOString()
+      });
 
       erfolg.innerText = 'Registrierung erfolgreich';
 
       document.getElementById('vorname').value = '';
       document.getElementById('nachname').value = '';
-      document.getElementById('benutzername').value = '';
       document.getElementById('email').value = '';
       document.getElementById('passwort').value = '';
       document.getElementById('passwort2').value = '';
