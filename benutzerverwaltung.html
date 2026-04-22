@@ -138,128 +138,91 @@
   <div class="container" id="container"></div>
   <div class="leer" id="leer"></div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
-  authDomain: "nksp-app.firebaseapp.com",
-  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "nksp-app",
-  storageBucket: "nksp-app.firebasestorage.app",
-  messagingSenderId: "328702502215",
-  appId: "1:328702502215:web:080148f3e768bfafc29862"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+      authDomain: "nksp-app.firebaseapp.com",
+      databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "nksp-app",
+      storageBucket: "nksp-app.firebasestorage.app",
+      messagingSenderId: "328702502215",
+      appId: "1:328702502215:web:080148f3e768bfafc29862"
+    };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-const benutzerRef = ref(db, "benutzer");
+    const benutzerRef = ref(db, 'benutzer');
 
-let aktuellerBenutzer = null;
-let alleBenutzer = [];
-let eigenerEintragKey = "";
+    let aktuellerBenutzer = null;
+    let alleBenutzer = [];
 
-onAuthStateChanged(auth, (user) => {
-  if(!user){
-    window.location.href = "index.html";
-    return;
-  }
-
-  onValue(benutzerRef, async (snapshot) => {
-    alleBenutzer = [];
-    let aktuellerDatensatz = null;
-
-    snapshot.forEach((child) => {
-      const daten = {
-        id: child.key,
-        ...child.val()
-      };
-
-      alleBenutzer.push(daten);
-
-      if(daten.uid === user.uid){
-        aktuellerDatensatz = daten;
-        eigenerEintragKey = child.key;
+    onAuthStateChanged(auth, (user) => {
+      if(!user){
+        window.location.href = 'index.html';
+        return;
       }
+
+      onValue(benutzerRef, (snapshot) => {
+        alleBenutzer = [];
+        let aktuellerDatensatz = null;
+
+        snapshot.forEach((child) => {
+          const daten = {
+            id: child.key,
+            ...child.val()
+          };
+
+          alleBenutzer.push(daten);
+
+          if(daten.uid === user.uid){
+            aktuellerDatensatz = daten;
+          }
+        });
+
+        if(!aktuellerDatensatz || aktuellerDatensatz.rolle !== 'admin'){
+          alert('Nur Admins dürfen diese Seite öffnen');
+          window.location.href = 'startseite.html';
+          return;
+        }
+
+        aktuellerBenutzer = aktuellerDatensatz;
+        render();
+      });
     });
 
-    if(!aktuellerDatensatz || aktuellerDatensatz.rolle !== "admin"){
-      alert("Nur Admins dürfen diese Seite öffnen");
-      window.location.href = "startseite.html";
-      return;
-    }
+    function render(){
+      const container = document.getElementById('container');
+      const leer = document.getElementById('leer');
 
-    aktuellerBenutzer = aktuellerDatensatz;
+      container.innerHTML = '';
 
-    if(eigenerEintragKey){
-      await update(ref(db, "benutzer/" + eigenerEintragKey), {
-        online: true,
-        letzteAktivitaet: new Date().toISOString()
+      if(alleBenutzer.length === 0){
+        leer.innerText = 'Keine Benutzer gefunden';
+        return;
+      }
+
+      leer.innerText = '';
+
+      alleBenutzer.forEach((user) => {
+        container.innerHTML += `
+          <div class="card">
+            <div class="status ${user.online ? 'online' : ''}"></div>
+            <h2>${user.vorname || ''} ${user.nachname || ''}</h2>
+            <p><strong>E-Mail:</strong> ${user.email || '-'}</p>
+            <p><strong>Rolle:</strong> ${user.rolle || '-'}</p>
+            <p><strong>Status:</strong> ${user.online ? 'Online' : 'Offline'}</p>
+            <span class="rolle ${user.rolle}">${user.rolle || '-'}</span>
+          </div>
+        `;
       });
     }
+  </script>
 
-    render();
-  });
-});
-
-window.addEventListener("beforeunload", async () => {
-  if(eigenerEintragKey){
-    try{
-      await update(ref(db, "benutzer/" + eigenerEintragKey), {
-        online: false,
-        letzteAktivitaet: new Date().toISOString()
-      });
-    }catch(error){
-      console.error(error);
-    }
-  }
-});
-
-document.addEventListener("visibilitychange", async () => {
-if(!eigenerEintragKey) return;
-
-try{
-if(document.visibilityState === "visible"){
-await update(ref(db, "benutzer/" + eigenerEintragKey), {
-online: true,
-letzteAktivitaet: new Date().toISOString()
-});
-}
-}catch(error){
-console.error(error);
-}
-});
-
-
-function render(){
-  const container = document.getElementById("container");
-  const leer = document.getElementById("leer");
-
-  container.innerHTML = "";
-
-  if(alleBenutzer.length === 0){
-    leer.innerText = "Keine Benutzer gefunden";
-    return;
-  }
-
-  leer.innerText = "";
-
-  alleBenutzer.forEach((user) => {
-    container.innerHTML += `
-      <div class="card">
-        <div class="status ${user.online ? "online" : ""}"></div>
-        <h2>${user.vorname || ""} ${user.nachname || ""}</h2>
-        <p><strong>Benutzername:</strong> ${user.benutzername || "-"}</p>
-        <p><strong>E-Mail:</strong> ${user.email || "-"}</p>
-        <p><strong>Rolle:</strong> ${user.rolle || "-"}</p>
-        <p><strong>Status:</strong> ${user.online ? "Online" : "Offline"}</p>
-        <span class="rolle ${user.rolle}">${user.rolle || "-"}</span>
-      </div>
-    `;
-  });
-}
-</script>
+</body>
+</html>
