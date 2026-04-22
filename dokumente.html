@@ -121,21 +121,88 @@ input{
 </div>
 
 <script type="module">
-    alert('Nur Admins dürfen Dokumente hochladen');
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const storage = getStorage(app);
+const auth = getAuth(app);
+const dokumenteRef = ref(db, "dokumente");
+
+let liste = [];
+let userRolle = "";
+
+onAuthStateChanged(auth, (user) => {
+  if(!user){
+    window.location.href = "index.html";
     return;
   }
 
-  const n = document.getElementById('name').value;
-  const d = document.getElementById('datei').files[0];
+  onValue(ref(db, "benutzer"), (snapshot) => {
+    snapshot.forEach((child) => {
+      const daten = child.val();
+
+      if(daten.uid === user.uid){
+        userRolle = daten.rolle;
+
+        if(userRolle !== "admin"){
+          const addBtn = document.querySelector(".top-bar button");
+          if(addBtn){
+            addBtn.style.display = "none";
+          }
+        }
+
+        render();
+      }
+    });
+  }, {
+    onlyOnce: true
+  });
+});
+
+window.oeffneModal = function(){
+  if(userRolle !== "admin"){
+    alert("Nur Admins dürfen Dokumente hinzufügen");
+    return;
+  }
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+window.schliessen = function(){
+  document.getElementById("modal").style.display = "none";
+}
+
+window.speichern = async function(){
+  if(userRolle !== "admin"){
+    alert("Nur Admins dürfen Dokumente hochladen");
+    return;
+  }
+
+  const n = document.getElementById("name").value;
+  const d = document.getElementById("datei").files[0];
 
   if(!n || !d){
-    alert('Bitte alles ausfüllen');
+    alert("Bitte alles ausfüllen");
     return;
   }
 
   try{
-    const dateiname = Date.now() + '_' + d.name;
-    const dateiRef = storageRef(storage, 'dokumente/' + dateiname);
+    const dateiname = Date.now() + "_" + d.name;
+    const dateiRef = storageRef(storage, "dokumente/" + dateiname);
 
     await uploadBytes(dateiRef, d);
 
@@ -144,39 +211,40 @@ input{
     await push(dokumenteRef, {
       name: n,
       datei: downloadURL,
-      storagePath: 'dokumente/' + dateiname
+      storagePath: "dokumente/" + dateiname
     });
 
-    alert('Dokument gespeichert');
+    alert("Dokument gespeichert");
 
-    document.getElementById('name').value = '';
-    document.getElementById('datei').value = '';
+    document.getElementById("name").value = "";
+    document.getElementById("datei").value = "";
 
     schliessen();
   }catch(error){
     console.error(error);
-    alert('Fehler beim Hochladen');
+    alert("Fehler beim Hochladen");
   }
 }
 
 function render(){
-  const c = document.getElementById('container');
-  c.innerHTML = '';
+  const c = document.getElementById("container");
+  c.innerHTML = "";
 
   liste.forEach((x, i) => {
     c.innerHTML += `
-    <div class="card">
-      ${userRolle === 'admin' ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ''}
-      <h2>${x.name}</h2>
-      <br>
-      <a href="${x.datei}" download="${x.name}.pdf" class="admin-btn">Herunterladen</a>
-    </div>`;
+      <div class="card">
+        ${userRolle === "admin" ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ""}
+        <h2>${x.name}</h2>
+        <br>
+        <a href="${x.datei}" download="${x.name}.pdf" class="admin-btn">Herunterladen</a>
+      </div>
+    `;
   });
 }
 
 window.loeschen = async function(i){
-  if(userRolle !== 'admin'){
-    alert('Nur Admins dürfen Dokumente löschen');
+  if(userRolle !== "admin"){
+    alert("Nur Admins dürfen Dokumente löschen");
     return;
   }
 
@@ -186,16 +254,12 @@ window.loeschen = async function(i){
       await deleteObject(fileRef);
     }
 
-    await remove(ref(db, 'dokumente/' + liste[i].id));
-    alert('Dokument gelöscht');
+    await remove(ref(db, "dokumente/" + liste[i].id));
+    alert("Dokument gelöscht");
   }catch(error){
     console.error(error);
-    alert('Fehler beim Löschen');
+    alert("Fehler beim Löschen");
   }
-}
-
-window.schliessen = function(){
-  document.getElementById('modal').style.display = 'none';
 }
 
 onValue(dokumenteRef, (snapshot) => {
