@@ -121,67 +121,6 @@ input{
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
-  authDomain: "nksp-app.firebaseapp.com",
-  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "nksp-app",
-  storageBucket: "nksp-app.firebasestorage.app",
-  messagingSenderId: "328702502215",
-  appId: "1:328702502215:web:080148f3e768bfafc29862"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const storage = getStorage(app);
-const auth = getAuth(app);
-const dokumenteRef = ref(db, 'dokumente');
-
-let liste = [];
-let userRolle = '';
-
-onAuthStateChanged(auth, (user) => {
-  if(!user){
-    window.location.href = 'index.html';
-    return;
-  }
-
-  onValue(ref(db, 'benutzer'), (snapshot) => {
-    snapshot.forEach((child) => {
-      const daten = child.val();
-
-      if(daten.uid === user.uid){
-        userRolle = daten.rolle;
-
-        if(userRolle !== 'admin'){
-          const addBtn = document.querySelector('.top-bar button');
-          if(addBtn){
-            addBtn.style.display = 'none';
-          }
-        }
-      }
-    });
-  }, {
-    onlyOnce: true
-  });
-});
-
-window.oeffne = function(){
-  if(userRolle !== 'admin'){
-    alert('Nur Admins dürfen Dokumente hinzufügen');
-    return;
-  }
-
-  document.getElementById('modal').style.display = 'flex';
-}
-
-window.speichern = async function(){
-  if(userRolle !== 'admin'){
     alert('Nur Admins dürfen Dokumente hochladen');
     return;
   }
@@ -195,8 +134,8 @@ window.speichern = async function(){
   }
 
   try{
-    const dateiname = Date.now() + "_" + d.name;
-    const dateiRef = storageRef(storage, "dokumente/" + dateiname);
+    const dateiname = Date.now() + '_' + d.name;
+    const dateiRef = storageRef(storage, 'dokumente/' + dateiname);
 
     await uploadBytes(dateiRef, d);
 
@@ -205,7 +144,7 @@ window.speichern = async function(){
     await push(dokumenteRef, {
       name: n,
       datei: downloadURL,
-      storagePath: "dokumente/" + dateiname
+      storagePath: 'dokumente/' + dateiname
     });
 
     alert('Dokument gespeichert');
@@ -248,6 +187,7 @@ window.loeschen = async function(i){
     }
 
     await remove(ref(db, 'dokumente/' + liste[i].id));
+    alert('Dokument gelöscht');
   }catch(error){
     console.error(error);
     alert('Fehler beim Löschen');
@@ -271,6 +211,3 @@ onValue(dokumenteRef, (snapshot) => {
   render();
 });
 </script>
-
-</body>
-</html>
