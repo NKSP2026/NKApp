@@ -196,8 +196,8 @@ h1{text-align:center;margin-bottom:30px;font-size:48px;}
 </div>
 
 <script type="module">
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
@@ -216,10 +216,38 @@ const db = getDatabase(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 const mitarbeiterRef = ref(db, 'mitarbeiter');
-
-const adminPasswort = "Admin2026";
+const benutzerRef = ref(db, 'benutzer');
 
 let mitarbeiterListe = [];
+let userRolle = '';
+
+onAuthStateChanged(auth, (user) => {
+  if(!user){
+    window.location.href = 'index.html';
+    return;
+  }
+
+  onValue(benutzerRef, (snapshot) => {
+    snapshot.forEach((child) => {
+      const daten = child.val();
+
+      if(daten.uid === user.uid){
+        userRolle = daten.rolle;
+
+        if(userRolle !== 'admin'){
+          const addBtn = document.querySelector('.top-bar button');
+          if(addBtn){
+            addBtn.style.display = 'none';
+          }
+        }
+
+        renderMitarbeiter();
+      }
+    });
+  }, {
+    onlyOnce: true
+  });
+});
 
 function berechneAlter(geburtsdatum){
   if(!geburtsdatum || geburtsdatum.includes("?")) return "?";
@@ -257,10 +285,10 @@ function renderMitarbeiter(){
   const container = document.getElementById("mitarbeiterContainer");
   container.innerHTML = "";
 
-  mitarbeiterListe.forEach((m,index)=>{
+  mitarbeiterListe.forEach((m, index) => {
     container.innerHTML += `
       <div class="card" onclick="showDetails(${index})">
-        <button class="remove-btn" onclick="event.stopPropagation(); loescheMitarbeiter(${index})">X</button>
+        ${userRolle === 'admin' ? `<button class="remove-btn" onclick="event.stopPropagation(); loescheMitarbeiter(${index})">X</button>` : ''}
         <img src="${m.bild}">
         <div>
           <h2>${m.name}</h2>
@@ -297,21 +325,25 @@ window.closeModal = function(){
   document.getElementById("detailModal").style.display = "none";
 }
 
-window.oeffne = function(){
-  if(!auth.currentUser){
-    alert('Bitte zuerst einloggen');
+window.oeffneFormular = function(){
+  if(userRolle !== 'admin'){
+    alert('Nur Admins dürfen Mitarbeiter hinzufügen');
     return;
   }
 
-  document.getElementById('modal').style.display = 'flex';
+  document.getElementById("formularModal").style.display = "flex";
 }
 
 window.schliesseFormular = function(){
   document.getElementById("formularModal").style.display = "none";
 }
 
+window.speichereMitarbeiter = async function(){
+  if(userRolle !== 'admin'){
+    alert('Nur Admins dürfen Mitarbeiter speichern');
+    return;
+  }
 
-  window.speichereMitarbeiter = async function(){
   const bildDatei = document.getElementById("formBild").files[0];
 
   if(!bildDatei){
@@ -346,7 +378,6 @@ window.schliesseFormular = function(){
     });
 
     alert("Mitarbeiter gespeichert");
-
     document.getElementById("formularModal").style.display = "none";
   }catch(error){
     console.error(error);
@@ -354,15 +385,15 @@ window.schliesseFormular = function(){
   }
 }
 
-
-window.loeschen = async function(i){
-  if(!auth.currentUser){
-    alert('Bitte zuerst einloggen');
+window.loescheMitarbeiter = async function(index){
+  if(userRolle !== 'admin'){
+    alert('Nur Admins dürfen Mitarbeiter löschen');
     return;
   }
 
   try{
-    await remove(ref(db, 'mitarbeiterliste/' + liste[i].id));
+    await remove(ref(db, 'mitarbeiter/' + mitarbeiterListe[index].id));
+    alert('Mitarbeiter gelöscht');
   }catch(error){
     console.error(error);
     alert('Fehler beim Löschen');
@@ -373,6 +404,7 @@ window.onclick = function(event){
   if(event.target === document.getElementById("detailModal")){
     closeModal();
   }
+
   if(event.target === document.getElementById("formularModal")){
     schliesseFormular();
   }
@@ -391,3 +423,4 @@ onValue(mitarbeiterRef, (snapshot) => {
   renderMitarbeiter();
 });
 </script>
+
