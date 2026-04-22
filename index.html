@@ -145,54 +145,58 @@
 
   await setPersistence(auth, browserSessionPersistence);
 
-  window.login = async function(){
-  const benutzername = document.getElementById('benutzername').value.trim();
-  const passwort = document.getElementById('passwort').value;
-  const fehler = document.getElementById('fehler');
+window.login = async function(){
+  const benutzername = document.getElementById("benutzername").value.trim();
+  const passwort = document.getElementById("passwort").value;
+  const fehler = document.getElementById("fehler");
 
-  fehler.innerText = '';
+  fehler.innerText = "";
 
   if(!benutzername || !passwort){
-    fehler.innerText = 'Bitte Benutzername und Passwort eingeben';
+    fehler.innerText = "Bitte Benutzername und Passwort eingeben";
     return;
   }
 
   try{
-    let gefundeneEmail = '';
+    let gefundeneEmail = "";
 
-    await new Promise((resolve) => {
-      onValue(ref(db, 'benutzer'), (snapshot) => {
-        snapshot.forEach((child) => {
-          const daten = child.val();
-
-          if(daten.benutzername && daten.benutzername.toLowerCase() === benutzername.toLowerCase()){
-            gefundeneEmail = daten.email;
-          }
-        });
-
-        resolve();
+    const snapshot = await new Promise((resolve, reject) => {
+      onValue(ref(db, "benutzer"), (snapshot) => {
+        resolve(snapshot);
       }, {
         onlyOnce: true
       });
     });
 
+    snapshot.forEach((child) => {
+      const daten = child.val();
+
+      if(
+        daten.benutzername &&
+        daten.benutzername.toLowerCase() === benutzername.toLowerCase()
+      ){
+        gefundeneEmail = daten.email;
+      }
+    });
+
     if(!gefundeneEmail){
-      fehler.innerText = 'Benutzername nicht gefunden';
+      fehler.innerText = "Benutzername nicht gefunden";
       return;
     }
 
     await signInWithEmailAndPassword(auth, gefundeneEmail, passwort);
 
-    window.location.href = 'startseite.html';
+    window.location.href = "startseite.html";
+
   }catch(error){
     console.error(error);
 
-    if(error.code === 'auth/invalid-credential'){
-      fehler.innerText = 'Benutzername oder Passwort falsch';
-    }else if(error.code === 'auth/wrong-password'){
-      fehler.innerText = 'Passwort falsch';
+    if(error.code === "auth/invalid-credential"){
+      fehler.innerText = "Benutzername oder Passwort falsch";
+    }else if(error.code === "auth/wrong-password"){
+      fehler.innerText = "Passwort falsch";
     }else{
-      fehler.innerText = 'Anmeldung fehlgeschlagen';
+      fehler.innerText = "Anmeldung fehlgeschlagen";
     }
   }
 }
