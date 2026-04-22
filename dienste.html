@@ -126,116 +126,16 @@ input{
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+  const [bisStunde, bisMinute] = bis.split(':').map(Number);
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
-  authDomain: "nksp-app.firebaseapp.com",
-  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "nksp-app",
-  storageBucket: "nksp-app.firebasestorage.app",
-  messagingSenderId: "328702502215",
-  appId: "1:328702502215:web:080148f3e768bfafc29862"
-};
+  const start = vonStunde * 60 + vonMinute;
+  const ende = bisStunde * 60 + bisMinute;
+  const diff = ende - start;
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
-const diensteRef = ref(db, 'dienste');
+  const stunden = Math.floor(diff / 60);
+  const minuten = diff % 60;
 
-let liste = [];
-let userRolle = '';
-
-onAuthStateChanged(auth, (user) => {
-  if(!user){
-    window.location.href = 'index.html';
-    return;
-  }
-
-  onValue(ref(db, 'benutzer'), (snapshot) => {
-    snapshot.forEach((child) => {
-      const daten = child.val();
-
-      if(daten.uid === user.uid){
-        userRolle = daten.rolle;
-
-        if(userRolle !== 'admin'){
-          const addBtn = document.querySelector('.top-bar button');
-          if(addBtn){
-            addBtn.style.display = 'none';
-          }
-        }
-      }
-    });
-  }, {
-    onlyOnce: true
-  });
-});
-
-window.oeffne = function(){
-  if(userRolle !== 'admin'){
-    alert('Nur Admins dürfen Dienste hinzufügen');
-    return;
-  }
-
-  document.getElementById('modal').style.display = 'flex';
-}
-
-window.speichern = async function(){
-  if(userRolle !== 'admin'){
-    alert('Nur Admins dürfen Dienste speichern');
-    return;
-  }
-
-  const datum = document.getElementById('datum').value;
-  const von = document.getElementById('von').value;
-  const bis = document.getElementById('bis').value;
-  const ort = document.getElementById('ort').value;
-  const art = document.getElementById('art').value;
-  const auftraggeber = document.getElementById('auftraggeber').value;
-  const verantwortlich = document.getElementById('verantwortlich').value;
-
-  if(!datum){
-    alert('Bitte Datum auswählen');
-    return;
-  }
-
-  try{
-    await push(diensteRef, {
-      datum,
-      von,
-      bis,
-      ort,
-      art,
-      auftraggeber,
-      verantwortlich
-    });
-
-    alert('Dienst gespeichert');
-
-    document.getElementById('datum').value = '';
-    document.getElementById('von').value = '';
-    document.getElementById('bis').value = '';
-    document.getElementById('ort').value = '';
-    document.getElementById('art').value = '';
-    document.getElementById('auftraggeber').value = '';
-    document.getElementById('verantwortlich').value = '';
-  }catch(error){
-    console.error(error);
-    alert('Fehler beim Speichern');
-  }
-}
-
-function formatDatum(datum){
-  if(!datum) return '';
-
-  const teile = datum.split('-');
-
-  if(teile.length !== 3) return datum;
-
-  return `${teile[2]}.${teile[1]}.${teile[0]}`;
+  return `${stunden},${minuten.toString().padStart(2, '0')} h`;
 }
 
 function render(){
@@ -247,11 +147,11 @@ function render(){
     <div class="card">
       ${userRolle === 'admin' ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ''}
       <h2>${formatDatum(x.datum)}</h2>
-      <p>${x.von} - ${x.bis}</p>
-      <p>${x.ort}</p>
-      <p>${x.art}</p>
-      <p>Auftraggeber: ${x.auftraggeber}</p>
-      <p>Verantwortlich: ${x.verantwortlich}</p>
+      <p>ca. ${x.von} - ${x.bis} (${berechneDauer(x.von, x.bis)})</p>
+      <p>${x.ort || '-'}</p>
+      <p>${x.art || '-'}</p>
+      <p>Auftraggeber: ${x.auftraggeber || '-'}</p>
+      <p>Verantwortlich: ${x.verantwortlich || '-'}</p>
     </div>`;
   });
 }
@@ -264,6 +164,7 @@ window.loeschen = async function(i){
 
   try{
     await remove(ref(db, 'dienste/' + liste[i].id));
+    alert('Dienst gelöscht');
   }catch(error){
     console.error(error);
     alert('Fehler beim Löschen');
@@ -315,6 +216,3 @@ onValue(diensteRef, (snapshot) => {
   alteDiensteEntfernen();
 });
 </script>
-  
-</body>
-</html>
