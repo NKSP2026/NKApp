@@ -105,7 +105,7 @@
 
   <p>Zugriff nur für autorisierte Personen.</p>
 
-  <input type="email" id="email" placeholder="E-Mail">
+  <input type="text" id="benutzername" placeholder="Benutzername">
   <input type="password" id="passwort" placeholder="Passwort">
 
   <div class="error" id="fehler"></div>
@@ -127,6 +127,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -140,38 +141,61 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getDatabase(app);
 
   await setPersistence(auth, browserSessionPersistence);
 
   window.login = async function(){
-    const email = document.getElementById('email').value;
-    const passwort = document.getElementById('passwort').value;
-    const fehler = document.getElementById('fehler');
+  const benutzername = document.getElementById('benutzername').value.trim();
+  const passwort = document.getElementById('passwort').value;
+  const fehler = document.getElementById('fehler');
 
-    fehler.innerText = '';
+  fehler.innerText = '';
 
-    if(!email || !passwort){
-      fehler.innerText = 'Bitte E-Mail und Passwort eingeben';
+  if(!benutzername || !passwort){
+    fehler.innerText = 'Bitte Benutzername und Passwort eingeben';
+    return;
+  }
+
+  try{
+    let gefundeneEmail = '';
+
+    await new Promise((resolve) => {
+      onValue(ref(db, 'benutzer'), (snapshot) => {
+        snapshot.forEach((child) => {
+          const daten = child.val();
+
+          if(daten.benutzername && daten.benutzername.toLowerCase() === benutzername.toLowerCase()){
+            gefundeneEmail = daten.email;
+          }
+        });
+
+        resolve();
+      }, {
+        onlyOnce: true
+      });
+    });
+
+    if(!gefundeneEmail){
+      fehler.innerText = 'Benutzername nicht gefunden';
       return;
     }
 
-    try{
-      await signInWithEmailAndPassword(auth, email, passwort);
-      window.location.href = 'startseite.html';
-    }catch(error){
-      console.error(error);
+    await signInWithEmailAndPassword(auth, gefundeneEmail, passwort);
 
-      if(error.code === 'auth/invalid-credential'){
-        fehler.innerText = 'E-Mail oder Passwort falsch';
-      }else if(error.code === 'auth/user-not-found'){
-        fehler.innerText = 'Benutzer nicht gefunden';
-      }else if(error.code === 'auth/wrong-password'){
-        fehler.innerText = 'Passwort falsch';
-      }else{
-        fehler.innerText = 'Anmeldung fehlgeschlagen';
-      }
+    window.location.href = 'startseite.html';
+  }catch(error){
+    console.error(error);
+
+    if(error.code === 'auth/invalid-credential'){
+      fehler.innerText = 'Benutzername oder Passwort falsch';
+    }else if(error.code === 'auth/wrong-password'){
+      fehler.innerText = 'Passwort falsch';
+    }else{
+      fehler.innerText = 'Anmeldung fehlgeschlagen';
     }
   }
+}
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
