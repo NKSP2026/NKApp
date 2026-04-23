@@ -28,7 +28,6 @@ h1{text-align:center;margin-bottom:30px;font-size:38px;}
   font-weight:bold;
 }
 
-/* Grid */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
@@ -68,7 +67,6 @@ h1{text-align:center;margin-bottom:30px;font-size:38px;}
   cursor:pointer;
 }
 
-/* Detail Modal */
 .modal{
   display:none;
   position:fixed;
@@ -96,7 +94,6 @@ h1{text-align:center;margin-bottom:30px;font-size:38px;}
   margin-top:10px;
 }
 
-/* Upload */
 .upload-modal{
   display:none;
   position:fixed;
@@ -136,12 +133,10 @@ input,textarea{
 
 <div class="grid" id="container"></div>
 
-<!-- DETAIL -->
 <div class="modal" id="detailModal">
   <div class="modal-content" id="detailContent"></div>
 </div>
 
-<!-- UPLOAD -->
 <div class="upload-modal" id="uploadModal">
   <div class="upload-box">
     <input type="date" id="datum">
@@ -162,7 +157,6 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
-/* 🔥 Firebase */
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
   authDomain: "nksp-app.firebaseapp.com",
@@ -183,7 +177,6 @@ const dbRef = ref(db,"bilder");
 let rolle = "";
 let liste = [];
 
-/* 🔐 LOGIN + ROLLE */
 onAuthStateChanged(auth,(user)=>{
   if(!user){
     window.location.href="index.html";
@@ -199,13 +192,12 @@ onAuthStateChanged(auth,(user)=>{
           document.querySelector(".top-bar button").style.display="none";
         }
 
-        render(); // 🔥 wichtig
+        render();
       }
     });
   },{onlyOnce:true});
 });
 
-/* 📂 MODAL */
 window.openUpload = () => {
   document.getElementById("uploadModal").style.display="flex";
 };
@@ -214,7 +206,6 @@ window.closeUpload = () => {
   document.getElementById("uploadModal").style.display="none";
 };
 
-/* 💾 SPEICHERN */
 window.speichern = async () => {
   if(rolle !== "admin") return alert("Nur Admin");
 
@@ -245,7 +236,6 @@ window.speichern = async () => {
   location.reload();
 };
 
-/* 👁 DETAIL */
 window.showDetail = (i) => {
   const x = liste[i];
 
@@ -272,16 +262,12 @@ window.showDetail = (i) => {
   document.getElementById("detailModal").style.display = "flex";
 };
 
-/* ❌ LÖSCHEN */
 window.loeschen = async (i) => {
   if(rolle !== "admin") return;
-
   if(!confirm("Wirklich löschen?")) return;
-
   await remove(ref(db,"bilder/"+liste[i].id));
 };
 
-/* 🎯 RENDER */
 function render(){
   const container = document.getElementById("container");
   container.innerHTML = "";
@@ -297,13 +283,19 @@ function render(){
   });
 }
 
-/* 🔄 DATEN LADEN */
+/* 🔥 SORTIERUNG HIER */
 onValue(dbRef,(snap)=>{
   liste = [];
   snap.forEach(c=>{
     liste.push({id:c.key,...c.val()});
   });
 
+  // ✅ ÄLTESTES DATUM ZUERST
+  liste.sort((a,b)=> new Date(a.datum) - new Date(b.datum));
+
   render();
 });
 </script>
+
+</body>
+</html>
