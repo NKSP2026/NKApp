@@ -7,29 +7,97 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
-body{background:#111;color:white;padding:20px;}
-h1{text-align:center;margin-bottom:30px;}
+body{background:#0f0f11;color:white;padding:20px;}
 
-.top-bar{display:flex;justify-content:center;gap:10px;margin-bottom:30px;}
-.admin-btn{background:#2563eb;color:white;border:none;padding:10px 18px;border-radius:10px;cursor:pointer;}
+h1{text-align:center;margin-bottom:30px;font-size:38px;}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;}
+.top-bar{
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  margin-bottom:30px;
+}
 
-.card{background:#1c1c1f;padding:15px;border-radius:15px;position:relative;}
-.card img,.card video{width:100%;border-radius:10px;margin-bottom:10px;}
+.admin-btn{
+  background:#2563eb;
+  padding:12px 20px;
+  border-radius:12px;
+  color:white;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+/* Grid */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px;
+  max-width:1200px;
+  margin:auto;
+}
+
+.card{
+  background:#1c1c1f;
+  padding:15px;
+  border-radius:20px;
+  cursor:pointer;
+  position:relative;
+}
+
+.card img,
+.card video{
+  width:100%;
+  border-radius:15px;
+  max-height:200px;
+  object-fit:cover;
+}
+
+.card h2{margin-top:10px;}
+.card p{color:#aaa;margin-top:5px;}
 
 .remove-btn{
   position:absolute;
   top:10px;
   right:10px;
-  background:red;
-  color:white;
+  background:#dc2626;
   border:none;
-  padding:5px;
+  color:white;
+  border-radius:8px;
+  padding:5px 8px;
   cursor:pointer;
 }
 
+/* Detail Modal */
 .modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.modal-content{
+  background:#1c1c1f;
+  padding:20px;
+  border-radius:20px;
+  width:90%;
+  max-width:900px;
+  max-height:90vh;
+  overflow-y:auto;
+}
+
+.modal img,
+.modal video{
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+/* Upload Modal */
+.upload-modal{
   display:none;
   position:fixed;
   inset:0;
@@ -38,15 +106,22 @@ h1{text-align:center;margin-bottom:30px;}
   align-items:center;
 }
 
-.modal-content{
+.upload-box{
   background:#1c1c1f;
   padding:20px;
-  border-radius:15px;
+  border-radius:20px;
   width:90%;
   max-width:500px;
 }
 
-input,textarea{width:100%;padding:10px;margin-bottom:10px;background:#111;color:white;border:1px solid #444;}
+input,textarea{
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+  background:#111;
+  color:white;
+  border:1px solid #444;
+}
 </style>
 </head>
 
@@ -56,20 +131,27 @@ input,textarea{width:100%;padding:10px;margin-bottom:10px;background:#111;color:
 
 <div class="top-bar">
 <a href="startseite.html" class="admin-btn">Zurück</a>
-<button class="admin-btn" onclick="oeffneModal()">+ Bilder hinzufügen</button>
+<button class="admin-btn" onclick="openUpload()">+ Bilder hinzufügen</button>
 </div>
 
 <div class="grid" id="container"></div>
 
-<div class="modal" id="modal">
-<div class="modal-content">
+<!-- Detail -->
+<div class="modal" id="detailModal">
+<div class="modal-content" id="detailContent"></div>
+</div>
+
+<!-- Upload -->
+<div class="upload-modal" id="uploadModal">
+<div class="upload-box">
 <input type="date" id="datum">
-<input type="text" id="auftrag" placeholder="Auftrag">
-<textarea id="beschreibung" placeholder="Beschreibung"></textarea>
-<input type="file" id="dateien" multiple>
+<input type="text" id="auftrag" placeholder="Auftrag (optional)">
+<textarea id="beschreibung" placeholder="Beschreibung (optional)"></textarea>
+
+<input type="file" id="files" multiple accept="image/*,video/*">
 
 <button onclick="speichern()" class="admin-btn">Speichern</button>
-<button onclick="schliessen()" class="admin-btn" style="background:red;">Abbrechen</button>
+<button onclick="closeUpload()" class="admin-btn" style="background:red;">Abbrechen</button>
 </div>
 </div>
 
@@ -77,90 +159,119 @@ input,textarea{width:100%;padding:10px;margin-bottom:10px;background:#111;color:
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
-const firebaseConfig = {
-apiKey:"AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
-authDomain:"nksp-app.firebaseapp.com",
-databaseURL:"https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
-projectId:"nksp-app",
-storageBucket:"nksp-app.firebasestorage.app",
-messagingSenderId:"328702502215",
-appId:"1:328702502215:web:080148f3e768bfafc29862"
-};
+const app = initializeApp({
+  apiKey:"AIzaSy...",
+  authDomain:"nksp-app.firebaseapp.com",
+  databaseURL:"https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app"
+});
 
-const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 const storage = getStorage(app);
 
-const bilderRef = ref(db,"bilder");
+const dbRef = ref(db,"bilder");
 
 let rolle="";
 let liste=[];
 
 onAuthStateChanged(auth,user=>{
-if(!user){location.href="index.html";return;}
+  if(!user){location.href="index.html";return;}
 
-onValue(ref(db,"benutzer"),snap=>{
-snap.forEach(c=>{
-if(c.val().uid===user.uid){
-rolle=c.val().rolle;
-if(rolle!=="admin"){
-document.querySelector(".top-bar button").style.display="none";
-}
-}
-});
-},{onlyOnce:true});
+  onValue(ref(db,"benutzer"),snap=>{
+    snap.forEach(c=>{
+      if(c.val().uid===user.uid){
+        rolle=c.val().rolle;
+
+        if(rolle!=="admin"){
+          document.querySelector(".top-bar button").style.display="none";
+        }
+      }
+    });
+  },{onlyOnce:true});
 });
 
-window.oeffneModal=()=>{modal.style.display="flex";}
-window.schliessen=()=>{modal.style.display="none";}
+/* Upload */
+window.openUpload=()=>uploadModal.style.display="flex";
+window.closeUpload=()=>uploadModal.style.display="none";
 
 window.speichern=async()=>{
-if(rolle!=="admin")return alert("Nur Admin");
+  if(rolle!=="admin") return alert("Nur Admin");
 
-const datum=document.getElementById("datum").value;
-if(!datum)return alert("Datum fehlt");
+  const datum=document.getElementById("datum").value;
+  if(!datum) return alert("Datum ist Pflicht");
 
-const files=document.getElementById("dateien").files;
-const arr=[];
+  const files=document.getElementById("files").files;
+  const arr=[];
 
-for(const f of files){
-const path="bilder/"+Date.now()+"_"+f.name;
-const refFile=storageRef(storage,path);
-await uploadBytes(refFile,f);
-arr.push(await getDownloadURL(refFile));
-}
+  for(const f of files){
+    const path="bilder/"+Date.now()+"_"+f.name;
+    const r=sRef(storage,path);
+    await uploadBytes(r,f);
 
-await push(bilderRef,{datum,arr});
+    arr.push({
+      url:await getDownloadURL(r),
+      type:f.type
+    });
+  }
 
-alert("Gespeichert");
-location.reload();
+  await push(dbRef,{
+    datum,
+    auftrag:document.getElementById("auftrag").value || "",
+    beschreibung:document.getElementById("beschreibung").value || "",
+    files:arr
+  });
+
+  alert("Gespeichert");
+  location.reload();
+};
+
+/* Detail */
+window.showDetail=i=>{
+  const x=liste[i];
+
+  let html=`
+  <h2>${x.datum}</h2>
+  <p>${x.auftrag || ""}</p>
+  <p>${x.beschreibung || ""}</p>
+  `;
+
+  (x.files||[]).forEach(f=>{
+    if(f.type.startsWith("image")){
+      html+=`<img src="${f.url}">`;
+    }else if(f.type.startsWith("video")){
+      html+=`<video controls src="${f.url}"></video>`;
+    }
+  });
+
+  detailContent.innerHTML=html;
+  detailModal.style.display="flex";
 };
 
 window.loeschen=async(i)=>{
-if(rolle!=="admin")return;
-await remove(ref(db,"bilder/"+liste[i].id));
+  if(rolle!=="admin") return;
+  await remove(ref(db,"bilder/"+liste[i].id));
 };
 
-function render(){
-container.innerHTML="";
-liste.forEach((x,i)=>{
-container.innerHTML+=`
-<div class="card">
-${rolle==="admin"?`<button class="remove-btn" onclick="loeschen(${i})">X</button>`:""}
-${(x.arr||[]).map(u=>`<img src="${u}">`).join("")}
-<p>${x.datum}</p>
-</div>`;
-});
-}
+/* Render */
+onValue(dbRef,snap=>{
+  liste=[];
+  snap.forEach(c=>liste.push({id:c.key,...c.val()}));
 
-onValue(bilderRef,snap=>{
-liste=[];
-snap.forEach(c=>liste.push({id:c.key,...c.val()}));
-render();
+  container.innerHTML="";
+
+  liste.forEach((x,i)=>{
+    container.innerHTML+=`
+    <div class="card" onclick="showDetail(${i})">
+      ${rolle==="admin"?`<button class="remove-btn" onclick="event.stopPropagation();loeschen(${i})">X</button>`:""}
+      ${x.files?.[0]?.url ? `<img src="${x.files[0].url}">` : ""}
+      <h2>${x.datum}</h2>
+      <p>${x.auftrag || ""}</p>
+    </div>`;
+  });
 });
 </script>
+
 </body>
 </html>
