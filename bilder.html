@@ -133,7 +133,7 @@ input,textarea{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -163,60 +163,62 @@ onAuthStateChanged(auth, (user) => {
 
   onValue(ref(db, "benutzer"), (snapshot) => {
     snapshot.forEach((child) => {
-      const daten = child.val();
-
-      if(daten.uid === user.uid){
-        userRolle = daten.rolle;
+      const d = child.val();
+      if(d.uid === user.uid){
+        userRolle = d.rolle;
 
         if(userRolle !== "admin"){
           document.querySelector(".top-bar button").style.display = "none";
         }
       }
     });
-  }, { onlyOnce:true });
+  }, {onlyOnce:true});
 });
 
-window.oeffneModal = function(){
+window.oeffneModal = () => {
   document.getElementById("modal").style.display = "flex";
 }
 
-window.schliessen = function(){
+window.schliessen = () => {
   document.getElementById("modal").style.display = "none";
 }
 
-window.speichern = async function(){
-  const datum = document.getElementById("datum").value;
-  const auftrag = document.getElementById("auftrag").value;
-  const beschreibung = document.getElementById("beschreibung").value;
-
-  if(!datum){
-    alert("Datum ist Pflicht");
+window.speichern = async () => {
+  if(userRolle !== "admin"){
+    alert("Nur Admins dürfen hochladen");
     return;
   }
 
-  const dateienArray = [];
+  const datum = document.getElementById("datum").value;
+  const auftrag = document.getElementById("auftrag").value;
+  const beschreibung = document.getElementById("beschreibung").value;
+  const files = document.getElementById("dateien").files;
 
-  for(const datei of document.getElementById("dateien").files){
-    const pfad = "bilder/" + Date.now() + "_" + datei.name;
-    const fileRef = storageRef(storage, pfad);
+  if(!datum){
+    alert("Datum ist Pflicht!");
+    return;
+  }
 
-    await uploadBytes(fileRef, datei);
+  let urls = [];
+
+  for(const file of files){
+    const path = "bilder/" + Date.now() + "_" + file.name;
+    const fileRef = storageRef(storage, path);
+
+    await uploadBytes(fileRef, file);
     const url = await getDownloadURL(fileRef);
 
-    dateienArray.push({
-      url,
-      type: datei.type
-    });
+    urls.push(url);
   }
 
   await push(bilderRef, {
     datum,
-    auftrag,
-    beschreibung,
-    dateien: dateienArray
+    auftrag: auftrag || "",
+    beschreibung: beschreibung || "",
+    dateien: urls
   });
 
-  alert("Bilder gespeichert");
+  alert("Gespeichert!");
   location.reload();
 }
 
@@ -225,42 +227,28 @@ function render(){
   c.innerHTML = "";
 
   liste.forEach((x,i) => {
-    let mediaHTML = "";
-
-    if(x.dateien){
-      x.dateien.forEach((d) => {
-        if(d.type.startsWith("image")){
-          mediaHTML += `<img src="${d.url}">`;
-        }else{
-          mediaHTML += `<video src="${d.url}" controls></video>`;
-        }
-      });
-    }
-
     c.innerHTML += `
-      <div class="card">
-        ${userRolle === "admin" ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ""}
-        ${mediaHTML}
-        <p><strong>Datum:</strong> ${x.datum}</p>
-        <p><strong>Auftrag:</strong> ${x.auftrag || "-"}</p>
-        <p>${x.beschreibung || ""}</p>
-      </div>
-    `;
+    <div class="card">
+      ${userRolle === "admin" ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ""}
+      <h3>${x.datum}</h3>
+      <p>${x.auftrag || ""}</p>
+      ${x.dateien ? x.dateien.map(f =>
+        f.includes("video")
+        ? `<video controls src="${f}"></video>`
+        : `<img src="${f}">`
+      ).join("") : ""}
+    </div>`;
   });
 }
 
-window.loeschen = async function(i){
+window.loeschen = async (i) => {
+  if(userRolle !== "admin") return;
   await remove(ref(db, "bilder/" + liste[i].id));
 }
 
-onValue(bilderRef, (snapshot) => {
+onValue(bilderRef, (snap) => {
   liste = [];
-  snapshot.forEach((child) => {
-    liste.push({ id: child.key, ...child.val() });
-  });
+  snap.forEach(c => liste.push({id:c.key,...c.val()}));
   render();
 });
 </script>
-
-</body>
-</html>
