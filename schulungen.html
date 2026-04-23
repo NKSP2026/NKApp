@@ -192,7 +192,7 @@ const dbRef = ref(db,"schulungen");
 let rolle="";
 let liste=[];
 
-/* LOGIN */
+/* LOGIN + ROLLE */
 onAuthStateChanged(auth,(user)=>{
   if(!user){
     window.location.href="index.html";
@@ -203,6 +203,7 @@ onAuthStateChanged(auth,(user)=>{
     snap.forEach(c=>{
       if(c.val().uid===user.uid){
         rolle=c.val().rolle;
+        render(); // WICHTIG → erst rendern wenn Rolle da ist
 
         if(rolle!=="admin"){
           document.querySelector(".top-bar button").style.display="none";
@@ -226,41 +227,22 @@ window.speichern=async()=>{
   if(rolle!=="admin") return alert("Nur Admin");
 
   const datum=document.getElementById("datum").value;
-  if(!datum) return alert("Datum ist Pflicht");
+  if(!datum) return alert("Datum Pflicht");
 
   const bilderFiles=document.getElementById("bilder").files;
-  const videoFiles=document.getElementById("videos").files;
-  const docFiles=document.getElementById("docs").files;
-
   const bilder=[];
-  const videos=[];
-  const docs=[];
 
-   for(const f of bilderFiles){
+  for(const f of bilderFiles){
     const r=sRef(storage,"schulungen/"+Date.now()+"_"+f.name);
     await uploadBytes(r,f);
     bilder.push(await getDownloadURL(r));
   }
 
-  for(const f of videoFiles){
-    const r=sRef(storage,"schulungen/"+Date.now()+"_"+f.name);
-    await uploadBytes(r,f);
-    videos.push(await getDownloadURL(r));
-  }
-
-  for(const f of docFiles){
-    const r=sRef(storage,"schulungen/"+Date.now()+"_"+f.name);
-    await uploadBytes(r,f);
-    docs.push(await getDownloadURL(r));
-  }
-
   await push(dbRef,{
     titel:document.getElementById("titel").value || "",
-    beschreibung:document.getElementById("beschreibung").value || "",
     datum,
-    bilder,
-    videos,
-    docs
+    beschreibung:document.getElementById("beschreibung").value || "",
+    bilder
   });
 
   alert("Gespeichert");
@@ -272,14 +254,19 @@ window.showDetail=(i)=>{
   const x=liste[i];
 
   let html=`
+  <button onclick="document.getElementById('detailModal').style.display='none'" 
+  style="margin-bottom:10px;padding:8px 12px;border:none;border-radius:8px;background:#2563eb;color:white;">
+  Zurück
+  </button>
+
   <h2>${x.titel || "Schulung"}</h2>
   <p>${x.datum}</p>
   <p>${x.beschreibung || ""}</p>
   `;
 
-  (x.bilder||[]).forEach(b=>html+=`<img src="${b}">`);
-  (x.videos||[]).forEach(v=>html+=`<video controls src="${v}"></video>`);
-  (x.docs||[]).forEach(d=>html+=`<a href="${d}" target="_blank">📄 Dokument öffnen</a><br>`);
+  (x.bilder||[]).forEach(b=>{
+    html+=`<img src="${b}" style="width:100%;margin-top:10px;border-radius:10px;">`;
+  });
 
   document.getElementById("detailContent").innerHTML=html;
   document.getElementById("detailModal").style.display="flex";
@@ -292,24 +279,28 @@ window.loeschen=async(i)=>{
 };
 
 /* RENDER */
-onValue(dbRef,snap=>{
-  liste=[];
-  snap.forEach(c=>liste.push({id:c.key,...c.val()}));
-
+function render(){
   const container=document.getElementById("container");
-  container.innerHTML="";
+  container.innerHTML=""; // WICHTIG
 
   liste.forEach((x,i)=>{
     container.innerHTML+=`
     <div class="card" onclick="showDetail(${i})">
-      ${rolle==="admin"?`<button class="remove-btn" onclick="event.stopPropagation();loeschen(${i})">X</button>`:""}
-      ${x.bilder?.[0]?`<img src="${x.bilder[0]}">`:""}
+      ${rolle==="admin" ? `<button class="remove-btn" onclick="event.stopPropagation();loeschen(${i})">X</button>` : ""}
+      ${x.bilder && x.bilder[0] ? `<img src="${x.bilder[0]}">` : ""}
       <h2>${x.titel || "Schulung"}</h2>
       <p>${x.datum}</p>
     </div>`;
   });
+}
+
+/* DATEN LADEN */
+onValue(dbRef,snap=>{
+  liste=[];
+  snap.forEach(c=>{
+    liste.push({id:c.key,...c.val()});
+  });
+
+  render();
 });
 </script>
-
-</body>
-</html>
