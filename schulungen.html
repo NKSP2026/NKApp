@@ -28,7 +28,6 @@ h1{text-align:center;margin-bottom:30px;font-size:38px;}
   font-weight:bold;
 }
 
-/* Karten */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
@@ -67,7 +66,6 @@ h1{text-align:center;margin-bottom:30px;font-size:38px;}
   cursor:pointer;
 }
 
-/* Modal groß */
 .modal{
   display:none;
   position:fixed;
@@ -95,17 +93,6 @@ h1{text-align:center;margin-bottom:30px;font-size:38px;}
   margin-top:10px;
 }
 
-.download{
-  display:inline-block;
-  margin-top:10px;
-  padding:8px 12px;
-  background:#2563eb;
-  border-radius:8px;
-  color:white;
-  text-decoration:none;
-}
-
-/* Upload Modal */
 .upload-modal{
   display:none;
   position:fixed;
@@ -145,7 +132,6 @@ input,textarea{
 
 <div class="grid" id="container"></div>
 
-<!-- Upload Modal -->
 <div class="modal" id="modal">
   <div class="modal-content">
     <input type="text" id="titel" placeholder="Titel">
@@ -166,7 +152,6 @@ input,textarea{
   </div>
 </div>
 
-<!-- Detail Modal -->
 <div class="modal" id="detailModal">
   <div class="modal-content" id="detailContent"></div>
 </div>
@@ -197,7 +182,16 @@ const dbRef = ref(db,"schulungen");
 let rolle="";
 let liste=[];
 
-/* LOGIN + ROLLE */
+/* 🔥 DATUM FORMATIERUNG */
+function formatDatum(d){
+  const date = new Date(d);
+  const tag = String(date.getDate()).padStart(2,"0");
+  const monat = String(date.getMonth()+1).padStart(2,"0");
+  const jahr = date.getFullYear();
+  return `${tag}.${monat}.${jahr}`;
+}
+
+/* LOGIN */
 onAuthStateChanged(auth,(user)=>{
   if(!user){
     window.location.href="index.html";
@@ -219,13 +213,8 @@ onAuthStateChanged(auth,(user)=>{
 });
 
 /* MODAL */
-window.oeffneModal=()=>{
-  document.getElementById("modal").style.display="flex";
-}
-
-window.schliessen=()=>{
-  document.getElementById("modal").style.display="none";
-}
+window.oeffneModal=()=> document.getElementById("modal").style.display="flex";
+window.schliessen=()=> document.getElementById("modal").style.display="none";
 
 /* SPEICHERN */
 window.speichern=async()=>{
@@ -237,42 +226,10 @@ window.speichern=async()=>{
   const titel=document.getElementById("titel").value;
   const beschreibung=document.getElementById("beschreibung").value;
 
-  const bilderFiles=document.getElementById("bilder").files;
-  const videoFiles=document.getElementById("videos").files;
-  const dokumentFiles=document.getElementById("dokumente").files;
-
-  const bilder=[];
-  const videos=[];
-  const dokumente=[];
-
-  /* 📸 Bilder */
-  for(const f of bilderFiles){
-    const r=sRef(storage,"schulungen/bilder/"+Date.now()+"_"+f.name);
-    await uploadBytes(r,f);
-    bilder.push(await getDownloadURL(r));
-  }
-
-  /* 🎥 Videos */
-  for(const f of videoFiles){
-    const r=sRef(storage,"schulungen/videos/"+Date.now()+"_"+f.name);
-    await uploadBytes(r,f);
-    videos.push(await getDownloadURL(r));
-  }
-
-  /* 📄 Dokumente */
-  for(const f of dokumentFiles){
-    const r=sRef(storage,"schulungen/dokumente/"+Date.now()+"_"+f.name);
-    await uploadBytes(r,f);
-    dokumente.push(await getDownloadURL(r));
-  }
-
   await push(dbRef,{
     titel: titel || "",
     datum,
-    beschreibung: beschreibung || "",
-    bilder,
-    videos,
-    dokumente
+    beschreibung: beschreibung || ""
   });
 
   alert("Gespeichert");
@@ -290,24 +247,9 @@ window.showDetail=(i)=>{
   </button>
 
   <h2>${x.titel || "Schulung"}</h2>
-  <p>${x.datum}</p>
+  <p>${formatDatum(x.datum)}</p>
   <p>${x.beschreibung || ""}</p>
   `;
-
-  /* Bilder */
-  (x.bilder||[]).forEach(b=>{
-    html+=`<img src="${b}" style="width:100%;margin-top:10px;border-radius:10px;">`;
-  });
-
-  /* Videos */
-  (x.videos||[]).forEach(v=>{
-    html+=`<video controls src="${v}" style="width:100%;margin-top:10px;border-radius:10px;"></video>`;
-  });
-
-  /* Dokumente */
-  (x.dokumente||[]).forEach(d=>{
-    html+=`<a href="${d}" target="_blank" style="display:block;margin-top:10px;color:#60a5fa;">📄 Dokument öffnen</a>`;
-  });
 
   document.getElementById("detailContent").innerHTML=html;
   document.getElementById("detailModal").style.display="flex";
@@ -328,20 +270,25 @@ function render(){
     container.innerHTML+=`
     <div class="card" onclick="showDetail(${i})">
       ${rolle==="admin" ? `<button class="remove-btn" onclick="event.stopPropagation();loeschen(${i})">X</button>` : ""}
-      ${x.bilder && x.bilder[0] ? `<img src="${x.bilder[0]}">` : ""}
       <h2>${x.titel || "Schulung"}</h2>
-      <p>${x.datum}</p>
+      <p>${formatDatum(x.datum)}</p>
     </div>`;
   });
 }
 
-/* DATEN LADEN */
+/* 🔥 DATEN + SORTIERUNG */
 onValue(dbRef,snap=>{
   liste=[];
   snap.forEach(c=>{
     liste.push({id:c.key,...c.val()});
   });
 
+  // ÄLTESTES DATUM OBEN
+  liste.sort((a,b)=> new Date(a.datum) - new Date(b.datum));
+
   render();
 });
 </script>
+
+</body>
+</html>
