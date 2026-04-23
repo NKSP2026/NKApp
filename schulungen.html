@@ -23,7 +23,11 @@ h1{text-align:center;margin-bottom:30px;}
 
 <h1>Schulungen</h1>
 
-<button onclick="oeffneModal()">+ Schulung</button>
+<div class="top-bar">
+<a href="startseite.html" class="admin-btn">Zurück</a>
+<button class="admin-btn" onclick="oeffneModal()">+ Schulung hinzufügen</button>
+</div>
+
 
 <div class="grid" id="container"></div>
 
@@ -34,6 +38,7 @@ h1{text-align:center;margin-bottom:30px;}
 <input type="file" id="bilder" multiple>
 
 <button onclick="speichern()">Speichern</button>
+<button onclick="abbrechen()">Abbrechen</button>
 </div>
 </div>
 
