@@ -177,6 +177,15 @@ const dbRef = ref(db,"bilder");
 let rolle = "";
 let liste = [];
 
+/* 🔥 DATUM FORMATIEREN */
+function formatDatum(datumString){
+  const d = new Date(datumString);
+  const tag = String(d.getDate()).padStart(2,"0");
+  const monat = String(d.getMonth()+1).padStart(2,"0");
+  const jahr = d.getFullYear();
+  return `${tag}.${monat}.${jahr}`;
+}
+
 onAuthStateChanged(auth,(user)=>{
   if(!user){
     window.location.href="index.html";
@@ -245,7 +254,7 @@ window.showDetail = (i) => {
   Zurück
   </button>
 
-  <h2>${x.datum}</h2>
+  <h2>${formatDatum(x.datum)}</h2>
   <p>${x.auftrag || ""}</p>
   <p>${x.beschreibung || ""}</p>
   `;
@@ -277,13 +286,13 @@ function render(){
     <div class="card" onclick="showDetail(${i})">
       ${rolle === "admin" ? `<button class="remove-btn" onclick="event.stopPropagation();loeschen(${i})">X</button>` : ""}
       ${x.files?.[0]?.url ? `<img src="${x.files[0].url}">` : ""}
-      <h2>${x.datum}</h2>
+      <h2>${formatDatum(x.datum)}</h2>
       <p>${x.auftrag || ""}</p>
     </div>`;
   });
 }
 
-/* 🔥 SORTIERUNG HIER */
+/* 🔥 DATEN LADEN + SORTIERUNG */
 onValue(dbRef,(snap)=>{
   liste = [];
   snap.forEach(c=>{
