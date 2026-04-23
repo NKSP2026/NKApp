@@ -155,15 +155,16 @@ const bilderRef = ref(db, "bilder");
 let userRolle = "";
 let liste = [];
 
+// 🔐 User prüfen
 onAuthStateChanged(auth, (user) => {
   if(!user){
     window.location.href = "index.html";
     return;
   }
 
-  onValue(ref(db, "benutzer"), (snapshot) => {
-    snapshot.forEach((child) => {
-      const d = child.val();
+  onValue(ref(db, "benutzer"), (snap) => {
+    snap.forEach((c) => {
+      const d = c.val();
       if(d.uid === user.uid){
         userRolle = d.rolle;
 
@@ -172,20 +173,23 @@ onAuthStateChanged(auth, (user) => {
         }
       }
     });
-  }, {onlyOnce:true});
+  }, { onlyOnce: true });
 });
 
-window.oeffneModal = () => {
+// 📂 Modal öffnen
+window.oeffneModal = function(){
   document.getElementById("modal").style.display = "flex";
 }
 
-window.schliessen = () => {
+// ❌ schließen
+window.schliessen = function(){
   document.getElementById("modal").style.display = "none";
 }
 
-window.speichern = async (){
+// 💾 speichern
+window.speichern = async function(){
   if(userRolle !== "admin"){
-    alert("Nur Admins dürfen hochladen");
+    alert("Nur Admin darf speichern");
     return;
   }
 
@@ -199,56 +203,81 @@ window.speichern = async (){
     return;
   }
 
-  let urls = [];
+  const dateien = [];
 
   for(const file of files){
-    const path = "bilder/" + Date.now() + "_" + file.name;
-    const fileRef = storageRef(storage, path);
+    const pfad = "bilder/" + Date.now() + "_" + file.name;
+    const fileRef = storageRef(storage, pfad);
 
     await uploadBytes(fileRef, file);
     const url = await getDownloadURL(fileRef);
 
-    urls.push(url);
+    dateien.push({
+      url,
+      type: file.type
+    });
   }
 
   await push(bilderRef, {
     datum,
     auftrag: auftrag || "",
     beschreibung: beschreibung || "",
-    dateien: urls
+    dateien
   });
 
   alert("Gespeichert!");
   location.reload();
-}
+};
 
+// 🖼️ anzeigen
 function render(){
   const c = document.getElementById("container");
   c.innerHTML = "";
 
-  liste.forEach((x,i) => {
+  liste.forEach((x,i)=>{
+    let media = "";
+
+    if(x.dateien){
+      x.dateien.forEach(f=>{
+        if(f.type.startsWith("image")){
+          media += `<img src="${f.url}">`;
+        } else if(f.type.startsWith("video")){
+          media += `<video src="${f.url}" controls></video>`;
+        }
+      });
+    }
+
     c.innerHTML += `
-    <div class="card">
-      ${userRolle === "admin" ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ""}
-      <h3>${x.datum}</h3>
-      <p>${x.auftrag || ""}</p>
-      ${x.dateien ? x.dateien.map(f =>
-        f.includes("video")
-        ? `<video controls src="${f}"></video>`
-        : `<img src="${f}">`
-      ).join("") : ""}
-    </div>`;
+      <div class="card">
+        ${userRolle === "admin" ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ""}
+        ${media}
+        <p><b>Datum:</b> ${x.datum}</p>
+        <p><b>Auftrag:</b> ${x.auftrag || "-"}</p>
+        <p>${x.beschreibung || ""}</p>
+      </div>
+    `;
   });
 }
 
-window.loeschen = async (i) => {
-  if(userRolle !== "admin") return;
-  await remove(ref(db, "bilder/" + liste[i].id));
-}
+// ❌ löschen
+window.loeschen = async function(i){
+  if(userRolle !== "admin"){
+    alert("Nur Admin darf löschen");
+    return;
+  }
 
-onValue(bilderRef, (snap) => {
+  await remove(ref(db, "bilder/" + liste[i].id));
+};
+
+// 🔄 laden
+onValue(bilderRef, (snap)=>{
   liste = [];
-  snap.forEach(c => liste.push({id:c.key,...c.val()}));
+  snap.forEach(c=>{
+    liste.push({
+      id: c.key,
+      ...c.val()
+    });
+  });
   render();
 });
 </script>
