@@ -152,9 +152,14 @@ input,textarea{
     <textarea id="beschreibung" placeholder="Beschreibung"></textarea>
     <input type="date" id="datum">
 
+    <label>Bilder auswählen</label>
     <input type="file" id="bilder" multiple accept="image/*">
+
+    <label>Videos auswählen</label>
     <input type="file" id="videos" multiple accept="video/*">
-    <input type="file" id="docs" multiple accept="application/pdf">
+
+    <label>Dokumente auswählen</label>
+    <input type="file" id="dokumente" multiple accept="application/pdf">
 
     <button class="admin-btn" onclick="speichern()">Speichern</button>
     <button class="admin-btn" onclick="schliessen()">Abbrechen</button>
