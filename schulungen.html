@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+  const bilder = [];
+  const videos = [];
+  const dokumente = [];
+
+  for(const datei of document.getElementById("bilder").files){
+    const pfad = "schulungen/bilder/" + Date.now() + "_" + datei.name;
+    const fileRef = storageRef(storage, pfad);
+    await uploadBytes(fileRef, datei);
+    bilder.push(await getDownloadURL(fileRef));
+  }
+
+  for(const datei of document.getElementById("videos").files){
+    const pfad = "schulungen/videos/" + Date.now() + "_" + datei.name;
+    const fileRef = storageRef(storage, pfad);
+    await uploadBytes(fileRef, datei);
+    videos.push(await getDownloadURL(fileRef));
+  }
+
+  for(const datei of document.getElementById("dokumente").files){
+    const pfad = "schulungen/dokumente/" + Date.now() + "_" + datei.name;
+    const fileRef = storageRef(storage, pfad);
+    await uploadBytes(fileRef, datei);
+    dokumente.push(await getDownloadURL(fileRef));
+  }
+
+  await push(schulungenRef, {
+    titel,
+    beschreibung,
+    datum,
+    bilder,
+    videos,
+    dokumente
+  });
+
+  alert("Schulung gespeichert");
+  location.reload();
+}
+
+function render(){
+  const c = document.getElementById("container");
+  c.innerHTML = "";
+
+  liste.forEach((x,i) => {
+    c.innerHTML += `
+      <div class="card">
+        ${userRolle === "admin" ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ""}
+        <h2>${x.titel}</h2>
+        <p>${x.datum}</p>
+        <p>${x.beschreibung}</p>
+        <p>Bilder: ${x.bilder ? x.bilder.length : 0}</p>
+        <p>Videos: ${x.videos ? x.videos.length : 0}</p>
+        <p>Dokumente: ${x.dokumente ? x.dokumente.length : 0}</p>
+      </div>
+    `;
+  });
+}
+
+window.loeschen = async function(i){
+  await remove(ref(db, "schulungen/" + liste[i].id));
+}
+
+onValue(schulungenRef, (snapshot) => {
+  liste = [];
+  snapshot.forEach((child) => {
+    liste.push({ id: child.key, ...child.val() });
+  });
+  render();
+});
+</script>
+</body>
+</html>
