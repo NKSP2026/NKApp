@@ -266,6 +266,16 @@ window.loeschen=async(i)=>{
   await remove(ref(db,"bilder/"+liste[i].id));
 };
 
+window.openUpload = function(){
+  document.getElementById("uploadModal").style.display = "flex";
+}
+window.closeUpload = function(){
+  document.getElementById("uploadModal").style.display = "none";
+}
+window.speichern = async function(){
+  // dein code
+} 
+  
 /* Render */
 onValue(dbRef,snap=>{
   liste=[];
