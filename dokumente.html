@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dokumente</title>
+
 <style>
 *{
   box-sizing:border-box;
@@ -11,16 +12,19 @@
   padding:0;
   font-family:Arial,sans-serif;
 }
+
 body{
   background:#111;
   color:white;
   padding:20px;
 }
+
 h1{
   text-align:center;
   font-size:48px;
   margin-bottom:30px;
 }
+
 .top-bar{
   display:flex;
   justify-content:center;
@@ -28,6 +32,7 @@ h1{
   margin-bottom:30px;
   flex-wrap:wrap;
 }
+
 .admin-btn{
   background:#2563eb;
   color:white;
@@ -39,9 +44,12 @@ h1{
   font-weight:bold;
   text-decoration:none;
 }
+
 .delete-btn{
   background:#dc2626;
 }
+
+/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -49,12 +57,71 @@ h1{
   max-width:1200px;
   margin:auto;
 }
+
+/* MOBILE */
+@media(max-width:800px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .card{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+}
+
+/* CARD */
 .card{
   background:#1c1c1f;
   border-radius:22px;
   padding:20px;
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  align-items:center;
   position:relative;
+  transition:0.2s;
 }
+
+.card:hover{
+  transform:scale(1.02);
+}
+
+/* LINKER BEREICH */
+.left{
+  flex:1;
+}
+
+/* TITEL */
+.card h2{
+  font-size:28px;
+  margin-bottom:10px;
+}
+
+/* TEXT */
+.card p{
+  color:#ccc;
+  font-size:16px;
+}
+
+/* RECHTS (BUTTON) */
+.right{
+  display:flex;
+  align-items:center;
+}
+
+/* DOWNLOAD BUTTON */
+.download-btn{
+  background:#2563eb;
+  color:white;
+  border:none;
+  padding:12px 18px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+/* DELETE */
 .remove-btn{
   position:absolute;
   top:10px;
@@ -66,6 +133,8 @@ h1{
   padding:5px 8px;
   cursor:pointer;
 }
+
+/* MODAL */
 .modal{
   display:none;
   position:fixed;
@@ -74,6 +143,7 @@ h1{
   justify-content:center;
   align-items:center;
 }
+
 .modal-content{
   background:#1c1c1f;
   padding:20px;
@@ -81,6 +151,7 @@ h1{
   width:90%;
   max-width:500px;
 }
+
 input{
   width:100%;
   padding:12px;
@@ -90,6 +161,7 @@ input{
   background:#111;
   color:white;
 }
+
 .button-row{
   display:flex;
   gap:10px;
@@ -97,6 +169,7 @@ input{
 }
 </style>
 </head>
+
 <body>
 
 <h1>Dokumente</h1>
@@ -108,6 +181,7 @@ input{
 
 <div class="grid" id="container"></div>
 
+<!-- MODAL -->
 <div class="modal" id="modal">
   <div class="modal-content">
     <input id="name" placeholder="Dokumentenname">
