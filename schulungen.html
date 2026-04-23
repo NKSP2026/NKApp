@@ -185,8 +185,11 @@ const dbRef = ref(db,"schulungen");
 let rolle="";
 let liste=[];
 
-onAuthStateChanged(auth,user=>{
-  if(!user){location.href="index.html";return;}
+onAuthStateChanged(auth, (user) => {
+  if(!user){
+    window.location.href = "index.html";
+    return;
+  }
 
   onValue(ref(db,"benutzer"),snap=>{
     snap.forEach(c=>{
