@@ -197,10 +197,13 @@ onAuthStateChanged(auth,(user)=>{
         if(rolle!=="admin"){
           document.querySelector(".top-bar button").style.display="none";
         }
+
+        render(); // 🔥 DAS FEHLT BEI DIR
       }
     });
   },{onlyOnce:true});
 });
+
 
 /* MODAL */
 window.openUpload=()=>{
@@ -280,6 +283,9 @@ window.loeschen=async(i)=>{
 onValue(dbRef,snap=>{
   liste=[];
   snap.forEach(c=>liste.push({id:c.key,...c.val()}));
+
+  render(); // 🔥 statt direkt container bauen
+});
 
   const container=document.getElementById("container");
   container.innerHTML="";
