@@ -59,6 +59,26 @@
       font-size:16px;
     }
 
+    /* 👁 Passwort Wrapper */
+    .password-wrapper{
+      position:relative;
+    }
+
+    .password-wrapper input{
+      margin-bottom:20px;
+    }
+
+    .toggle-eye{
+      position:absolute;
+      right:15px;
+      top:50%;
+      transform:translateY(-50%);
+      cursor:pointer;
+      font-size:20px;
+      color:#dc2626; /* ROT */
+      user-select:none;
+    }
+
     button{
       width:100%;
       padding:14px;
@@ -106,7 +126,12 @@
   <p>Zugriff nur für autorisierte Personen.</p>
 
   <input type="email" id="email" placeholder="E-Mail">
-  <input type="password" id="passwort" placeholder="Passwort">
+
+  <!-- 👁 Passwortfeld mit Auge -->
+  <div class="password-wrapper">
+    <input type="password" id="passwort" placeholder="Passwort">
+    <span class="toggle-eye" id="eye" onclick="togglePasswort()">👁</span>
+  </div>
 
   <div class="error" id="fehler"></div>
 
@@ -123,6 +148,22 @@
     <p>© 2026 NKSP Sicherheitsdienst</p>
   </div>
 </div>
+
+<script>
+/* 👁 Passwort anzeigen/verstecken */
+function togglePasswort(){
+  const input = document.getElementById("passwort");
+  const eye = document.getElementById("eye");
+
+  if(input.type === "password"){
+    input.type = "text";
+    eye.style.color = "#22c55e"; // GRÜN
+  }else{
+    input.type = "password";
+    eye.style.color = "#dc2626"; // ROT
+  }
+}
+</script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
