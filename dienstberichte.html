@@ -49,11 +49,26 @@ h1{
   max-width:1200px;
   margin:auto;
 }
-.card{
-  background:#1c1c1f;
-  border-radius:22px;
-  padding:20px;
-  position:relative;
+.card:hover{transform:scale(1.02);}
+.card img{
+  width:110px;
+  height:140px;
+  object-fit:cover;
+  border-radius:16px;
+  border:2px solid #444;
+}
+.card h2{margin-bottom:10px;font-size:32px;}
+.card p{color:#ccc;margin-bottom:8px;font-size:18px;}
+.remove-btn{
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:#dc2626;
+  color:white;
+  border:none;
+  border-radius:8px;
+  padding:5px 8px;
+  cursor:pointer;
 }
 .remove-btn{
   position:absolute;
