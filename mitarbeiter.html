@@ -215,17 +215,15 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
-
 const mitarbeiterRef = ref(db, 'mitarbeiter');
 const benutzerRef = ref(db, 'benutzer');
 
 let mitarbeiterListe = [];
-let userRolle = "";
+let userRolle = '';
 
-/* 🔐 LOGIN + ROLLE */
 onAuthStateChanged(auth, (user) => {
   if(!user){
-    window.location.href = "index.html";
+    window.location.href = 'index.html';
     return;
   }
 
@@ -236,32 +234,44 @@ onAuthStateChanged(auth, (user) => {
       if(daten.uid === user.uid){
         userRolle = daten.rolle;
 
-        if(userRolle !== "admin"){
-          const btn = document.querySelector(".top-bar button");
-          if(btn) btn.style.display = "none";
+        if(userRolle !== 'admin'){
+          const addBtn = document.querySelector('.top-bar button');
+          if(addBtn){
+            addBtn.style.display = 'none';
+          }
         }
 
         renderMitarbeiter();
       }
     });
-  }, { onlyOnce:true });
+  }, {
+    onlyOnce: true
+  });
 });
 
-/* 📊 ALTER */
 function berechneAlter(geburtsdatum){
   if(!geburtsdatum || geburtsdatum.includes("?")) return "?";
 
+  let teile;
+
   if(geburtsdatum.includes(".")){
-    const t = geburtsdatum.split(".");
-    const geburt = new Date(t[2], t[1]-1, t[0]);
+    teile = geburtsdatum.split(".");
+    const tag = parseInt(teile[0]);
+    const monat = parseInt(teile[1]) - 1;
+    const jahr = parseInt(teile[2]);
+
+    if(isNaN(tag) || isNaN(monat) || isNaN(jahr)) return "?";
+
+    const geburt = new Date(jahr, monat, tag);
     const heute = new Date();
 
     let alter = heute.getFullYear() - geburt.getFullYear();
 
-    if(
-      heute.getMonth() < geburt.getMonth() ||
-      (heute.getMonth() === geburt.getMonth() && heute.getDate() < geburt.getDate())
-    ){
+    const hatGeburtstagSchonGehabt =
+      heute.getMonth() > geburt.getMonth() ||
+      (heute.getMonth() === geburt.getMonth() && heute.getDate() >= geburt.getDate());
+
+    if(!hatGeburtstagSchonGehabt){
       alter--;
     }
 
@@ -271,7 +281,6 @@ function berechneAlter(geburtsdatum){
   return "?";
 }
 
-/* 🎨 RENDER */
 function renderMitarbeiter(){
   const container = document.getElementById("mitarbeiterContainer");
   container.innerHTML = "";
@@ -279,7 +288,7 @@ function renderMitarbeiter(){
   mitarbeiterListe.forEach((m, index) => {
     container.innerHTML += `
       <div class="card" onclick="showDetails(${index})">
-        ${userRolle === "admin" ? `<button class="remove-btn" onclick="event.stopPropagation(); loescheMitarbeiter(${index})">X</button>` : ""}
+        ${userRolle === 'admin' ? `<button class="remove-btn" onclick="event.stopPropagation(); loescheMitarbeiter(${index})">X</button>` : ''}
         <img src="${m.bild}">
         <div>
           <h2>${m.name}</h2>
@@ -291,10 +300,8 @@ function renderMitarbeiter(){
   });
 }
 
-/* 🔍 DETAILS */
 window.showDetails = function(index){
   const m = mitarbeiterListe[index];
-
   document.getElementById("detailBild").src = m.bild;
   document.getElementById("detailName").innerText = m.name;
   document.getElementById("detailAlter").innerText = berechneAlter(m.geburtsdatum);
@@ -311,42 +318,48 @@ window.showDetails = function(index){
   document.getElementById("detailFirma").innerText = m.firma;
   document.getElementById("detailFuehrerschein").innerText = m.fuehrerschein;
   document.getElementById("detailChef").innerText = m.chef;
-
   document.getElementById("detailModal").style.display = "flex";
-};
+}
 
 window.closeModal = function(){
   document.getElementById("detailModal").style.display = "none";
-};
+}
 
-/* ➕ FORMULAR */
 window.oeffneFormular = function(){
-  if(userRolle !== "admin"){
-    alert("Nur Admins dürfen hinzufügen");
+  if(userRolle !== 'admin'){
+    alert('Nur Admins dürfen Mitarbeiter hinzufügen');
     return;
   }
 
   document.getElementById("formularModal").style.display = "flex";
-};
+}
 
 window.schliesseFormular = function(){
   document.getElementById("formularModal").style.display = "none";
-};
+}
 
-/* 💾 SPEICHERN */
 window.speichereMitarbeiter = async function(){
-  if(userRolle !== "admin") return alert("Nur Admin");
+  if(userRolle !== 'admin'){
+    alert('Nur Admins dürfen Mitarbeiter speichern');
+    return;
+  }
 
-  const file = document.getElementById("formBild").files[0];
-  if(!file) return alert("Bild fehlt");
+  const bildDatei = document.getElementById("formBild").files[0];
+
+  if(!bildDatei){
+    alert("Bitte Bild auswählen");
+    return;
+  }
 
   try{
-    const r = storageRef(storage,"mitarbeiterbilder/"+Date.now()+"_"+file.name);
-    await uploadBytes(r,file);
+    const dateiname = Date.now() + "_" + bildDatei.name;
+    const bildRef = storageRef(storage, "mitarbeiterbilder/" + dateiname);
 
-    const url = await getDownloadURL(r);
+    await uploadBytes(bildRef, bildDatei);
 
-    await push(mitarbeiterRef,{
+    const bildURL = await getDownloadURL(bildRef);
+
+    await push(mitarbeiterRef, {
       name: document.getElementById("formName").value,
       geburtsdatum: document.getElementById("formGeburtsdatum").value,
       wannNK: document.getElementById("formWannNK").value,
@@ -361,32 +374,42 @@ window.speichereMitarbeiter = async function(){
       firma: document.getElementById("formFirma").value,
       fuehrerschein: document.getElementById("formFuehrerschein").value,
       chef: document.getElementById("formChef").value,
-      bild: url
+      bild: bildURL
     });
 
-    alert("Gespeichert");
-    location.reload();
-
-  }catch(e){
-    console.error(e);
-    alert("Fehler");
+    alert("Mitarbeiter gespeichert");
+    document.getElementById("formularModal").style.display = "none";
+  }catch(error){
+    console.error(error);
+    alert("Fehler beim Hochladen");
   }
-};
+}
 
-/* ❌ LÖSCHEN */
 window.loescheMitarbeiter = async function(index){
-  if(userRolle !== "admin") return;
+  if(userRolle !== 'admin'){
+    alert('Nur Admins dürfen Mitarbeiter löschen');
+    return;
+  }
 
-  await remove(ref(db,"mitarbeiter/"+mitarbeiterListe[index].id));
-};
+  try{
+    await remove(ref(db, 'mitarbeiter/' + mitarbeiterListe[index].id));
+    alert('Mitarbeiter gelöscht');
+  }catch(error){
+    console.error(error);
+    alert('Fehler beim Löschen');
+  }
+}
 
-/* ❗ MODAL CLOSE */
-window.onclick = function(e){
-  if(e.target.id === "detailModal") closeModal();
-  if(e.target.id === "formularModal") schliesseFormular();
-};
+window.onclick = function(event){
+  if(event.target === document.getElementById("detailModal")){
+    closeModal();
+  }
 
-/* 🔥 LADEN + SORTIERUNG */
+  if(event.target === document.getElementById("formularModal")){
+    schliesseFormular();
+  }
+}
+
 onValue(mitarbeiterRef, (snapshot) => {
   mitarbeiterListe = [];
 
@@ -397,24 +420,7 @@ onValue(mitarbeiterRef, (snapshot) => {
     });
   });
 
-  /* ⭐ SORTIERUNG */
-  mitarbeiterListe.sort((a, b) => {
-    const top = [
-      "Nicole, Küttner",
-      "Marcel, Maczeyzik",
-      "Ronny, Winkler"
-    ];
-
-    const ia = top.indexOf(a.name);
-    const ib = top.indexOf(b.name);
-
-    if(ia !== -1 && ib !== -1) return ia - ib;
-    if(ia !== -1) return -1;
-    if(ib !== -1) return 1;
-
-    return a.name.localeCompare(b.name, "de");
-  });
-
   renderMitarbeiter();
 });
 </script>
+
