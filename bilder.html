@@ -161,11 +161,15 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
-const app = initializeApp({
-  apiKey:"AIzaSy...",
-  authDomain:"nksp-app.firebaseapp.com",
-  databaseURL:"https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app"
-});
+const firebaseConfig = {
+    apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+    authDomain: "nksp-app.firebaseapp.com",
+    databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "nksp-app",
+    storageBucket: "nksp-app.firebasestorage.app",
+    messagingSenderId: "328702502215",
+    appId: "1:328702502215:web:080148f3e768bfafc29862"
+  };
 
 const auth = getAuth(app);
 const db = getDatabase(app);
