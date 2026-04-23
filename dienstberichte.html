@@ -1,8 +1,4 @@
-Nichts anderes kaputt
-
-👉 Du kannst das 1:1 ersetzen
-
-✅ FERTIGER CODE (nur Style ersetzt)
+✅ FERTIGER CODE (komplett)
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -54,7 +50,7 @@ h1{
   background:#dc2626;
 }
 
-/* 🔥 GRID */
+/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -63,21 +59,32 @@ h1{
   margin:auto;
 }
 
-/* 📱 Mobile */
+/* MOBILE */
 @media(max-width:800px){
   .grid{
     grid-template-columns:1fr;
   }
+
+  .card{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .right{
+    width:100%;
+    margin-top:15px;
+  }
 }
 
-/* 🔥 CARD WIE MITARBEITER */
+/* CARD */
 .card{
   background:#1c1c1f;
   border-radius:22px;
   padding:20px;
   display:flex;
+  justify-content:space-between;
   gap:20px;
-  align-items:center;
+  align-items:flex-start;
   cursor:pointer;
   position:relative;
   transition:0.2s;
@@ -87,28 +94,31 @@ h1{
   transform:scale(1.02);
 }
 
-/* Optional falls später Bild */
-.card img{
-  width:110px;
-  height:140px;
-  object-fit:cover;
-  border-radius:16px;
-  border:2px solid #444;
+/* LINKER BEREICH */
+.left{
+  flex:1;
+}
+
+/* TITEL */
+.card h2{
+  font-size:28px;
+  margin-bottom:15px;
 }
 
 /* TEXT */
-.card h2{
-  margin-bottom:10px;
-  font-size:28px;
-}
-
 .card p{
   color:#ccc;
-  margin-bottom:6px;
+  margin-bottom:10px;
   font-size:16px;
 }
 
-/* ❌ Löschen */
+/* RECHTS */
+.right{
+  display:flex;
+  align-items:center;
+}
+
+/* DELETE */
 .remove-btn{
   position:absolute;
   top:10px;
@@ -156,17 +166,21 @@ input{
 }
 </style>
 </head>
+
 <body>
 
 <h1>Dienstberichte</h1>
 
 <div class="top-bar">
   <a href="startseite.html" class="admin-btn">Zurück</a>
-  <button class="admin-btn" onclick="document.getElementById('modal').style.display='flex'">+ Dienstbericht hochladen</button>
+  <button class="admin-btn" onclick="document.getElementById('modal').style.display='flex'">
+    + Dienstbericht hochladen
+  </button>
 </div>
 
 <div class="grid" id="container"></div>
 
+<!-- MODAL -->
 <div class="modal" id="modal">
   <div class="modal-content">
     <input id="titel" placeholder="Titel des Berichtes">
