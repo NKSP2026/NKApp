@@ -96,7 +96,7 @@ h1{text-align:center;margin-bottom:30px;font-size:38px;}
   margin-top:10px;
 }
 
-/* Upload Modal */
+/* Upload */
 .upload-modal{
   display:none;
   position:fixed;
@@ -136,23 +136,24 @@ input,textarea{
 
 <div class="grid" id="container"></div>
 
-<!-- Detail -->
+<!-- DETAIL -->
 <div class="modal" id="detailModal">
-<div class="modal-content" id="detailContent"></div>
+  <div class="modal-content" id="detailContent"></div>
 </div>
 
-<!-- Upload -->
+<!-- UPLOAD -->
 <div class="upload-modal" id="uploadModal">
-<div class="upload-box">
-<input type="date" id="datum">
-<input type="text" id="auftrag" placeholder="Auftrag (optional)">
-<textarea id="beschreibung" placeholder="Beschreibung (optional)"></textarea>
+  <div class="upload-box">
+    <input type="date" id="datum">
+    <input type="text" id="auftrag" placeholder="Auftrag (optional)">
+    <textarea id="beschreibung" placeholder="Beschreibung (optional)"></textarea>
 
-<input type="file" id="files" multiple accept="image/*,video/*">
+    <label>Bilder & Videos</label>
+    <input type="file" id="files" multiple accept="image/*,video/*">
 
-<button onclick="speichern()" class="admin-btn">Speichern</button>
-<button onclick="closeUpload()" class="admin-btn" style="background:red;">Abbrechen</button>
-</div>
+    <button onclick="speichern()" class="admin-btn">Speichern</button>
+    <button onclick="closeUpload()" class="admin-btn" style="background:red;">Abbrechen</button>
+  </div>
 </div>
 
 <script type="module">
@@ -161,7 +162,6 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
-/* 🔥 WICHTIG: DAS HAT BEI DIR GEFEHLT */
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
   authDomain: "nksp-app.firebaseapp.com",
@@ -172,8 +172,7 @@ const firebaseConfig = {
   appId: "1:328702502215:web:080148f3e768bfafc29862"
 };
 
-const app = initializeApp(firebaseConfig); // ← FEHLTE
-
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 const storage = getStorage(app);
@@ -183,14 +182,10 @@ const dbRef = ref(db,"bilder");
 let rolle="";
 let liste=[];
 
-/* 🔐 LOGIN CHECK */
-onAuthStateChanged(auth, (user) => {
-  if(user === null){
-    setTimeout(() => {
-      if(!auth.currentUser){
-        window.location.href = "index.html";
-      }
-    }, 500);
+/* LOGIN */
+onAuthStateChanged(auth,(user)=>{
+  if(!user){
+    window.location.href="index.html";
     return;
   }
 
@@ -207,30 +202,28 @@ onAuthStateChanged(auth, (user) => {
   },{onlyOnce:true});
 });
 
-/* 📂 MODAL */
-window.oeffneModal = function(){
-  document.getElementById("modal").style.display = "flex";
-}
+/* MODAL */
+window.openUpload=()=>{
+  document.getElementById("uploadModal").style.display="flex";
+};
 
-window.schliessen = function(){
-  document.getElementById("modal").style.display = "none";
-}
+window.closeUpload=()=>{
+  document.getElementById("uploadModal").style.display="none";
+};
 
-/* 💾 SPEICHERN */
-window.speichern = async function(){
+/* SPEICHERN */
+window.speichern=async()=>{
   if(rolle!=="admin") return alert("Nur Admin");
 
-  const datum = document.getElementById("datum").value;
-  if(!datum) return alert("Datum ist Pflicht");
+  const datum=document.getElementById("datum").value;
+  if(!datum) return alert("Datum Pflicht");
 
-  const files = document.getElementById("dateien").files; // ← FIX
+  const files=document.getElementById("files").files;
 
   const arr=[];
 
   for(const f of files){
-    const path="bilder/"+Date.now()+"_"+f.name;
-    const r=sRef(storage,path);
-
+    const r=sRef(storage,"bilder/"+Date.now()+"_"+f.name);
     await uploadBytes(r,f);
 
     arr.push({
@@ -250,11 +243,16 @@ window.speichern = async function(){
   location.reload();
 };
 
-/* 👁 DETAIL */
-window.showDetail = function(i){
+/* DETAIL */
+window.showDetail=(i)=>{
   const x=liste[i];
 
   let html=`
+  <button onclick="document.getElementById('detailModal').style.display='none'" 
+  style="margin-bottom:10px;padding:8px 12px;border:none;border-radius:8px;background:#2563eb;color:white;">
+  Zurück
+  </button>
+
   <h2>${x.datum}</h2>
   <p>${x.auftrag || ""}</p>
   <p>${x.beschreibung || ""}</p>
@@ -272,18 +270,18 @@ window.showDetail = function(i){
   document.getElementById("detailModal").style.display="flex";
 };
 
-/* ❌ LÖSCHEN */
-window.loeschen = async function(i){
+/* LÖSCHEN */
+window.loeschen=async(i)=>{
   if(rolle!=="admin") return;
   await remove(ref(db,"bilder/"+liste[i].id));
 };
 
-/* 🔄 RENDER */
+/* RENDER */
 onValue(dbRef,snap=>{
   liste=[];
   snap.forEach(c=>liste.push({id:c.key,...c.val()}));
 
-  const container = document.getElementById("container");
+  const container=document.getElementById("container");
   container.innerHTML="";
 
   liste.forEach((x,i)=>{
@@ -297,6 +295,3 @@ onValue(dbRef,snap=>{
   });
 });
 </script>
-
-</body>
-</html>
