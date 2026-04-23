@@ -183,7 +183,7 @@ window.schliessen = () => {
   document.getElementById("modal").style.display = "none";
 }
 
-window.speichern = async () => {
+window.speichern = async (){
   if(userRolle !== "admin"){
     alert("Nur Admins dürfen hochladen");
     return;
