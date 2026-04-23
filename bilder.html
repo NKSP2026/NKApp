@@ -161,15 +161,18 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
+/* 🔥 WICHTIG: DAS HAT BEI DIR GEFEHLT */
 const firebaseConfig = {
-    apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
-    authDomain: "nksp-app.firebaseapp.com",
-    databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "nksp-app",
-    storageBucket: "nksp-app.firebasestorage.app",
-    messagingSenderId: "328702502215",
-    appId: "1:328702502215:web:080148f3e768bfafc29862"
-  };
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
+
+const app = initializeApp(firebaseConfig); // ← FEHLTE
 
 const auth = getAuth(app);
 const db = getDatabase(app);
@@ -180,9 +183,9 @@ const dbRef = ref(db,"bilder");
 let rolle="";
 let liste=[];
 
+/* 🔐 LOGIN CHECK */
 onAuthStateChanged(auth, (user) => {
   if(user === null){
-    // NICHT sofort rauswerfen → kurz warten
     setTimeout(() => {
       if(!auth.currentUser){
         window.location.href = "index.html";
@@ -204,22 +207,30 @@ onAuthStateChanged(auth, (user) => {
   },{onlyOnce:true});
 });
 
-/* Upload */
-window.openUpload=()=>uploadModal.style.display="flex";
-window.closeUpload=()=>uploadModal.style.display="none";
+/* 📂 MODAL */
+window.oeffneModal = function(){
+  document.getElementById("modal").style.display = "flex";
+}
 
-window.speichern=async()=>{
+window.schliessen = function(){
+  document.getElementById("modal").style.display = "none";
+}
+
+/* 💾 SPEICHERN */
+window.speichern = async function(){
   if(rolle!=="admin") return alert("Nur Admin");
 
-  const datum=document.getElementById("datum").value;
+  const datum = document.getElementById("datum").value;
   if(!datum) return alert("Datum ist Pflicht");
 
-  const files=document.getElementById("files").files;
+  const files = document.getElementById("dateien").files; // ← FIX
+
   const arr=[];
 
   for(const f of files){
     const path="bilder/"+Date.now()+"_"+f.name;
     const r=sRef(storage,path);
+
     await uploadBytes(r,f);
 
     arr.push({
@@ -239,8 +250,8 @@ window.speichern=async()=>{
   location.reload();
 };
 
-/* Detail */
-window.showDetail=i=>{
+/* 👁 DETAIL */
+window.showDetail = function(i){
   const x=liste[i];
 
   let html=`
@@ -257,30 +268,22 @@ window.showDetail=i=>{
     }
   });
 
-  detailContent.innerHTML=html;
-  detailModal.style.display="flex";
+  document.getElementById("detailContent").innerHTML=html;
+  document.getElementById("detailModal").style.display="flex";
 };
 
-window.loeschen=async(i)=>{
+/* ❌ LÖSCHEN */
+window.loeschen = async function(i){
   if(rolle!=="admin") return;
   await remove(ref(db,"bilder/"+liste[i].id));
 };
 
-window.openUpload = function(){
-  document.getElementById("uploadModal").style.display = "flex";
-}
-window.closeUpload = function(){
-  document.getElementById("uploadModal").style.display = "none";
-}
-window.speichern = async function(){
-  // dein code
-} 
-  
-/* Render */
+/* 🔄 RENDER */
 onValue(dbRef,snap=>{
   liste=[];
   snap.forEach(c=>liste.push({id:c.key,...c.val()}));
 
+  const container = document.getElementById("container");
   container.innerHTML="";
 
   liste.forEach((x,i)=>{
