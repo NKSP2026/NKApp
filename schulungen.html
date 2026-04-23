@@ -59,23 +59,16 @@ input,textarea{width:100%;padding:12px;margin-bottom:12px;border-radius:10px;bor
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
-  authDomain: "nksp-app.firebaseapp.com",
-  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "nksp-app",
-  storageBucket: "nksp-app.firebasestorage.app",
-  messagingSenderId: "328702502215",
-  appId: "1:328702502215:web:080148f3e768bfafc29862"
-};
+const firebaseConfig = { /* gleich lassen */ };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 const storage = getStorage(app);
-const schulungenRef = ref(db, "schulungen");  
+
+const schulungenRef = ref(db, "schulungen");
 
 let userRolle = "";
 let liste = [];
@@ -86,36 +79,27 @@ onAuthStateChanged(auth, (user) => {
     return;
   }
 
-  onValue(ref(db, "benutzer"), (snapshot) => {
-    snapshot.forEach((child) => {
-      const daten = child.val();
-
-      if(daten.uid === user.uid){
-        userRolle = daten.rolle;
-
-        if(userRolle !== "admin"){
-          document.querySelector(".top-bar button").style.display = "none";
-        }
+  onValue(ref(db,"benutzer"), (snap)=>{
+    snap.forEach(c=>{
+      const d = c.val();
+      if(d.uid === user.uid){
+        userRolle = d.rolle;
       }
     });
-  }, { onlyOnce:true });
+  }, {onlyOnce:true});
 });
 
-window.oeffneModal = function(){
-  document.getElementById("modal").style.display = "flex";
-}
+window.speichern = async () => {
+  if(userRolle !== "admin"){
+    alert("Nur Admin!");
+    return;
+  }
 
-window.schliessen = function(){
-  document.getElementById("modal").style.display = "none";
-}
-
-window.speichern = async function(){
   const titel = document.getElementById("titel").value;
-  const beschreibung = document.getElementById("beschreibung").value;
   const datum = document.getElementById("datum").value;
 
-  if(!titel || !datum){
-    alert("Bitte Titel und Datum ausfüllen");
+  if(!datum){
+    alert("Datum ist Pflicht!");
     return;
   }
 
@@ -123,70 +107,39 @@ window.speichern = async function(){
   const videos = [];
   const dokumente = [];
 
-  for(const datei of document.getElementById("bilder").files){
-    const pfad = "schulungen/bilder/" + Date.now() + "_" + datei.name;
-    const fileRef = storageRef(storage, pfad);
-    await uploadBytes(fileRef, datei);
-    bilder.push(await getDownloadURL(fileRef));
+  for(const f of document.getElementById("bilder").files){
+    const refFile = storageRef(storage,"schulungen/"+Date.now()+f.name);
+    await uploadBytes(refFile,f);
+    bilder.push(await getDownloadURL(refFile));
   }
 
-  for(const datei of document.getElementById("videos").files){
-    const pfad = "schulungen/videos/" + Date.now() + "_" + datei.name;
-    const fileRef = storageRef(storage, pfad);
-    await uploadBytes(fileRef, datei);
-    videos.push(await getDownloadURL(fileRef));
+  for(const f of document.getElementById("videos").files){
+    const refFile = storageRef(storage,"schulungen/"+Date.now()+f.name);
+    await uploadBytes(refFile,f);
+    videos.push(await getDownloadURL(refFile));
   }
 
-  for(const datei of document.getElementById("dokumente").files){
-    const pfad = "schulungen/dokumente/" + Date.now() + "_" + datei.name;
-    const fileRef = storageRef(storage, pfad);
-    await uploadBytes(fileRef, datei);
-    dokumente.push(await getDownloadURL(fileRef));
+  for(const f of document.getElementById("dokumente").files){
+    const refFile = storageRef(storage,"schulungen/"+Date.now()+f.name);
+    await uploadBytes(refFile,f);
+    dokumente.push(await getDownloadURL(refFile));
   }
 
-  await push(schulungenRef, {
-    titel,
-    beschreibung,
+  await push(schulungenRef,{
+    titel: titel || "",
     datum,
     bilder,
     videos,
     dokumente
   });
 
-  alert("Schulung gespeichert");
+  alert("Gespeichert");
   location.reload();
 }
 
-function render(){
-  const c = document.getElementById("container");
-  c.innerHTML = "";
-
-  liste.forEach((x,i) => {
-    c.innerHTML += `
-      <div class="card">
-        ${userRolle === "admin" ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ""}
-        <h2>${x.titel}</h2>
-        <p>${x.datum}</p>
-        <p>${x.beschreibung}</p>
-        <p>Bilder: ${x.bilder ? x.bilder.length : 0}</p>
-        <p>Videos: ${x.videos ? x.videos.length : 0}</p>
-        <p>Dokumente: ${x.dokumente ? x.dokumente.length : 0}</p>
-      </div>
-    `;
-  });
-}
-
-window.loeschen = async function(i){
-  await remove(ref(db, "schulungen/" + liste[i].id));
-}
-
-onValue(schulungenRef, (snapshot) => {
-  liste = [];
-  snapshot.forEach((child) => {
-    liste.push({ id: child.key, ...child.val() });
-  });
-  render();
+onValue(schulungenRef,(snap)=>{
+  liste=[];
+  snap.forEach(c=>liste.push({id:c.key,...c.val()}));
+  console.log(liste);
 });
 </script>
-</body>
-</html>  
