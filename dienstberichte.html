@@ -1,9 +1,15 @@
+Nichts anderes kaputt
+
+👉 Du kannst das 1:1 ersetzen
+
+✅ FERTIGER CODE (nur Style ersetzt)
 <!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dienstberichte</title>
+
 <style>
 *{
   box-sizing:border-box;
@@ -11,16 +17,19 @@
   padding:0;
   font-family:Arial,sans-serif;
 }
+
 body{
   background:#111;
   color:white;
   padding:20px;
 }
+
 h1{
   text-align:center;
   font-size:48px;
   margin-bottom:30px;
 }
+
 .top-bar{
   display:flex;
   justify-content:center;
@@ -28,6 +37,7 @@ h1{
   margin-bottom:30px;
   flex-wrap:wrap;
 }
+
 .admin-btn{
   background:#2563eb;
   color:white;
@@ -39,9 +49,12 @@ h1{
   font-weight:bold;
   text-decoration:none;
 }
+
 .delete-btn{
   background:#dc2626;
 }
+
+/* 🔥 GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -49,7 +62,32 @@ h1{
   max-width:1200px;
   margin:auto;
 }
-.card:hover{transform:scale(1.02);}
+
+/* 📱 Mobile */
+@media(max-width:800px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* 🔥 CARD WIE MITARBEITER */
+.card{
+  background:#1c1c1f;
+  border-radius:22px;
+  padding:20px;
+  display:flex;
+  gap:20px;
+  align-items:center;
+  cursor:pointer;
+  position:relative;
+  transition:0.2s;
+}
+
+.card:hover{
+  transform:scale(1.02);
+}
+
+/* Optional falls später Bild */
 .card img{
   width:110px;
   height:140px;
@@ -57,8 +95,20 @@ h1{
   border-radius:16px;
   border:2px solid #444;
 }
-.card h2{margin-bottom:10px;font-size:32px;}
-.card p{color:#ccc;margin-bottom:8px;font-size:18px;}
+
+/* TEXT */
+.card h2{
+  margin-bottom:10px;
+  font-size:28px;
+}
+
+.card p{
+  color:#ccc;
+  margin-bottom:6px;
+  font-size:16px;
+}
+
+/* ❌ Löschen */
 .remove-btn{
   position:absolute;
   top:10px;
@@ -70,17 +120,8 @@ h1{
   padding:5px 8px;
   cursor:pointer;
 }
-.remove-btn{
-  position:absolute;
-  top:10px;
-  right:10px;
-  background:#dc2626;
-  color:white;
-  border:none;
-  border-radius:8px;
-  padding:5px 8px;
-  cursor:pointer;
-}
+
+/* MODAL */
 .modal{
   display:none;
   position:fixed;
@@ -89,6 +130,7 @@ h1{
   justify-content:center;
   align-items:center;
 }
+
 .modal-content{
   background:#1c1c1f;
   padding:20px;
@@ -96,6 +138,7 @@ h1{
   width:90%;
   max-width:500px;
 }
+
 input{
   width:100%;
   padding:12px;
@@ -105,6 +148,7 @@ input{
   background:#111;
   color:white;
 }
+
 .button-row{
   display:flex;
   gap:10px;
