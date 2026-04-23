@@ -2,107 +2,20 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Schulungen</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
-body{background:#111;color:white;padding:20px;}
-h1{text-align:center;font-size:42px;margin-bottom:30px;}
+body{background:#111;color:white;padding:20px;font-family:Arial;}
+h1{text-align:center;margin-bottom:30px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;}
 
-.top-bar{
-  display:flex;
-  justify-content:center;
-  gap:15px;
-  margin-bottom:30px;
-  flex-wrap:wrap;
-}
+.card{background:#1c1c1f;padding:15px;border-radius:15px;cursor:pointer;position:relative;}
+.card img{width:100%;border-radius:10px;}
 
-.admin-btn{
-  background:#2563eb;
-  color:white;
-  border:none;
-  padding:12px 20px;
-  border-radius:12px;
-  cursor:pointer;
-  font-size:16px;
-  font-weight:bold;
-  text-decoration:none;
-}
+.remove-btn{position:absolute;top:10px;right:10px;background:red;color:white;border:none;}
 
-.delete-btn{background:#dc2626;}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-  gap:20px;
-  max-width:1300px;
-  margin:auto;
-}
-
-.card{
-  background:#1c1c1f;
-  padding:20px;
-  border-radius:20px;
-  position:relative;
-}
-
-.card h2{margin-bottom:10px;}
-.card p{margin-bottom:8px;color:#ccc;}
-
-.card img,.card video{
-  width:100%;
-  border-radius:12px;
-  margin-top:10px;
-}
-
-.remove-btn{
-  position:absolute;
-  top:10px;
-  right:10px;
-  background:#dc2626;
-  color:white;
-  border:none;
-  border-radius:8px;
-  padding:5px 8px;
-  cursor:pointer;
-}
-
-.modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  justify-content:center;
-  align-items:center;
-  z-index:999;
-}
-
-.modal-content{
-  background:#1c1c1f;
-  padding:20px;
-  border-radius:20px;
-  width:90%;
-  max-width:600px;
-  max-height:90vh;
-  overflow-y:auto;
-}
-
-input,textarea{
-  width:100%;
-  padding:12px;
-  margin-bottom:12px;
-  border-radius:10px;
-  border:1px solid #444;
-  background:#111;
-  color:white;
-}
-
-.button-row{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);justify-content:center;align-items:center;}
+.modal-content{background:#1c1c1f;padding:20px;border-radius:15px;width:90%;max-width:800px;max-height:90vh;overflow:auto;}
 </style>
 </head>
 
@@ -110,169 +23,91 @@ input,textarea{
 
 <h1>Schulungen</h1>
 
-<div class="top-bar">
-  <a href="startseite.html" class="admin-btn">Zurück</a>
-  <button class="admin-btn" onclick="oeffneModal()">+ Schulung hinzufügen</button>
-</div>
+<button onclick="oeffneModal()">+ Schulung</button>
 
 <div class="grid" id="container"></div>
 
 <div class="modal" id="modal">
-  <div class="modal-content">
-    <input type="text" id="titel" placeholder="Welche Schulung war es?">
-    <textarea id="beschreibung" placeholder="Worum ging es?"></textarea>
-    <input type="date" id="datum">
+<div class="modal-content">
+<input id="titel" placeholder="Titel">
+<input type="date" id="datum">
+<input type="file" id="bilder" multiple>
 
-    <label>Bilder</label>
-    <input type="file" id="bilder" multiple accept="image/*">
+<button onclick="speichern()">Speichern</button>
+</div>
+</div>
 
-    <label>Videos</label>
-    <input type="file" id="videos" multiple accept="video/*">
-
-    <label>Dokumente</label>
-    <input type="file" id="dokumente" multiple accept="application/pdf">
-
-    <div class="button-row">
-      <button class="admin-btn" onclick="speichern()">Speichern</button>
-      <button class="admin-btn delete-btn" onclick="schliessen()">Abbrechen</button>
-    </div>
-  </div>
+<div class="modal" id="detailModal">
+<div class="modal-content" id="detailContent"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getDatabase,ref,push,onValue,remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getStorage,ref as sRef,uploadBytes,getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
-  authDomain: "nksp-app.firebaseapp.com",
-  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "nksp-app",
-  storageBucket: "nksp-app.firebasestorage.app",
-  messagingSenderId: "328702502215",
-  appId: "1:328702502215:web:080148f3e768bfafc29862"
+const app=initializeApp({apiKey:"AIzaSy...",authDomain:"nksp-app.firebaseapp.com",databaseURL:"https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app"});
+const auth=getAuth(app);
+const db=getDatabase(app);
+const storage=getStorage(app);
+
+const refDB=ref(db,"schulungen");
+
+let rolle="",liste=[];
+
+onAuthStateChanged(auth,user=>{
+onValue(ref(db,"benutzer"),snap=>{
+snap.forEach(c=>{
+if(c.val().uid===user.uid)rolle=c.val().rolle;
+});
+});
+});
+
+window.oeffneModal=()=>modal.style.display="flex";
+
+window.speichern=async()=>{
+const datum=document.getElementById("datum").value;
+if(!datum)return alert("Datum fehlt");
+
+const files=document.getElementById("bilder").files;
+const arr=[];
+
+for(const f of files){
+const r=sRef(storage,"schulungen/"+Date.now()+f.name);
+await uploadBytes(r,f);
+arr.push(await getDownloadURL(r));
+}
+
+await push(refDB,{datum,arr});
+location.reload();
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-const storage = getStorage(app);
+window.showDetail=i=>{
+const x=liste[i];
+detailContent.innerHTML=(x.arr||[]).map(u=>`<img src="${u}" style="width:100%">`).join("");
+detailModal.style.display="flex";
+};
 
-const schulungenRef = ref(db, "schulungen");
+window.loeschen=async(i)=>{
+if(rolle!=="admin")return;
+await remove(ref(db,"schulungen/"+liste[i].id));
+};
 
-let userRolle = "";
-let liste = [];
+onValue(refDB,snap=>{
+liste=[];
+snap.forEach(c=>liste.push({id:c.key,...c.val()}));
 
-onAuthStateChanged(auth, (user) => {
-  if(!user){
-    window.location.href = "index.html";
-    return;
-  }
-
-  onValue(ref(db,"benutzer"), (snap)=>{
-    snap.forEach(c=>{
-      const d = c.val();
-      if(d.uid === user.uid){
-        userRolle = d.rolle;
-
-        if(userRolle !== "admin"){
-          document.querySelector(".top-bar button").style.display = "none";
-        }
-      }
-    });
-  }, {onlyOnce:true});
+container.innerHTML="";
+liste.forEach((x,i)=>{
+container.innerHTML+=`
+<div class="card" onclick="showDetail(${i})">
+${rolle==="admin"?`<button class="remove-btn" onclick="event.stopPropagation();loeschen(${i})">X</button>`:""}
+${x.arr?.[0]?`<img src="${x.arr[0]}">`:""}
+<p>${x.datum}</p>
+</div>`;
 });
-
-window.oeffneModal = function(){
-  document.getElementById("modal").style.display = "flex";
-}
-
-window.schliessen = function(){
-  document.getElementById("modal").style.display = "none";
-}
-
-window.speichern = async function(){
-  if(userRolle !== "admin"){
-    alert("Nur Admin!");
-    return;
-  }
-
-  const titel = document.getElementById("titel").value;
-  const beschreibung = document.getElementById("beschreibung").value;
-  const datum = document.getElementById("datum").value;
-
-  if(!datum){
-    alert("Datum ist Pflicht!");
-    return;
-  }
-
-  const bilder = [];
-  const videos = [];
-  const dokumente = [];
-
-  for(const f of document.getElementById("bilder").files){
-    const refFile = storageRef(storage,"schulungen/"+Date.now()+"_"+f.name);
-    await uploadBytes(refFile,f);
-    bilder.push(await getDownloadURL(refFile));
-  }
-
-  for(const f of document.getElementById("videos").files){
-    const refFile = storageRef(storage,"schulungen/"+Date.now()+"_"+f.name);
-    await uploadBytes(refFile,f);
-    videos.push(await getDownloadURL(refFile));
-  }
-
-  for(const f of document.getElementById("dokumente").files){
-    const refFile = storageRef(storage,"schulungen/"+Date.now()+"_"+f.name);
-    await uploadBytes(refFile,f);
-    dokumente.push(await getDownloadURL(refFile));
-  }
-
-  await push(schulungenRef,{
-    titel: titel || "",
-    beschreibung: beschreibung || "",
-    datum,
-    bilder,
-    videos,
-    dokumente
-  });
-
-  alert("Gespeichert!");
-  location.reload();
-}
-
-function render(){
-  const c = document.getElementById("container");
-  c.innerHTML = "";
-
-  liste.forEach((x,i)=>{
-    c.innerHTML += `
-      <div class="card">
-        ${userRolle === "admin" ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ""}
-        <h2>${x.titel || "Schulung"}</h2>
-        <p>${x.datum}</p>
-        <p>${x.beschreibung || ""}</p>
-
-        ${(x.bilder || []).map(b=>`<img src="${b}">`).join("")}
-        ${(x.videos || []).map(v=>`<video controls src="${v}"></video>`).join("")}
-      </div>
-    `;
-  });
-}
-
-window.loeschen = async function(i){
-  if(userRolle !== "admin") return;
-  await remove(ref(db, "schulungen/" + liste[i].id));
-}
-
-onValue(schulungenRef,(snap)=>{
-  liste=[];
-  snap.forEach(c=>liste.push({id:c.key,...c.val()}));
-  render();
 });
 </script>
-
 </body>
 </html>
