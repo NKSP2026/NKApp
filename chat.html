@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat - NKSP Sicherheitsdienst</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#111;
+  color:white;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+  font-size:42px;
+  margin-bottom:25px;
+}
+
+.top-bar{
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  flex-wrap:wrap;
+  margin-bottom:25px;
+}
+
+.admin-btn{
+  background:#2563eb;
+  color:white;
+  border:none;
+  padding:12px 20px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:16px;
+  font-weight:bold;
+  text-decoration:none;
+}
+
+.delete-btn{
+  background:#dc2626;
+}
+
+.chat-select{
+  max-width:900px;
+  margin:0 auto 20px auto;
+}
+
+select,input,button{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #444;
+  background:#1c1c1f;
+  color:white;
+  font-size:15px;
+}
+
+.chat-box{
+  max-width:900px;
+  margin:auto;
+  background:#1c1c1f;
+  border-radius:20px;
+  padding:20px;
+  min-height:500px;
+  display:flex;
+  flex-direction:column;
+}
+
+.messages{
+  flex:1;
+  max-height:500px;
+  overflow-y:auto;
+  margin-bottom:20px;
+}
+
+.message{
+  background:#151518;
+  border-radius:16px;
+  padding:15px;
+  margin-bottom:12px;
+  position:relative;
+}
+
+.message h3{
+  font-size:16px;
+  margin-bottom:8px;
+}
+
+.message p{
+  color:#ddd;
+  line-height:1.5;
+  margin-bottom:8px;
+}
+
+.message small{
+  color:#888;
+}
+
+.remove-btn{
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:#dc2626;
+  color:white;
+  border:none;
+  border-radius:8px;
+  padding:4px 8px;
+  cursor:pointer;
+  width:auto;
+}
+
+.send-area{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.send-area input{
+  flex:1;
+}
+
+.send-area button{
+  width:auto;
+  min-width:160px;
+}
+
+.online-box{
+  max-width:900px;
+  margin:20px auto;
+  background:#1c1c1f;
+  border-radius:20px;
+  padding:15px;
+}
+
+.online-box h2{
+  margin-bottom:10px;
+  font-size:20px;
+}
+
+.online-user{
+  margin-bottom:8px;
+  color:#ccc;
+}
+
+@media(max-width:800px){
+  .send-area{
+    flex-direction:column;
+  }
+
+  .send-area button{
+    width:100%;
+  }
+}
+</style>
+</head>
+<body>
+
+<h1>Chat</h1>
+
+<div class="top-bar">
+  <a href="startseite.html" class="admin-btn">Zurück</a>
+</div>
+
+<div class="chat-select">
+  <select id="chatRaum" onchange="wechselChat()">
+    <option value="allgemein">Allgemeiner Chat</option>
+    <option value="dienst">Dienst Chat</option>
+    <option value="ausbildung">Ausbildungs Chat</option>
+    <option value="einsatz">Einsatzbesprechung</option>
+  </select>
+</div>
+
+<div class="online-box">
+  <h2>Online Mitarbeiter</h2>
+  <div id="onlineContainer"></div>
+</div>
+
+<div class="chat-box">
+  <div class="messages" id="messages"></div>
+
+  <div class="send-area">
+    <input id="nachricht" placeholder="Nachricht schreiben...">
+    <button class="admin-btn" onclick="senden()">Senden</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+let aktuellerUser = null;
+let userName = "";
+let userRolle = "";
+let aktuellerRaum = "allgemein";
+let aktuelleListe = [];
+
+function zeitFormat(){
+  const now = new Date();
+  return now.toLocaleString("de-DE");
+}
+
+function ladeChat(){
+  const chatRef = ref(db, "chat/" + aktuellerRaum);
+
+  onValue(chatRef, (snapshot) => {
+    aktuelleListe = [];
+
+    snapshot.forEach((child) => {
+      aktuelleListe.push({
+        id: child.key,
+        ...child.val()
+      });
+    });
+
+    render();
+  });
+}
+
+function render(){
+  const container = document.getElementById("messages");
+  container.innerHTML = "";
+
+  aktuelleListe.forEach((msg, index) => {
+    container.innerHTML += `
+      <div class="message">
+        ${userRolle === "admin" ? `<button class="remove-btn" onclick="loeschen(${index})">X</button>` : ""}
+        <h3>${msg.name || "Unbekannt"}</h3>
+        <p>${msg.text || ""}</p>
+        <small>${msg.zeit || ""}</small>
+      </div>
+    `;
+  });
+
+  container.scrollTop = container.scrollHeight;
+}
+
+window.wechselChat = function(){
+  aktuellerRaum = document.getElementById("chatRaum").value;
+  ladeChat();
+}
+
+window.senden = async function(){
+  const text = document.getElementById("nachricht").value.trim();
+  if(!text) return;
+
+  await push(ref(db, "chat/" + aktuellerRaum), {
+    name: userName,
+    text,
+    zeit: zeitFormat(),
+    uid: aktuellerUser.uid
+  });
+
+  document.getElementById("nachricht").value = "";
+};
+
+window.loeschen = async function(index){
+  if(userRolle !== "admin") return;
+
+  const ok = confirm("Nachricht wirklich löschen?");
+  if(!ok) return;
+
+  await remove(ref(db, "chat/" + aktuellerRaum + "/" + aktuelleListe[index].id));
+};
+
+onAuthStateChanged(auth, (user) => {
+  if(!user){
+    window.location.href = "index.html";
+    return;
+  }
+
+  aktuellerUser = user;
+
+  onValue(ref(db, "benutzer"), (snapshot) => {
+    const onlineContainer = document.getElementById("onlineContainer");
+    onlineContainer.innerHTML = "";
+
+    snapshot.forEach((child) => {
+      const daten = child.val();
+
+      if(daten.uid === user.uid){
+        userName = `${daten.vorname || ""} ${daten.nachname || ""}`.trim();
+        userRolle = daten.rolle || "";
+      }
+
+      if(daten.online){
+        onlineContainer.innerHTML += `
+          <div class="online-user">• ${daten.vorname || ""} ${daten.nachname || ""}</div>
+        `;
+      }
+    });
+
+    ladeChat();
+  });
+});
+</script>
+
+</body>
+</html>
