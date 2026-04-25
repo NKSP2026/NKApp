@@ -206,7 +206,6 @@ const diensteRef = ref(db, "dienste");
 let liste = [];
 let userRolle = "";
 
-/* LOGIN + ROLLE */
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "index.html";
@@ -222,20 +221,15 @@ onAuthStateChanged(auth, (user) => {
 
         if (userRolle !== "admin") {
           const addBtn = document.querySelector(".top-bar button");
-          if (addBtn) {
-            addBtn.style.display = "none";
-          }
+          if (addBtn) addBtn.style.display = "none";
         }
 
         render();
       }
     });
-  }, {
-    onlyOnce: true
-  });
+  }, { onlyOnce: true });
 });
 
-/* MODAL ÖFFNEN */
 window.oeffne = function () {
   if (userRolle !== "admin") {
     alert("Nur Admins dürfen Dienste hinzufügen");
@@ -245,127 +239,68 @@ window.oeffne = function () {
   document.getElementById("modal").style.display = "flex";
 };
 
-/* MODAL SCHLIESSEN */
 window.schliessen = function () {
   document.getElementById("modal").style.display = "none";
 };
 
-/* ZUSAGE / ABSAGE / VIELLEICHT */
 window.antworten = async function (id, typ) {
   const user = auth.currentUser;
-
-  if (!user) {
-    alert("Bitte zuerst einloggen");
-    return;
-  }
+  if (!user) return;
 
   let name = "Unbekannt";
 
   await new Promise((resolve) => {
     onValue(ref(db, "benutzer"), (snapshot) => {
       snapshot.forEach((child) => {
-        const daten = child.val();
-
-        if (daten.uid === user.uid) {
-          name = `${daten.vorname || ""} ${daten.nachname || ""}`;
+        const d = child.val();
+        if (d.uid === user.uid) {
+          name = `${d.vorname || ""} ${d.nachname || ""}`;
         }
       });
       resolve();
-    }, {
-      onlyOnce: true
-    });
+    }, { onlyOnce: true });
   });
 
-  try {
-    await push(ref(db, `dienste/${id}/${typ}`), {
-      uid: user.uid,
-      name: name,
-      zeit: Date.now()
-    });
+  await push(ref(db, `dienste/${id}/${typ}`), {
+    uid: user.uid,
+    name: name,
+    zeit: Date.now()
+  });
 
-    alert("Deine Antwort wurde gespeichert");
-  } catch (error) {
-    console.error(error);
-    alert("Fehler beim Speichern");
-  }
+  alert("Antwort gespeichert");
 };
 
-/* SPEICHERN */
 window.speichern = async function () {
-  if (userRolle !== "admin") {
-    alert("Nur Admins dürfen Dienste speichern");
-    return;
-  }
+  if (userRolle !== "admin") return;
 
   const datum = document.getElementById("datum").value;
   const von = document.getElementById("von").value;
   const bis = document.getElementById("bis").value;
-  const ort = document.getElementById("ort").value;
-  const art = document.getElementById("art").value;
-  const auftraggeber = document.getElementById("auftraggeber").value;
-  const verantwortlich = document.getElementById("verantwortlich").value;
 
   if (!datum || !von || !bis) {
-    alert("Bitte Datum und Uhrzeit ausfüllen");
+    alert("Bitte Datum + Uhrzeit ausfüllen");
     return;
   }
 
-  try {
-    await push(diensteRef, {
-      datum,
-      von,
-      bis,
-      ort,
-      art,
-      auftraggeber,
-      verantwortlich
-    });
+  await push(diensteRef, {
+    datum,
+    von,
+    bis,
+    ort: document.getElementById("ort").value || "",
+    art: document.getElementById("art").value || "",
+    auftraggeber: document.getElementById("auftraggeber").value || "",
+    verantwortlich: document.getElementById("verantwortlich").value || ""
+  });
 
-    alert("Dienst gespeichert");
-
-    document.getElementById("datum").value = "";
-    document.getElementById("von").value = "";
-    document.getElementById("bis").value = "";
-    document.getElementById("ort").value = "";
-    document.getElementById("art").value = "";
-    document.getElementById("auftraggeber").value = "";
-    document.getElementById("verantwortlich").value = "";
-
-    schliessen();
-  } catch (error) {
-    console.error(error);
-    alert("Fehler beim Speichern");
-  }
+  location.reload();
 };
 
-/* DATUM FORMAT */
-function formatDatum(datum) {
-  if (!datum) return "";
-
-  const teile = datum.split("-");
-  if (teile.length !== 3) return datum;
-
-  return `${teile[2]}.${teile[1]}.${teile[0]}`;
+function formatDatum(d) {
+  if (!d) return "";
+  const t = d.split("-");
+  return `${t[2]}.${t[1]}.${t[0]}`;
 }
 
-/* DAUER */
-function berechneDauer(von, bis) {
-  if (!von || !bis) return "";
-
-  const [vonStunde, vonMinute] = von.split(":").map(Number);
-  const [bisStunde, bisMinute] = bis.split(":").map(Number);
-
-  const start = vonStunde * 60 + vonMinute;
-  const ende = bisStunde * 60 + bisMinute;
-  const diff = ende - start;
-
-  const stunden = Math.floor(diff / 60);
-  const minuten = diff % 60;
-
-  return `${stunden},${minuten.toString().padStart(2, "0")} h`;
-}
-
-/* RENDER */
 function render() {
   const c = document.getElementById("container");
   c.innerHTML = "";
@@ -378,72 +313,34 @@ function render() {
           : ""}
 
         <h2>${formatDatum(x.datum)}</h2>
-        <p>ca. ${x.von} - ${x.bis} (${berechneDauer(x.von, x.bis)})</p>
         <p>${x.ort || "-"}</p>
         <p>${x.art || "-"}</p>
-        <p>Auftraggeber: ${x.auftraggeber || "-"}</p>
-        <p>Verantwortlich: ${x.verantwortlich || "-"}</p>
 
         <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
           <button class="admin-btn" onclick="antworten('${x.id}','zusagen')">✅ Zusagen</button>
           <button class="admin-btn" onclick="antworten('${x.id}','absagen')">❌ Absagen</button>
-          <button class="admin-btn" onclick="antworten('${x.id}','vielleicht')">❓ Vielleicht</button>
         </div>
       </div>
     `;
   });
 }
 
-/* LÖSCHEN */
 window.loeschen = async function (i) {
-  if (userRolle !== "admin") {
-    alert("Nur Admins dürfen löschen");
-    return;
-  }
+  if (userRolle !== "admin") return;
 
-  const ok = confirm("Wirklich löschen?");
-  if (!ok) return;
+  if (!confirm("Wirklich löschen?")) return;
 
   const eintrag = liste[i];
 
-  try {
-    await push(ref(db, "papierkorb"), {
-      ...eintrag,
-      originalPfad: "dienste",
-      geloeschtAm: Date.now()
-    });
+  await push(ref(db, "papierkorb"), {
+    ...eintrag,
+    originalPfad: "dienste",
+    geloeschtAm: Date.now()
+  });
 
-    await remove(ref(db, "dienste/" + eintrag.id));
-
-    alert("Dienst in Papierkorb verschoben");
-  } catch (error) {
-    console.error(error);
-    alert("Fehler beim Löschen");
-  }
+  await remove(ref(db, "dienste/" + eintrag.id));
 };
 
-/* ALTE DIENSTE ENTFERNEN */
-async function alteDiensteEntfernen() {
-  const jetzt = new Date();
-
-  for (const dienst of liste) {
-    if (!dienst.datum) continue;
-
-    const dienstDatum = new Date(dienst.datum);
-    dienstDatum.setDate(dienstDatum.getDate() + 2);
-    dienstDatum.setHours(23, 59, 59, 999);
-
-    if (jetzt > dienstDatum) {
-      try {
-        await remove(ref(db, "dienste/" + dienst.id));
-      } catch (error) {
-        console.error("Fehler beim automatischen Löschen:", error);
-      }
-    }
-  }
-}
-
-/* LADEN */
 onValue(diensteRef, (snapshot) => {
   liste = [];
 
@@ -454,11 +351,6 @@ onValue(diensteRef, (snapshot) => {
     });
   });
 
-  liste.sort((a, b) => {
-    return new Date(a.datum) - new Date(b.datum);
-  });
-
   render();
-  alteDiensteEntfernen();
 });
 </script>
