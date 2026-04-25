@@ -177,130 +177,191 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const storage = getStorage(app);
 
-const dbRef = ref(db,"schulungen");
+const dbRef = ref(db, "schulungen");
 
-let rolle="";
-let liste=[];
+let rolle = "";
+let liste = [];
 
-/* 🔥 DATUM FORMATIERUNG */
+/* DATUM FORMATIERUNG */
 function formatDatum(d){
+  if(!d) return "";
+
   const date = new Date(d);
-  const tag = String(date.getDate()).padStart(2,"0");
-  const monat = String(date.getMonth()+1).padStart(2,"0");
+  const tag = String(date.getDate()).padStart(2, "0");
+  const monat = String(date.getMonth() + 1).padStart(2, "0");
   const jahr = date.getFullYear();
+
   return `${tag}.${monat}.${jahr}`;
 }
 
 /* LOGIN */
-onAuthStateChanged(auth,(user)=>{
+onAuthStateChanged(auth, (user) => {
   if(!user){
-    window.location.href="index.html";
+    window.location.href = "index.html";
     return;
   }
 
-  onValue(ref(db,"benutzer"),snap=>{
-    snap.forEach(c=>{
-      if(c.val().uid===user.uid){
-        rolle=c.val().rolle;
-        render();
+  onValue(ref(db, "benutzer"), (snap) => {
+    snap.forEach((c) => {
+      const daten = c.val();
 
-        if(rolle!=="admin"){
-          document.querySelector(".top-bar button").style.display="none";
+      if(daten.uid === user.uid){
+        rolle = daten.rolle;
+
+        if(rolle !== "admin"){
+          const btn = document.querySelector(".top-bar button");
+          if(btn) btn.style.display = "none";
         }
+
+        render();
       }
     });
-  },{onlyOnce:true});
+  }, { onlyOnce: true });
 });
 
 /* MODAL */
-window.oeffneModal=()=> document.getElementById("modal").style.display="flex";
-window.schliessen=()=> document.getElementById("modal").style.display="none";
+window.oeffneModal = function(){
+  if(rolle !== "admin"){
+    alert("Nur Admins dürfen Schulungen hinzufügen");
+    return;
+  }
+
+  document.getElementById("modal").style.display = "flex";
+};
+
+window.schliessen = function(){
+  document.getElementById("modal").style.display = "none";
+};
 
 /* SPEICHERN */
-window.speichern=async()=>{
-  if(rolle!=="admin") return alert("Nur Admin");
+window.speichern = async function(){
+  if(rolle !== "admin"){
+    alert("Nur Admins dürfen speichern");
+    return;
+  }
 
-  const datum=document.getElementById("datum").value;
-  if(!datum) return alert("Datum Pflicht");
+  const datum = document.getElementById("datum").value;
+  const titel = document.getElementById("titel").value;
+  const beschreibung = document.getElementById("beschreibung").value;
 
-  const titel=document.getElementById("titel").value;
-  const beschreibung=document.getElementById("beschreibung").value;
+  if(!datum){
+    alert("Datum ist Pflicht");
+    return;
+  }
 
-  await push(dbRef,{
-    titel: titel || "",
-    datum,
-    beschreibung: beschreibung || ""
-  });
+  try{
+    await push(dbRef, {
+      titel: titel || "",
+      datum: datum,
+      beschreibung: beschreibung || ""
+    });
 
-  alert("Gespeichert");
-  location.reload();
+    /* BENACHRICHTIGUNG */
+    await push(ref(db, "benachrichtigungen"), {
+      titel: "Neue Schulung",
+      name: "System",
+      typ: "Schulung",
+      text: `Neue Schulung am ${formatDatum(datum)} wurde eingetragen`,
+      zeit: Date.now()
+    });
+
+    alert("Schulung gespeichert");
+    location.reload();
+
+  }catch(error){
+    console.error(error);
+    alert("Fehler beim Speichern");
+  }
 };
 
 /* DETAIL */
-window.showDetail=(i)=>{
-  const x=liste[i];
+window.showDetail = function(i){
+  const x = liste[i];
+  if(!x) return;
 
-  let html=`
-  <button onclick="document.getElementById('detailModal').style.display='none'" 
-  style="margin-bottom:10px;padding:8px 12px;border:none;border-radius:8px;background:#2563eb;color:white;">
-  Zurück
-  </button>
+  let html = `
+    <button onclick="document.getElementById('detailModal').style.display='none'"
+      style="margin-bottom:10px;padding:8px 12px;border:none;border-radius:8px;background:#2563eb;color:white;">
+      Zurück
+    </button>
 
-  <h2>${x.titel || "Schulung"}</h2>
-  <p>${formatDatum(x.datum)}</p>
-  <p>${x.beschreibung || ""}</p>
+    <h2>${x.titel || "Schulung"}</h2>
+    <p>${formatDatum(x.datum)}</p>
+    <p>${x.beschreibung || ""}</p>
   `;
 
-  document.getElementById("detailContent").innerHTML=html;
-  document.getElementById("detailModal").style.display="flex";
+  document.getElementById("detailContent").innerHTML = html;
+  document.getElementById("detailModal").style.display = "flex";
 };
 
 /* LÖSCHEN */
 window.loeschen = async function(i){
-  if(rolle !== "admin") return;
+  if(rolle !== "admin"){
+    alert("Nur Admins dürfen löschen");
+    return;
+  }
 
   const ok = confirm("Wirklich löschen?");
   if(!ok) return;
 
   const eintrag = liste[i];
+  if(!eintrag) return;
 
-  await push(ref(db, "papierkorb"), {
-    ...eintrag,
-    originalPfad: "schulungen", // 🔁 HIER ANPASSEN!
-    geloeschtAm: Date.now()
-  });
+  try{
+    await push(ref(db, "papierkorb"), {
+      ...eintrag,
+      originalPfad: "schulungen",
+      geloeschtAm: Date.now()
+    });
 
-  await remove(ref(db, "schulungen/" + eintrag.id));
+    await remove(ref(db, "schulungen/" + eintrag.id));
+
+    alert("In Papierkorb verschoben");
+
+  }catch(error){
+    console.error(error);
+    alert("Fehler beim Löschen");
+  }
 };
 
 /* RENDER */
 function render(){
-  const container=document.getElementById("container");
-  container.innerHTML="";
+  const container = document.getElementById("container");
+  container.innerHTML = "";
 
-  liste.forEach((x,i)=>{
-    container.innerHTML+=`
-    <div class="card" onclick="showDetail(${i})">
-      ${rolle==="admin" ? `<button class="remove-btn" onclick="event.stopPropagation();loeschen(${i})">X</button>` : ""}
-      <h2>${x.titel || "Schulung"}</h2>
-      <p>${formatDatum(x.datum)}</p>
-    </div>`;
+  liste.forEach((x, i) => {
+    container.innerHTML += `
+      <div class="card" onclick="showDetail(${i})">
+
+        ${
+          rolle === "admin"
+            ? `<button class="remove-btn" onclick="event.stopPropagation(); loeschen(${i})">X</button>`
+            : ""
+        }
+
+        <h2>${x.titel || "Schulung"}</h2>
+        <p>${formatDatum(x.datum)}</p>
+      </div>
+    `;
   });
 }
 
-/* 🔥 DATEN + SORTIERUNG */
-onValue(dbRef,snap=>{
-  liste=[];
-  snap.forEach(c=>{
-    liste.push({id:c.key,...c.val()});
+/* DATEN LADEN + SORTIERUNG */
+onValue(dbRef, (snap) => {
+  liste = [];
+
+  snap.forEach((c) => {
+    liste.push({
+      id: c.key,
+      ...c.val()
+    });
   });
 
-  // ÄLTESTES DATUM OBEN
-  liste.sort((a,b)=> new Date(a.datum) - new Date(b.datum));
+  /* ÄLTESTES DATUM OBEN */
+  liste.sort((a, b) => {
+    return new Date(a.datum) - new Date(b.datum);
+  });
 
   render();
 });
 </script>
-
-</body>
-</html>
