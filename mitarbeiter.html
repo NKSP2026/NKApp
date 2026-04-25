@@ -374,23 +374,34 @@ window.speichereMitarbeiter = async function(){
 };
 
 /* ❌ LÖSCHEN */
-window.loeschen = async function(i){
-  if(rolle !== "admin") return;
+/* ❌ LÖSCHEN */
+window.loescheMitarbeiter = async function(index){
+  if(userRolle !== "admin"){
+    alert("Nur Admins dürfen löschen");
+    return;
+  }
 
   const ok = confirm("Wirklich löschen?");
   if(!ok) return;
 
-  const eintrag = liste[i];
+  const eintrag = mitarbeiterListe[index];
 
-  await push(ref(db, "papierkorb"), {
-    ...eintrag,
-    originalPfad: "mitarbeiter", // 🔁 HIER ANPASSEN!
-    geloeschtAm: Date.now()
-  });
+  try{
+    await push(ref(db, "papierkorb"), {
+      ...eintrag,
+      originalPfad: "mitarbeiter",
+      geloeschtAm: Date.now()
+    });
 
-  await remove(ref(db, "mitarbeiter/" + eintrag.id));
+    await remove(ref(db, "mitarbeiter/" + eintrag.id));
+
+    alert("Mitarbeiter in Papierkorb verschoben");
+  }catch(error){
+    console.error(error);
+    alert("Fehler beim Löschen");
+  }
 };
-
+  
 /* ❗ MODAL CLOSE */
 window.onclick = function(e){
   if(e.target.id === "detailModal") closeModal();
