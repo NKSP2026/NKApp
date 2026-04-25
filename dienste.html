@@ -325,20 +325,26 @@ function render(){
   c.innerHTML = "";
 
   liste.forEach((x, i) => {
-    c.innerHTML += `
-      <div class="card">
-        ${userRolle === "admin" ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ""}
-        <h2>${formatDatum(x.datum)}</h2>
-        <p>ca. ${x.von} - ${x.bis} (${berechneDauer(x.von, x.bis)})</p>
-        <p>${x.ort || "-"}</p>
-        <p>${x.art || "-"}</p>
-        <p>Auftraggeber: ${x.auftraggeber || "-"}</p>
-        <p>Verantwortlich: ${x.verantwortlich || "-"}</p>
-      </div>
-    `;
-  });
-}
+  c.innerHTML += `
+    <div class="card">
+      ${userRolle === "admin" ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>` : ""}
 
+      <h2>${formatDatum(x.datum)}</h2>
+      <p>ca. ${x.von} - ${x.bis} (${berechneDauer(x.von, x.bis)})</p>
+      <p>${x.ort || "-"}</p>
+      <p>${x.art || "-"}</p>
+      <p>Auftraggeber: ${x.auftraggeber || "-"}</p>
+      <p>Verantwortlich: ${x.verantwortlich || "-"}</p>
+
+      <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="admin-btn" onclick="antworten('${x.id}','zusagen')">✅ Zusagen</button>
+        <button class="admin-btn" onclick="antworten('${x.id}','absagen')">❌ Absagen</button>
+        <button class="admin-btn" onclick="antworten('${x.id}','vielleicht')">❓ Vielleicht</button>
+      </div>
+    </div>
+  `;
+});
+  
 window.loeschen = async function(i){
   if(userRolle !== "admin"){
     alert("Nur Admins dürfen löschen");
