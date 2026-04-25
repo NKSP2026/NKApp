@@ -247,7 +247,10 @@ function render(){
   aktuelleListe.forEach((msg, index) => {
     container.innerHTML += `
       <div class="message">
-        ${userRolle === "admin" ? `<button class="remove-btn" onclick="loeschen(${index})">X</button>` : ""}
+        ${userRolle === "admin"
+          ? `<button class="remove-btn" onclick="loeschen(${index})">X</button>`
+          : ""}
+
         <h3>${msg.name || "Unbekannt"}</h3>
         <p>${msg.text || ""}</p>
         <small>${msg.zeit || ""}</small>
@@ -261,29 +264,58 @@ function render(){
 window.wechselChat = function(){
   aktuellerRaum = document.getElementById("chatRaum").value;
   ladeChat();
-}
+};
 
 window.senden = async function(){
   const text = document.getElementById("nachricht").value.trim();
+
   if(!text) return;
 
-  await push(ref(db, "chat/" + aktuellerRaum), {
-    name: userName,
-    text,
-    zeit: zeitFormat(),
-    uid: aktuellerUser.uid
-  });
+  try{
+    await push(ref(db, "chat/" + aktuellerRaum), {
+      name: userName,
+      text: text,
+      zeit: zeitFormat(),
+      uid: aktuellerUser.uid
+    });
 
-  document.getElementById("nachricht").value = "";
+    /* ADMIN BENACHRICHTIGUNG */
+    await push(ref(db, "benachrichtigungen"), {
+      titel: "Neue Chatnachricht",
+      name: userName,
+      typ: "Chat",
+      text: `${userName} schrieb im Chat "${aktuellerRaum}"`,
+      zeit: Date.now()
+    });
+
+    document.getElementById("nachricht").value = "";
+
+  }catch(error){
+    console.error(error);
+    alert("Fehler beim Senden");
+  }
 };
 
 window.loeschen = async function(index){
-  if(userRolle !== "admin") return;
+  if(userRolle !== "admin"){
+    alert("Nur Admins dürfen löschen");
+    return;
+  }
 
   const ok = confirm("Nachricht wirklich löschen?");
   if(!ok) return;
 
-  await remove(ref(db, "chat/" + aktuellerRaum + "/" + aktuelleListe[index].id));
+  try{
+    await remove(
+      ref(
+        db,
+        "chat/" + aktuellerRaum + "/" + aktuelleListe[index].id
+      )
+    );
+  }catch(error){
+    console.error(error);
+    alert("Fehler beim Löschen");
+  }
 };
 
 onAuthStateChanged(auth, (user) => {
@@ -302,13 +334,17 @@ onAuthStateChanged(auth, (user) => {
       const daten = child.val();
 
       if(daten.uid === user.uid){
-        userName = `${daten.vorname || ""} ${daten.nachname || ""}`.trim();
+        userName =
+          `${daten.vorname || ""} ${daten.nachname || ""}`.trim();
+
         userRolle = daten.rolle || "";
       }
 
       if(daten.online){
         onlineContainer.innerHTML += `
-          <div class="online-user">• ${daten.vorname || ""} ${daten.nachname || ""}</div>
+          <div class="online-user">
+            • ${daten.vorname || ""} ${daten.nachname || ""}
+          </div>
         `;
       }
     });
@@ -317,6 +353,3 @@ onAuthStateChanged(auth, (user) => {
   });
 });
 </script>
-
-</body>
-</html>
