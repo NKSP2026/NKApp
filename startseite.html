@@ -218,6 +218,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -229,15 +230,77 @@ const firebaseConfig = {
   appId: "1:328702502215:web:080148f3e768bfafc29862"
 };
 
+const VAPID_KEY = "BE-rnRFY8xtS5q9n0AbahJO6vKzHTx0qJWswxniLPEOT9vv151eaJEbaYwrRd-r1ijlEb7L5dwrKSa2e7hHKAaE";
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
+const messaging = getMessaging(app);
 
+/* PUSH BENACHRICHTIGUNGEN AKTIVIEREN */
+async function pushAktivieren(userUid) {
+  try {
+    const permission = await Notification.requestPermission();
+
+    if (permission !== "granted") {
+      console.log("Benachrichtigungen nicht erlaubt");
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.register(
+      "/firebase-messaging-sw.js"
+    );
+
+    const token = await getToken(messaging, {
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: registration
+    });
+
+    if (token) {
+      console.log("FCM Token:", token);
+
+      const benutzerRef = ref(db, "benutzer");
+
+      onValue(benutzerRef, async (snapshot) => {
+        snapshot.forEach(async (child) => {
+          const daten = child.val();
+
+          if (daten.uid === userUid) {
+            await update(ref(db, "benutzer/" + child.key), {
+              fcmToken: token
+            });
+          }
+        });
+      }, {
+        onlyOnce: true
+      });
+    }
+
+  } catch (error) {
+    console.error("Push Fehler:", error);
+  }
+}
+
+/* WENN APP OFFEN IST → POPUP */
+onMessage(messaging, (payload) => {
+  console.log("Foreground Nachricht:", payload);
+
+  if (payload.notification) {
+    alert(
+      payload.notification.title + "\n\n" +
+      payload.notification.body
+    );
+  }
+});
+
+/* LOGIN + STATUS */
 onAuthStateChanged(auth, (user) => {
-  if(!user){
+  if (!user) {
     window.location.href = "index.html";
     return;
   }
+
+  pushAktivieren(user.uid);
 
   const benutzerRef = ref(db, "benutzer");
 
@@ -245,7 +308,7 @@ onAuthStateChanged(auth, (user) => {
     snapshot.forEach(async (child) => {
       const daten = child.val();
 
-      if(daten.uid === user.uid){
+      if (daten.uid === user.uid) {
 
         await update(ref(db, "benutzer/" + child.key), {
           online: true,
@@ -253,7 +316,7 @@ onAuthStateChanged(auth, (user) => {
         });
 
         /* Nur Admin darf diese Buttons sehen */
-        if(daten.rolle === "admin"){
+        if (daten.rolle === "admin") {
           document.getElementById("adminBereichBtn").style.display = "flex";
           document.getElementById("benachrichtigungenBtn").style.display = "flex";
           document.getElementById("papierkorbBtn").style.display = "flex";
@@ -265,11 +328,12 @@ onAuthStateChanged(auth, (user) => {
   });
 });
 
-window.logout = async function(){
-  try{
+/* LOGOUT */
+window.logout = async function () {
+  try {
     const user = auth.currentUser;
 
-    if(user){
+    if (user) {
       const benutzerRef = ref(db, "benutzer");
 
       await new Promise((resolve) => {
@@ -279,7 +343,7 @@ window.logout = async function(){
           snapshot.forEach((child) => {
             const daten = child.val();
 
-            if(daten.uid === user.uid){
+            if (daten.uid === user.uid) {
               updates.push(
                 update(ref(db, "benutzer/" + child.key), {
                   online: false,
@@ -300,7 +364,7 @@ window.logout = async function(){
     await signOut(auth);
     window.location.href = "index.html";
 
-  }catch(error){
+  } catch (error) {
     console.error(error);
     alert("Fehler beim Logout");
   }
