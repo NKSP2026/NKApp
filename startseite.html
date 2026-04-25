@@ -84,10 +84,38 @@
   <a href="chat.html" class="admin-btn">Chat</a>
   <a class="admin-btn" href="schulungen.html">Schulungen</a>
   <a class="admin-btn" href="bilder.html">Bilder</a>
-  <a href="benachrichtigungen.html" class="admin-btn">Benachrichtigungen</a>
-  <a class="admin-btn" href="benutzerverwaltung.html" id="adminBereichBtn" style="display:none;">Benutzerverwaltung</a>
-  <a href="papierkorb.html" class="admin-btn">Papierkorb</a>
-  <a class="admin-btn logout-btn" href="#" onclick="logout(); return false;">Logout</a>
+
+  <!-- Nur Admin -->
+  <a
+    href="benachrichtigungen.html"
+    class="admin-btn"
+    id="benachrichtigungenBtn"
+    style="display:none;"
+  >
+    Benachrichtigungen
+  </a>
+
+  <a
+    class="admin-btn"
+    href="benutzerverwaltung.html"
+    id="adminBereichBtn"
+    style="display:none;"
+  >
+    Benutzerverwaltung
+  </a>
+
+  <a
+    href="papierkorb.html"
+    class="admin-btn"
+    id="papierkorbBtn"
+    style="display:none;"
+  >
+    Papierkorb
+  </a>
+
+  <a class="admin-btn logout-btn" href="#" onclick="logout(); return false;">
+    Logout
+  </a>
 </div>
 
 <div class="footer-text">
@@ -148,8 +176,11 @@ onAuthStateChanged(auth, (user) => {
           letzteAktivitaet: new Date().toISOString()
         });
 
+        /* Nur Admin darf diese Buttons sehen */
         if(daten.rolle === "admin"){
           document.getElementById("adminBereichBtn").style.display = "inline-block";
+          document.getElementById("benachrichtigungenBtn").style.display = "inline-block";
+          document.getElementById("papierkorbBtn").style.display = "inline-block";
         }
       }
     });
@@ -192,9 +223,13 @@ window.logout = async function(){
 
     await signOut(auth);
     window.location.href = "index.html";
+
   }catch(error){
     console.error(error);
     alert("Fehler beim Logout");
   }
-}
+};
 </script>
+
+</body>
+</html>
