@@ -297,14 +297,6 @@ window.loeschen = async function(i){
   await remove(ref(db, "dienstberichte/" + eintrag.id));
 };
 
-  try{
-    await remove(ref(db, 'dienstberichte/' + liste[i].id));
-  }catch(error){
-    console.error(error);
-    alert('Fehler beim Löschen');
-  }
-}
-
 window.schliessen = function(){
   document.getElementById('modal').style.display = 'none';
 }
