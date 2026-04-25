@@ -321,7 +321,7 @@ window.antworten = async function (id, typ) {
     return;
   }
 
-  let name = "Unbekannt";
+  let name = "Unbekkannt";
 
   await new Promise((resolve) => {
     onValue(ref(db, "benutzer"), (snapshot) => {
@@ -343,15 +343,18 @@ window.antworten = async function (id, typ) {
     zeit: Date.now()
   });
 
-  if(typ === "zusagen"){
-  await push(ref(db, "benachrichtigungen"), {
-    titel: "Neue Dienst-Zusage",
-    name: name,
-    typ: "Dienst",
-    text: `${name} hat bei einem Dienst zugesagt`,
-    zeit: Date.now()
-  });
-}
+  if (typ === "zusagen") {
+    await push(ref(db, "benachrichtigungen"), {
+      titel: "Neue Dienst-Zusage",
+      name: name,
+      typ: "Dienst",
+      text: `${name} hat bei einem Dienst zugesagt`,
+      zeit: Date.now()
+    });
+  }
+
+  alert("Antwort gespeichert");
+};
 
 /* SPEICHERN + BEARBEITEN */
 window.speichern = async function () {
