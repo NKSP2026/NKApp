@@ -1,23 +1,28 @@
-const CACHE_NAME = "nksp-cache-v1";
+self.addEventListener("push", function(event) {
+  let data = {
+    title: "NKSP Sicherheitsdienst",
+    body: "Neue Benachrichtigung",
+    icon: "bilder/app-icon.png"
+  };
 
-const urlsToCache = [
-  "/NKApp/",
-  "/NKApp/index.html",
-  "/NKApp/startseite.html"
-];
+  if (event.data) {
+    data = event.data.json();
+  }
 
-self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache);
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon || "bilder/app-icon.png",
+      badge: data.icon || "bilder/app-icon.png",
+      vibrate: [200, 100, 200]
     })
   );
 });
 
-self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    })
+self.addEventListener("notificationclick", function(event) {
+  event.notification.close();
+
+  event.waitUntil(
+    clients.openWindow("https://nksp2026.github.io/NKApp/")
   );
 });
