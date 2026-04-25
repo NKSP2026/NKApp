@@ -343,8 +343,15 @@ window.antworten = async function (id, typ) {
     zeit: Date.now()
   });
 
-  alert("Antwort gespeichert");
-};
+  if(typ === "zusagen"){
+  await push(ref(db, "benachrichtigungen"), {
+    titel: "Neue Dienst-Zusage",
+    name: name,
+    typ: "Dienst",
+    text: `${name} hat bei einem Dienst zugesagt`,
+    zeit: Date.now()
+  });
+}
 
 /* SPEICHERN + BEARBEITEN */
 window.speichern = async function () {
