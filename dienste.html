@@ -321,7 +321,7 @@ window.antworten = async function (id, typ) {
     return;
   }
 
-  let name = "Unbekkannt";
+  let name = "Unbekannt";
 
   await new Promise((resolve) => {
     onValue(ref(db, "benutzer"), (snapshot) => {
@@ -382,9 +382,27 @@ window.speichern = async function () {
   try {
     if (bearbeiteID) {
       await update(ref(db, "dienste/" + bearbeiteID), daten);
+
+      await push(ref(db, "benachrichtigungen"), {
+        titel: "Dienst geändert",
+        name: "System",
+        typ: "Dienst",
+        text: `Ein Dienst am ${formatDatum(daten.datum)} wurde geändert`,
+        zeit: Date.now()
+      });
+
       alert("Dienst aktualisiert");
     } else {
       await push(diensteRef, daten);
+
+      await push(ref(db, "benachrichtigungen"), {
+        titel: "Neuer Dienst eingetragen",
+        name: "System",
+        typ: "Dienst",
+        text: `Neuer Dienst am ${formatDatum(daten.datum)} wurde eingetragen`,
+        zeit: Date.now()
+      });
+
       alert("Dienst gespeichert");
     }
 
