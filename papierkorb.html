@@ -6,8 +6,44 @@
 <title>Papierkorb</title>
 
 <style>
-body{background:#111;color:white;font-family:Arial;padding:20px;}
-h1{text-align:center;margin-bottom:30px;}
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#111;
+  color:white;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+  margin-bottom:30px;
+  font-size:42px;
+}
+
+.top-bar{
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  margin-bottom:30px;
+  flex-wrap:wrap;
+}
+
+.admin-btn{
+  background:#2563eb;
+  color:white;
+  border:none;
+  padding:12px 20px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:16px;
+  font-weight:bold;
+  text-decoration:none;
+}
 
 .grid{
   display:grid;
@@ -23,23 +59,44 @@ h1{text-align:center;margin-bottom:30px;}
   border-radius:20px;
 }
 
+.card h2{
+  margin-bottom:12px;
+}
+
+.card p{
+  margin-bottom:8px;
+  color:#ccc;
+}
+
 .btn{
-  padding:10px;
+  padding:10px 14px;
   border:none;
   border-radius:10px;
   cursor:pointer;
   margin-top:10px;
-  margin-right:5px;
+  margin-right:8px;
+  font-weight:bold;
 }
 
-.restore{background:#16a34a;color:white;}
-.delete{background:#dc2626;color:white;}
+.restore{
+  background:#16a34a;
+  color:white;
+}
+
+.delete{
+  background:#dc2626;
+  color:white;
+}
 </style>
 </head>
 
 <body>
 
 <h1>Papierkorb</h1>
+
+<div class="top-bar">
+  <a href="startseite.html" class="admin-btn">Zurück</a>
+</div>
 
 <div class="grid" id="container"></div>
 
@@ -49,104 +106,159 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getDatabase, ref, onValue, remove, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSy...",
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
   authDomain: "nksp-app.firebaseapp.com",
   databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-const papierkorbRef = ref(db,"papierkorb");
+const papierkorbRef = ref(db, "papierkorb");
 
-/* 🔐 ADMIN CHECK */
-onAuthStateChanged(auth,(user)=>{
-  if(!user){
-    location.href="index.html";
+/*
+WICHTIG:
+Das Problem war:
+apiKey: "AIzaSy..."
+→ das war unvollständig
+
+Dadurch wurde Firebase nicht richtig verbunden
+und du wurdest direkt ausgeloggt.
+*/
+
+/* ADMIN CHECK */
+onAuthStateChanged(auth, (user) => {
+  if(user === null){
+    // kleine Verzögerung damit Firebase Session sauber lädt
+    setTimeout(() => {
+      if(!auth.currentUser){
+        window.location.href = "index.html";
+      }
+    }, 800);
     return;
   }
 
-  onValue(ref(db,"benutzer"),snap=>{
-    snap.forEach(c=>{
-      if(c.val().uid===user.uid){
-        if(c.val().rolle !== "admin"){
-          alert("Kein Zugriff");
-          location.href="startseite.html";
+  let adminGefunden = false;
+
+  onValue(ref(db, "benutzer"), (snapshot) => {
+    snapshot.forEach((child) => {
+      const daten = child.val();
+
+      if(daten.uid === user.uid){
+        if(daten.rolle === "admin"){
+          adminGefunden = true;
         }
       }
     });
-  },{onlyOnce:true});
+
+    if(!adminGefunden){
+      alert("Nur Admins dürfen den Papierkorb öffnen");
+      window.location.href = "startseite.html";
+    }
+  }, {
+    onlyOnce: true
+  });
 });
 
-/* 🧠 AUTO LÖSCHEN NACH 10 TAGEN */
-function autoClean(id,data){
+/* AUTO LÖSCHEN NACH 10 TAGEN */
+function autoClean(id, data){
+  if(!data.geloeschtAm) return false;
+
   const jetzt = Date.now();
   const diff = jetzt - data.geloeschtAm;
   const limit = 10 * 24 * 60 * 60 * 1000;
 
   if(diff > limit){
-    remove(ref(db,"papierkorb/"+id));
+    remove(ref(db, "papierkorb/" + id));
     return true;
   }
+
   return false;
 }
 
-/* ⏳ RESTZEIT */
+/* RESTZEIT */
 function restZeit(ts){
+  if(!ts) return "-";
+
   const diff = Date.now() - ts;
-  const tage = Math.floor(diff / (1000*60*60*24));
-  return 10 - tage;
+  const tage = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const rest = 10 - tage;
+
+  return rest > 0 ? rest : 0;
 }
 
-/* 🔄 RENDER */
-onValue(papierkorbRef,(snap)=>{
-  const c = document.getElementById("container");
-  c.innerHTML="";
+/* RENDER */
+onValue(papierkorbRef, (snapshot) => {
+  const container = document.getElementById("container");
+  container.innerHTML = "";
 
-  snap.forEach(child=>{
-    const d = child.val();
+  snapshot.forEach((child) => {
+    const daten = child.val();
     const id = child.key;
 
-    if(autoClean(id,d)) return;
+    if(autoClean(id, daten)) return;
 
-    c.innerHTML += `
+    container.innerHTML += `
       <div class="card">
-        <h2>${d.titel || d.datum || "Eintrag"}</h2>
-        <p><b>Bereich:</b> ${d.originalPfad}</p>
-        <p><b>Noch:</b> ${restZeit(d.geloeschtAm)} Tage</p>
+        <h2>${daten.titel || daten.name || daten.datum || "Eintrag"}</h2>
 
-        <button class="btn restore" onclick="restore('${id}')">Wiederherstellen</button>
-        <button class="btn delete" onclick="endDelete('${id}')">Endgültig löschen</button>
+        <p><strong>Bereich:</strong> ${daten.originalPfad || "-"}</p>
+        <p><strong>Noch vorhanden:</strong> ${restZeit(daten.geloeschtAm)} Tage</p>
+
+        <button class="btn restore" onclick="restore('${id}')">
+          Wiederherstellen
+        </button>
+
+        <button class="btn delete" onclick="endDelete('${id}')">
+          Endgültig löschen
+        </button>
       </div>
     `;
   });
 });
 
-/* ♻️ WIEDERHERSTELLEN */
+/* WIEDERHERSTELLEN */
 window.restore = async function(id){
-  const snap = await fetchData(id);
-  if(!snap) return;
-
-  await push(ref(db, snap.originalPfad), snap);
-  await remove(ref(db,"papierkorb/"+id));
-}
-
-/* 🗑️ ENDGÜLTIG */
-window.endDelete = async function(id){
-  const ok = confirm("Endgültig löschen?");
+  const ok = confirm("Eintrag wiederherstellen?");
   if(!ok) return;
 
-  await remove(ref(db,"papierkorb/"+id));
-}
+  const daten = await holeDaten(id);
+  if(!daten) return;
 
-/* Daten holen */
-async function fetchData(id){
-  return new Promise((resolve)=>{
-    onValue(ref(db,"papierkorb/"+id),(snap)=>{
-      resolve(snap.val());
-    },{onlyOnce:true});
+  const originalPfad = daten.originalPfad;
+
+  delete daten.originalPfad;
+  delete daten.geloeschtAm;
+  delete daten.id;
+
+  await push(ref(db, originalPfad), daten);
+  await remove(ref(db, "papierkorb/" + id));
+
+  alert("Eintrag wiederhergestellt");
+};
+
+/* ENDGÜLTIG LÖSCHEN */
+window.endDelete = async function(id){
+  const ok = confirm("Wirklich endgültig löschen?");
+  if(!ok) return;
+
+  await remove(ref(db, "papierkorb/" + id));
+  alert("Endgültig gelöscht");
+};
+
+/* EINTRAG HOLEN */
+async function holeDaten(id){
+  return new Promise((resolve) => {
+    onValue(ref(db, "papierkorb/" + id), (snapshot) => {
+      resolve(snapshot.val());
+    }, {
+      onlyOnce: true
+    });
   });
 }
 </script>
