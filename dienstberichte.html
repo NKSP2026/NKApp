@@ -195,10 +195,10 @@ input{
 </div>
 
 <script type="module">
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -214,93 +214,150 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
-const dienstberichteRef = ref(db, 'dienstberichte');
 
-const adminPasswort = 'Admin2026';
+const dienstberichteRef = ref(db, "dienstberichte");
+const benutzerRef = ref(db, "benutzer");
+
 let liste = [];
+let userRolle = "";
 
-window.oeffne = function(){
-  if(!auth.currentUser){
-    alert('Bitte zuerst einloggen');
+/* LOGIN + ROLLE */
+onAuthStateChanged(auth, (user) => {
+  if(!user){
+    window.location.href = "index.html";
     return;
   }
 
-  document.getElementById('modal').style.display = 'flex';
-}
+  onValue(benutzerRef, (snapshot) => {
+    snapshot.forEach((child) => {
+      const daten = child.val();
 
+      if(daten.uid === user.uid){
+        userRolle = daten.rolle;
+
+        if(userRolle !== "admin"){
+          const btn = document.querySelector(".top-bar button");
+          if(btn) btn.style.display = "none";
+        }
+
+        render();
+      }
+    });
+  }, { onlyOnce:true });
+});
+
+/* MODAL */
+window.oeffne = function(){
+  if(userRolle !== "admin"){
+    alert("Nur Admins dürfen hinzufügen");
+    return;
+  }
+
+  document.getElementById("modal").style.display = "flex";
+};
+
+window.schliessen = function(){
+  document.getElementById("modal").style.display = "none";
+};
+
+/* SPEICHERN */
 window.speichern = async function(){
-  const titel = document.getElementById('titel').value;
-  const dienst = document.getElementById('dienst').value;
-  const mitarbeiter = document.getElementById('mitarbeiter').value;
-  const datei = document.getElementById('datei').files[0];
+  if(userRolle !== "admin"){
+    alert("Nur Admins dürfen speichern");
+    return;
+  }
+
+  const titel = document.getElementById("titel").value;
+  const dienst = document.getElementById("dienst").value;
+  const mitarbeiter = document.getElementById("mitarbeiter").value;
+  const datei = document.getElementById("datei").files[0];
 
   if(!titel || !dienst || !mitarbeiter || !datei){
-    alert('Bitte alles ausfüllen');
+    alert("Bitte alles ausfüllen");
     return;
   }
 
   try{
     const dateiname = Date.now() + "_" + datei.name;
-    const dateiRef = storageRef(storage, "dienstberichte/" + dateiname);
+    const fileRef = storageRef(storage, "dienstberichte/" + dateiname);
 
-    await uploadBytes(dateiRef, datei);
-
-    const downloadURL = await getDownloadURL(dateiRef);
+    await uploadBytes(fileRef, datei);
+    const downloadURL = await getDownloadURL(fileRef);
 
     await push(dienstberichteRef, {
-  titel,
-  dienst,
-  mitarbeiter,
-  datei: downloadURL,
-  storagePath: "dienstberichte/" + dateiname
-});
+      titel,
+      dienst,
+      mitarbeiter,
+      datei: downloadURL,
+      storagePath: "dienstberichte/" + dateiname
+    });
 
-    alert('Dienstbericht gespeichert');
-    schliessen();
+    alert("Dienstbericht gespeichert");
+    location.reload();
+
   }catch(error){
     console.error(error);
-    alert('Fehler beim Hochladen');
+    alert("Fehler beim Speichern");
   }
-}
+};
 
+/* RENDER */
 function render(){
-  const c = document.getElementById('container');
-  c.innerHTML = '';
+  const c = document.getElementById("container");
+  c.innerHTML = "";
 
   liste.forEach((x, i) => {
     c.innerHTML += `
-    <div class="card">
-      <button class="remove-btn" onclick="loeschen(${i})">X</button>
-      <h2>${x.titel}</h2>
-      <p>Dienst: ${x.dienst}</p>
-      <p>Mitarbeiter: ${x.mitarbeiter}</p>
-      <br>
-      <a href="${x.datei}" download="${x.titel}.pdf" class="admin-btn">Herunterladen</a>
-    </div>`;
+      <div class="card">
+        ${userRolle === "admin"
+          ? `<button class="remove-btn" onclick="loescheDienstbericht(${i})">X</button>`
+          : ""}
+
+        <div class="left">
+          <h2>${x.titel}</h2>
+          <p><strong>Dienst:</strong> ${x.dienst}</p>
+          <p><strong>Mitarbeiter:</strong> ${x.mitarbeiter}</p>
+        </div>
+
+        <div class="right">
+          <a href="${x.datei}" target="_blank" class="admin-btn">
+            Herunterladen
+          </a>
+        </div>
+      </div>
+    `;
   });
 }
 
-window.loeschen = async function(i){
-  if(rolle !== "admin") return;
+/* LÖSCHEN */
+window.loescheDienstbericht = async function(index){
+  if(userRolle !== "admin"){
+    alert("Nur Admins dürfen löschen");
+    return;
+  }
 
   const ok = confirm("Wirklich löschen?");
   if(!ok) return;
 
-  const eintrag = liste[i];
+  const eintrag = liste[index];
 
-  await push(ref(db, "papierkorb"), {
-    ...eintrag,
-    originalPfad: "dienstberichte", // 🔁 HIER ANPASSEN!
-    geloeschtAm: Date.now()
-  });
+  try{
+    await push(ref(db, "papierkorb"), {
+      ...eintrag,
+      originalPfad: "dienstberichte",
+      geloeschtAm: Date.now()
+    });
 
-  await remove(ref(db, "dienstberichte/" + eintrag.id));
+    await remove(ref(db, "dienstberichte/" + eintrag.id));
+
+    alert("In Papierkorb verschoben");
+  }catch(error){
+    console.error(error);
+    alert("Fehler beim Löschen");
+  }
 };
 
-window.schliessen = function(){
-  document.getElementById('modal').style.display = 'none';
-}
-
+/* LADEN */
 onValue(dienstberichteRef, (snapshot) => {
   liste = [];
 
@@ -314,6 +371,3 @@ onValue(dienstberichteRef, (snapshot) => {
   render();
 });
 </script>
-
-</body>
-</html>
