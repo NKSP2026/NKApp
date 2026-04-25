@@ -271,10 +271,21 @@ window.showDetail = (i) => {
   document.getElementById("detailModal").style.display = "flex";
 };
 
-window.loeschen = async (i) => {
+window.loeschen = async function(i){
   if(rolle !== "admin") return;
-  if(!confirm("Wirklich löschen?")) return;
-  await remove(ref(db,"bilder/"+liste[i].id));
+
+  const ok = confirm("Wirklich löschen?");
+  if(!ok) return;
+
+  const eintrag = liste[i];
+
+  await push(ref(db, "papierkorb"), {
+    ...eintrag,
+    originalPfad: "bilder", // 🔁 HIER ANPASSEN!
+    geloeschtAm: Date.now()
+  });
+
+  await remove(ref(db, "bilder/" + eintrag.id));
 };
 
 function render(){
