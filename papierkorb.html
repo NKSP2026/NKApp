@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papierkorb</title>
+
+<style>
+body{background:#111;color:white;font-family:Arial;padding:20px;}
+h1{text-align:center;margin-bottom:30px;}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:20px;
+  max-width:1200px;
+  margin:auto;
+}
+
+.card{
+  background:#1c1c1f;
+  padding:20px;
+  border-radius:20px;
+}
+
+.btn{
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  margin-top:10px;
+  margin-right:5px;
+}
+
+.restore{background:#16a34a;color:white;}
+.delete{background:#dc2626;color:white;}
+</style>
+</head>
+
+<body>
+
+<h1>Papierkorb</h1>
+
+<div class="grid" id="container"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getDatabase, ref, onValue, remove, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+const papierkorbRef = ref(db,"papierkorb");
+
+/* 🔐 ADMIN CHECK */
+onAuthStateChanged(auth,(user)=>{
+  if(!user){
+    location.href="index.html";
+    return;
+  }
+
+  onValue(ref(db,"benutzer"),snap=>{
+    snap.forEach(c=>{
+      if(c.val().uid===user.uid){
+        if(c.val().rolle !== "admin"){
+          alert("Kein Zugriff");
+          location.href="startseite.html";
+        }
+      }
+    });
+  },{onlyOnce:true});
+});
+
+/* 🧠 AUTO LÖSCHEN NACH 10 TAGEN */
+function autoClean(id,data){
+  const jetzt = Date.now();
+  const diff = jetzt - data.geloeschtAm;
+  const limit = 10 * 24 * 60 * 60 * 1000;
+
+  if(diff > limit){
+    remove(ref(db,"papierkorb/"+id));
+    return true;
+  }
+  return false;
+}
+
+/* ⏳ RESTZEIT */
+function restZeit(ts){
+  const diff = Date.now() - ts;
+  const tage = Math.floor(diff / (1000*60*60*24));
+  return 10 - tage;
+}
+
+/* 🔄 RENDER */
+onValue(papierkorbRef,(snap)=>{
+  const c = document.getElementById("container");
+  c.innerHTML="";
+
+  snap.forEach(child=>{
+    const d = child.val();
+    const id = child.key;
+
+    if(autoClean(id,d)) return;
+
+    c.innerHTML += `
+      <div class="card">
+        <h2>${d.titel || d.datum || "Eintrag"}</h2>
+        <p><b>Bereich:</b> ${d.originalPfad}</p>
+        <p><b>Noch:</b> ${restZeit(d.geloeschtAm)} Tage</p>
+
+        <button class="btn restore" onclick="restore('${id}')">Wiederherstellen</button>
+        <button class="btn delete" onclick="endDelete('${id}')">Endgültig löschen</button>
+      </div>
+    `;
+  });
+});
+
+/* ♻️ WIEDERHERSTELLEN */
+window.restore = async function(id){
+  const snap = await fetchData(id);
+  if(!snap) return;
+
+  await push(ref(db, snap.originalPfad), snap);
+  await remove(ref(db,"papierkorb/"+id));
+}
+
+/* 🗑️ ENDGÜLTIG */
+window.endDelete = async function(id){
+  const ok = confirm("Endgültig löschen?");
+  if(!ok) return;
+
+  await remove(ref(db,"papierkorb/"+id));
+}
+
+/* Daten holen */
+async function fetchData(id){
+  return new Promise((resolve)=>{
+    onValue(ref(db,"papierkorb/"+id),(snap)=>{
+      resolve(snap.val());
+    },{onlyOnce:true});
+  });
+}
+</script>
+
+</body>
+</html>
