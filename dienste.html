@@ -230,7 +230,9 @@ onAuthStateChanged(auth, (user) => {
 
         if (userRolle !== "admin") {
           const addBtn = document.querySelector(".top-bar button");
-          if (addBtn) addBtn.style.display = "none";
+          if (addBtn) {
+            addBtn.style.display = "none";
+          }
         }
 
         render();
@@ -295,15 +297,25 @@ function berechneDauer(von, bis) {
 /* ZUSAGEN / ABSAGEN */
 window.antworten = async function (id, typ) {
   const user = auth.currentUser;
-  if (!user) return;
+
+  if (!user) {
+    alert("Bitte zuerst einloggen");
+    return;
+  }
 
   const dienst = liste.find(x => x.id === id);
   if (!dienst) return;
 
   const maxPersonal = Number(dienst.personal || 0);
-  const aktuelleZusagen = dienst.zusagen ? Object.keys(dienst.zusagen).length : 0;
+  const aktuelleZusagen = dienst.zusagen
+    ? Object.keys(dienst.zusagen).length
+    : 0;
 
-  if (typ === "zusagen" && maxPersonal > 0 && aktuelleZusagen >= maxPersonal) {
+  if (
+    typ === "zusagen" &&
+    maxPersonal > 0 &&
+    aktuelleZusagen >= maxPersonal
+  ) {
     alert("Dieser Dienst ist bereits vollständig besetzt");
     return;
   }
@@ -313,10 +325,10 @@ window.antworten = async function (id, typ) {
   await new Promise((resolve) => {
     onValue(ref(db, "benutzer"), (snapshot) => {
       snapshot.forEach((child) => {
-        const d = child.val();
+        const daten = child.val();
 
-        if (d.uid === user.uid) {
-          name = `${d.vorname || ""} ${d.nachname || ""}`;
+        if (daten.uid === user.uid) {
+          name = `${daten.vorname || ""} ${daten.nachname || ""}`;
         }
       });
 
@@ -379,6 +391,8 @@ window.bearbeiten = function (i) {
   if (userRolle !== "admin") return;
 
   const x = liste[i];
+  if (!x) return;
+
   bearbeiteID = x.id;
 
   document.getElementById("datum").value = x.datum || "";
@@ -393,6 +407,35 @@ window.bearbeiten = function (i) {
   document.getElementById("modal").style.display = "flex";
 };
 
+/* LÖSCHEN */
+window.loeschen = async function (i) {
+  if (userRolle !== "admin") {
+    alert("Nur Admins dürfen löschen");
+    return;
+  }
+
+  const ok = confirm("Wirklich löschen?");
+  if (!ok) return;
+
+  const eintrag = liste[i];
+  if (!eintrag) return;
+
+  try {
+    await push(ref(db, "papierkorb"), {
+      ...eintrag,
+      originalPfad: "dienste",
+      geloeschtAm: Date.now()
+    });
+
+    await remove(ref(db, "dienste/" + eintrag.id));
+
+    alert("Dienst in Papierkorb verschoben");
+  } catch (error) {
+    console.error(error);
+    alert("Fehler beim Löschen");
+  }
+};
+
 /* RENDER */
 function render() {
   const c = document.getElementById("container");
@@ -400,23 +443,35 @@ function render() {
 
   liste.forEach((x, i) => {
     const maxPersonal = Number(x.personal || 0);
-    const aktuelleZusagen = x.zusagen ? Object.keys(x.zusagen).length : 0;
-    const voll = maxPersonal > 0 && aktuelleZusagen >= maxPersonal;
+    const aktuelleZusagen = x.zusagen
+      ? Object.keys(x.zusagen).length
+      : 0;
+
+    const voll =
+      maxPersonal > 0 &&
+      aktuelleZusagen >= maxPersonal;
 
     c.innerHTML += `
       <div class="card">
 
-        ${userRolle === "admin"
-          ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>`
-          : ""}
+        ${
+          userRolle === "admin"
+            ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>`
+            : ""
+        }
 
         <h2>${formatDatum(x.datum)}</h2>
 
         <p><strong>Zeit:</strong> ${x.von || "-"} - ${x.bis || "-"} (${berechneDauer(x.von, x.bis)})</p>
+
         <p><strong>Ort:</strong> ${x.ort || "-"}</p>
+
         <p><strong>Art:</strong> ${x.art || "-"}</p>
+
         <p><strong>Auftraggeber:</strong> ${x.auftraggeber || "-"}</p>
+
         <p><strong>Ansprechpartner:</strong> ${x.verantwortlich || "-"}</p>
+
         <p><strong>Benötigtes Personal:</strong> ${aktuelleZusagen}/${maxPersonal || "-"}</p>
 
         <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
@@ -436,9 +491,11 @@ function render() {
             ❌ Absagen
           </button>
 
-          ${userRolle === "admin"
-            ? `<button class="admin-btn" onclick="bearbeiten(${i})">✏ Bearbeiten</button>`
-            : ""}
+          ${
+            userRolle === "admin"
+              ? `<button class="admin-btn" onclick="bearbeiten(${i})">✏ Bearbeiten</button>`
+              : ""
+          }
 
         </div>
       </div>
@@ -446,35 +503,7 @@ function render() {
   });
 }
 
-/* LÖSCHEN */
-window.loeschen = async function (i) {
-  if (userRolle !== "admin") {
-    alert("Nur Admins dürfen löschen");
-    return;
-  }
-
-  const ok = confirm("Wirklich löschen?");
-  if (!ok) return;
-
-  const eintrag = liste[i];
-
-  try {
-    await push(ref(db, "papierkorb"), {
-      ...eintrag,
-      originalPfad: "dienste",
-      geloeschtAm: Date.now()
-    });
-
-    await remove(ref(db, "dienste/" + eintrag.id));
-
-    alert("Dienst in Papierkorb verschoben");
-  } catch (error) {
-    console.error(error);
-    alert("Fehler beim Löschen");
-  }
-};
-
-/* AUTO LÖSCHEN */
+/* ALTE DIENSTE AUTOMATISCH ENTFERNEN */
 async function alteDiensteEntfernen() {
   const jetzt = new Date();
 
@@ -506,7 +535,9 @@ onValue(diensteRef, (snapshot) => {
     });
   });
 
-  liste.sort((a, b) => new Date(a.datum) - new Date(b.datum));
+  liste.sort((a, b) => {
+    return new Date(a.datum) - new Date(b.datum);
+  });
 
   render();
   alteDiensteEntfernen();
