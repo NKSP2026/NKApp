@@ -356,15 +356,6 @@ window.loeschen = async function(i){
   await remove(ref(db, "dienste/" + eintrag.id));
 };
 
-  try{
-    await remove(ref(db, "dienste/" + liste[i].id));
-    alert("Dienst gelöscht");
-  }catch(error){
-    console.error(error);
-    alert("Fehler beim Löschen");
-  }
-}
-
 async function alteDiensteEntfernen(){
   const jetzt = new Date();
 
