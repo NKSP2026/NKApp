@@ -292,6 +292,14 @@ window.speichern = async function(){
       storagePath: "dienstberichte/" + dateiname
     });
 
+    await push(ref(db, "benachrichtigungen"), {
+     titel: "Neuer Dienstbericht",
+     name: mitarbeiter,
+     typ: "Dienstbericht",
+     text: `${mitarbeiter} hat den Bericht "${titel}" hochgeladen`,
+     zeit: Date.now()
+   });
+
     alert("Dienstbericht gespeichert");
     location.reload();
 
