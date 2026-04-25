@@ -206,6 +206,7 @@ const diensteRef = ref(db, "dienste");
 let liste = [];
 let userRolle = "";
 
+/* LOGIN + ROLLE */
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "index.html";
@@ -221,7 +222,9 @@ onAuthStateChanged(auth, (user) => {
 
         if (userRolle !== "admin") {
           const addBtn = document.querySelector(".top-bar button");
-          if (addBtn) addBtn.style.display = "none";
+          if (addBtn) {
+            addBtn.style.display = "none";
+          }
         }
 
         render();
@@ -230,6 +233,7 @@ onAuthStateChanged(auth, (user) => {
   }, { onlyOnce: true });
 });
 
+/* MODAL */
 window.oeffne = function () {
   if (userRolle !== "admin") {
     alert("Nur Admins dürfen Dienste hinzufügen");
@@ -243,20 +247,67 @@ window.schliessen = function () {
   document.getElementById("modal").style.display = "none";
 };
 
+/* DATUM */
+function formatDatum(datum) {
+  if (!datum) return "";
+
+  const teile = datum.split("-");
+  if (teile.length !== 3) return datum;
+
+  return `${teile[2]}.${teile[1]}.${teile[0]}`;
+}
+
+/* DAUER */
+function berechneDauer(von, bis) {
+  if (!von || !bis) return "";
+
+  const [vonStunde, vonMinute] = von.split(":").map(Number);
+  const [bisStunde, bisMinute] = bis.split(":").map(Number);
+
+  const start = vonStunde * 60 + vonMinute;
+  const ende = bisStunde * 60 + bisMinute;
+
+  const diff = ende - start;
+
+  const stunden = Math.floor(diff / 60);
+  const minuten = diff % 60;
+
+  return `${stunden}h ${minuten}min`;
+}
+
+/* ZUSAGEN */
 window.antworten = async function (id, typ) {
   const user = auth.currentUser;
-  if (!user) return;
+
+  if (!user) {
+    alert("Bitte zuerst einloggen");
+    return;
+  }
+
+  const dienst = liste.find(x => x.id === id);
+
+  if (!dienst) return;
+
+  const maxPersonal = Number(dienst.personal || 0);
+  const aktuelleZusagen = dienst.zusagen ? Object.keys(dienst.zusagen).length : 0;
+
+  if (typ === "zusagen" && maxPersonal > 0 && aktuelleZusagen >= maxPersonal) {
+    alert("Dieser Dienst ist bereits vollständig besetzt");
+    return;
+  }
 
   let name = "Unbekannt";
 
   await new Promise((resolve) => {
     onValue(ref(db, "benutzer"), (snapshot) => {
       snapshot.forEach((child) => {
-        const d = child.val();
-        if (d.uid === user.uid) {
-          name = `${d.vorname || ""} ${d.nachname || ""}`;
+        const daten = child.val();
+
+        if (daten.uid === user.uid) {
+          name = `${daten.vorname || ""} ${daten.nachname || ""}`;
         }
       });
+
       resolve();
     }, { onlyOnce: true });
   });
@@ -270,8 +321,12 @@ window.antworten = async function (id, typ) {
   alert("Antwort gespeichert");
 };
 
+/* SPEICHERN */
 window.speichern = async function () {
-  if (userRolle !== "admin") return;
+  if (userRolle !== "admin") {
+    alert("Nur Admins dürfen speichern");
+    return;
+  }
 
   const datum = document.getElementById("datum").value;
   const von = document.getElementById("von").value;
@@ -289,58 +344,119 @@ window.speichern = async function () {
     ort: document.getElementById("ort").value || "",
     art: document.getElementById("art").value || "",
     auftraggeber: document.getElementById("auftraggeber").value || "",
-    verantwortlich: document.getElementById("verantwortlich").value || ""
+    verantwortlich: document.getElementById("verantwortlich").value || "",
+    personal: document.getElementById("personal").value || ""
   });
 
+  alert("Dienst gespeichert");
   location.reload();
 };
 
-function formatDatum(d) {
-  if (!d) return "";
-  const t = d.split("-");
-  return `${t[2]}.${t[1]}.${t[0]}`;
-}
-
+/* RENDER */
 function render() {
   const c = document.getElementById("container");
   c.innerHTML = "";
 
   liste.forEach((x, i) => {
+    const maxPersonal = Number(x.personal || 0);
+    const aktuelleZusagen = x.zusagen ? Object.keys(x.zusagen).length : 0;
+    const voll = maxPersonal > 0 && aktuelleZusagen >= maxPersonal;
+
     c.innerHTML += `
       <div class="card">
+
         ${userRolle === "admin"
           ? `<button class="remove-btn" onclick="loeschen(${i})">X</button>`
           : ""}
 
         <h2>${formatDatum(x.datum)}</h2>
-        <p>${x.ort || "-"}</p>
-        <p>${x.art || "-"}</p>
+
+        <p><strong>Zeit:</strong> ${x.von || "-"} - ${x.bis || "-"} (${berechneDauer(x.von, x.bis)})</p>
+
+        <p><strong>Ort:</strong> ${x.ort || "-"}</p>
+
+        <p><strong>Art:</strong> ${x.art || "-"}</p>
+
+        <p><strong>Auftraggeber:</strong> ${x.auftraggeber || "-"}</p>
+
+        <p><strong>Ansprechpartner:</strong> ${x.verantwortlich || "-"}</p>
+
+        <p><strong>Benötigtes Personal:</strong> ${aktuelleZusagen}/${maxPersonal || "-"}</p>
 
         <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
-          <button class="admin-btn" onclick="antworten('${x.id}','zusagen')">✅ Zusagen</button>
-          <button class="admin-btn" onclick="antworten('${x.id}','absagen')">❌ Absagen</button>
+
+          <button
+            class="admin-btn"
+            onclick="antworten('${x.id}','zusagen')"
+            ${voll ? "disabled style='opacity:0.5;cursor:not-allowed;'" : ""}
+          >
+            ✅ Zusagen
+          </button>
+
+          <button
+            class="admin-btn"
+            onclick="antworten('${x.id}','absagen')"
+          >
+            ❌ Absagen
+          </button>
+
         </div>
+
       </div>
     `;
   });
 }
 
+/* LÖSCHEN */
 window.loeschen = async function (i) {
-  if (userRolle !== "admin") return;
+  if (userRolle !== "admin") {
+    alert("Nur Admins dürfen löschen");
+    return;
+  }
 
-  if (!confirm("Wirklich löschen?")) return;
+  const ok = confirm("Wirklich löschen?");
+  if (!ok) return;
 
   const eintrag = liste[i];
 
-  await push(ref(db, "papierkorb"), {
-    ...eintrag,
-    originalPfad: "dienste",
-    geloeschtAm: Date.now()
-  });
+  try {
+    await push(ref(db, "papierkorb"), {
+      ...eintrag,
+      originalPfad: "dienste",
+      geloeschtAm: Date.now()
+    });
 
-  await remove(ref(db, "dienste/" + eintrag.id));
+    await remove(ref(db, "dienste/" + eintrag.id));
+
+    alert("Dienst in Papierkorb verschoben");
+  } catch (error) {
+    console.error(error);
+    alert("Fehler beim Löschen");
+  }
 };
 
+/* AUTOMATISCH ALTE DIENSTE LÖSCHEN */
+async function alteDiensteEntfernen() {
+  const jetzt = new Date();
+
+  for (const dienst of liste) {
+    if (!dienst.datum) continue;
+
+    const dienstDatum = new Date(dienst.datum);
+    dienstDatum.setDate(dienstDatum.getDate() + 2);
+    dienstDatum.setHours(23, 59, 59, 999);
+
+    if (jetzt > dienstDatum) {
+      try {
+        await remove(ref(db, "dienste/" + dienst.id));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+}
+
+/* LADEN */
 onValue(diensteRef, (snapshot) => {
   liste = [];
 
@@ -351,6 +467,12 @@ onValue(diensteRef, (snapshot) => {
     });
   });
 
+  /* DATUM AUFSTEIGEND SORTIERT */
+  liste.sort((a, b) => {
+    return new Date(a.datum) - new Date(b.datum);
+  });
+
   render();
+  alteDiensteEntfernen();
 });
 </script>
