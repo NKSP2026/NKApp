@@ -141,40 +141,40 @@
   const auth = getAuth(app);
   const db = getDatabase(app);
 
-  const benutzerRef = ref(db, 'benutzer');
+  const benutzerRef = ref(db, "benutzer");
 
-  const mitarbeiterCode = '2026';
-  const adminCode = '1992';
+  const mitarbeiterCode = "2026";
+  const adminCode = "1992";
 
-  window.registrieren = async function(){
-    const vorname = document.getElementById('vorname').value.trim();
-    const nachname = document.getElementById('nachname').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const passwort = document.getElementById('passwort').value;
-    const passwort2 = document.getElementById('passwort2').value;
-    const code = document.getElementById('code').value.trim();
+  window.registrieren = async function () {
+    const vorname = document.getElementById("vorname").value.trim();
+    const nachname = document.getElementById("nachname").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const passwort = document.getElementById("passwort").value;
+    const passwort2 = document.getElementById("passwort2").value;
+    const code = document.getElementById("code").value.trim();
 
-    const fehler = document.getElementById('fehler');
-    const erfolg = document.getElementById('erfolg');
+    const fehler = document.getElementById("fehler");
+    const erfolg = document.getElementById("erfolg");
 
-    fehler.innerText = '';
-    erfolg.innerText = '';
+    fehler.innerText = "";
+    erfolg.innerText = "";
 
-    if(!vorname || !nachname || !email || !passwort || !passwort2 || !code){
-      fehler.innerText = 'Bitte alle Felder ausfüllen';
+    if (!vorname || !nachname || !email || !passwort || !passwort2 || !code) {
+      fehler.innerText = "Bitte alle Felder ausfüllen";
       return;
     }
 
-    if(passwort !== passwort2){
-      fehler.innerText = 'Passwörter stimmen nicht überein';
+    if (passwort !== passwort2) {
+      fehler.innerText = "Passwörter stimmen nicht überein";
       return;
     }
 
-    let rolle = '';
+    let rolle = "";
     let rechte = {};
 
-    if(code === mitarbeiterCode){
-      rolle = 'mitarbeiter';
+    if (code === mitarbeiterCode) {
+      rolle = "mitarbeiter";
       rechte = {
         mitarbeiter_lesen: true,
         dokumente_download: true,
@@ -183,8 +183,8 @@
         dokumente_hinzufuegen: false,
         dienste_hinzufuegen: false
       };
-    }else if(code === adminCode){
-      rolle = 'admin';
+    } else if (code === adminCode) {
+      rolle = "admin";
       rechte = {
         mitarbeiter_lesen: true,
         dokumente_download: true,
@@ -193,12 +193,12 @@
         dokumente_hinzufuegen: true,
         dienste_hinzufuegen: true
       };
-    }else{
-      fehler.innerText = 'Ungültiger Verifizierungscode';
+    } else {
+      fehler.innerText = "Ungültiger Verifizierungscode";
       return;
     }
 
-    try{
+    try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, passwort);
 
       await push(benutzerRef, {
@@ -212,33 +212,42 @@
         erstelltAm: new Date().toISOString()
       });
 
-      erfolg.innerText = 'Registrierung erfolgreich';
+      /* ADMIN BENACHRICHTIGUNG */
+      await push(ref(db, "benachrichtigungen"), {
+        titel: "Neue Registrierung",
+        name: `${vorname} ${nachname}`,
+        typ: "Registrierung",
+        text: `${vorname} ${nachname} hat sich neu registriert`,
+        zeit: Date.now()
+      });
 
-      document.getElementById('vorname').value = '';
-      document.getElementById('nachname').value = '';
-      document.getElementById('email').value = '';
-      document.getElementById('passwort').value = '';
-      document.getElementById('passwort2').value = '';
-      document.getElementById('code').value = '';
+      erfolg.innerText = "Registrierung erfolgreich";
+
+      document.getElementById("vorname").value = "";
+      document.getElementById("nachname").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("passwort").value = "";
+      document.getElementById("passwort2").value = "";
+      document.getElementById("code").value = "";
 
       setTimeout(() => {
-        window.location.href = 'index.html';
+        window.location.href = "index.html";
       }, 1500);
 
-    }catch(error){
+    } catch (error) {
       console.error(error);
 
-      if(error.code === 'auth/email-already-in-use'){
-        fehler.innerText = 'E-Mail wird bereits verwendet';
-      }else if(error.code === 'auth/invalid-email'){
-        fehler.innerText = 'Ungültige E-Mail Adresse';
-      }else if(error.code === 'auth/weak-password'){
-        fehler.innerText = 'Passwort muss mindestens 6 Zeichen haben';
-      }else{
-        fehler.innerText = 'Registrierung fehlgeschlagen';
+      if (error.code === "auth/email-already-in-use") {
+        fehler.innerText = "E-Mail wird bereits verwendet";
+      } else if (error.code === "auth/invalid-email") {
+        fehler.innerText = "Ungültige E-Mail Adresse";
+      } else if (error.code === "auth/weak-password") {
+        fehler.innerText = "Passwort muss mindestens 6 Zeichen haben";
+      } else {
+        fehler.innerText = "Registrierung fehlgeschlagen";
       }
     }
-  }
+  };
 </script>
 
 </body>
