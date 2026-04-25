@@ -54,19 +54,23 @@ h1{
   display:grid;
   grid-template-columns:repeat(2,1fr);
   gap:25px;
-  max-width:1200px;
+  max-width:1400px;
   margin:auto;
 }
 
 /* MOBILE */
-@media(max-width:800px){
+@media(max-width:1000px){
   .grid{
     grid-template-columns:1fr;
   }
 
   .card{
     flex-direction:column;
-    align-items:flex-start;
+  }
+
+  .card-actions{
+    width:100%;
+    align-items:stretch;
   }
 }
 
@@ -74,48 +78,77 @@ h1{
 .card{
   background:#1c1c1f;
   border-radius:22px;
-  padding:20px;
+  padding:25px;
   display:flex;
   justify-content:space-between;
-  gap:20px;
   align-items:flex-start;
+  gap:30px;
   position:relative;
   transition:0.2s;
 }
 
 .card:hover{
-  transform:scale(1.02);
+  transform:scale(1.01);
 }
 
-/* LINKER BEREICH */
-.left{
+/* LINKER INHALT */
+.card-main{
   flex:1;
 }
 
-/* TITEL */
 .card h2{
-  font-size:28px;
-  margin-bottom:15px;
+  font-size:32px;
+  margin-bottom:20px;
+  color:white;
 }
 
-/* TEXT */
-.card p{
-  color:#ccc;
-  margin-bottom:10px;
-  font-size:16px;
+/* SAUBERE ZEILEN */
+.info-row{
+  display:flex;
+  align-items:flex-start;
+  margin-bottom:12px;
+  gap:15px;
+}
+
+.info-label{
+  min-width:190px;
+  font-weight:bold;
+  color:white;
+  font-size:17px;
+}
+
+.info-value{
+  flex:1;
+  color:#d1d5db;
+  font-size:17px;
+  line-height:1.5;
+}
+
+/* BUTTON RECHTS */
+.card-actions{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  min-width:180px;
+}
+
+.card-actions .admin-btn{
+  width:100%;
+  text-align:center;
 }
 
 /* DELETE */
 .remove-btn{
   position:absolute;
-  top:10px;
-  right:10px;
+  top:12px;
+  right:12px;
   background:#dc2626;
   color:white;
   border:none;
   border-radius:8px;
-  padding:5px 8px;
+  padding:6px 10px;
   cursor:pointer;
+  font-weight:bold;
 }
 
 /* MODAL */
@@ -126,11 +159,12 @@ h1{
   background:rgba(0,0,0,0.8);
   justify-content:center;
   align-items:center;
+  z-index:999;
 }
 
 .modal-content{
   background:#1c1c1f;
-  padding:20px;
+  padding:25px;
   border-radius:20px;
   width:90%;
   max-width:500px;
