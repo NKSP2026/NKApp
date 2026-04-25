@@ -186,7 +186,14 @@ input{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import {
+  getDatabase,
+  ref,
+  push,
+  onValue,
+  remove,
+  update
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -205,6 +212,7 @@ const diensteRef = ref(db, "dienste");
 
 let liste = [];
 let userRolle = "";
+let bearbeiteID = null;
 
 /* LOGIN + ROLLE */
 onAuthStateChanged(auth, (user) => {
@@ -222,9 +230,7 @@ onAuthStateChanged(auth, (user) => {
 
         if (userRolle !== "admin") {
           const addBtn = document.querySelector(".top-bar button");
-          if (addBtn) {
-            addBtn.style.display = "none";
-          }
+          if (addBtn) addBtn.style.display = "none";
         }
 
         render();
@@ -233,21 +239,33 @@ onAuthStateChanged(auth, (user) => {
   }, { onlyOnce: true });
 });
 
-/* MODAL */
+/* MODAL ÖFFNEN */
 window.oeffne = function () {
   if (userRolle !== "admin") {
     alert("Nur Admins dürfen Dienste hinzufügen");
     return;
   }
 
+  bearbeiteID = null;
+
+  document.getElementById("datum").value = "";
+  document.getElementById("von").value = "";
+  document.getElementById("bis").value = "";
+  document.getElementById("ort").value = "";
+  document.getElementById("art").value = "";
+  document.getElementById("auftraggeber").value = "";
+  document.getElementById("verantwortlich").value = "";
+  document.getElementById("personal").value = "";
+
   document.getElementById("modal").style.display = "flex";
 };
 
+/* MODAL SCHLIESSEN */
 window.schliessen = function () {
   document.getElementById("modal").style.display = "none";
 };
 
-/* DATUM */
+/* DATUM FORMAT */
 function formatDatum(datum) {
   if (!datum) return "";
 
@@ -261,12 +279,11 @@ function formatDatum(datum) {
 function berechneDauer(von, bis) {
   if (!von || !bis) return "";
 
-  const [vonStunde, vonMinute] = von.split(":").map(Number);
-  const [bisStunde, bisMinute] = bis.split(":").map(Number);
+  const [vh, vm] = von.split(":").map(Number);
+  const [bh, bm] = bis.split(":").map(Number);
 
-  const start = vonStunde * 60 + vonMinute;
-  const ende = bisStunde * 60 + bisMinute;
-
+  const start = vh * 60 + vm;
+  const ende = bh * 60 + bm;
   const diff = ende - start;
 
   const stunden = Math.floor(diff / 60);
@@ -275,17 +292,12 @@ function berechneDauer(von, bis) {
   return `${stunden}h ${minuten}min`;
 }
 
-/* ZUSAGEN */
+/* ZUSAGEN / ABSAGEN */
 window.antworten = async function (id, typ) {
   const user = auth.currentUser;
-
-  if (!user) {
-    alert("Bitte zuerst einloggen");
-    return;
-  }
+  if (!user) return;
 
   const dienst = liste.find(x => x.id === id);
-
   if (!dienst) return;
 
   const maxPersonal = Number(dienst.personal || 0);
@@ -301,10 +313,10 @@ window.antworten = async function (id, typ) {
   await new Promise((resolve) => {
     onValue(ref(db, "benutzer"), (snapshot) => {
       snapshot.forEach((child) => {
-        const daten = child.val();
+        const d = child.val();
 
-        if (daten.uid === user.uid) {
-          name = `${daten.vorname || ""} ${daten.nachname || ""}`;
+        if (d.uid === user.uid) {
+          name = `${d.vorname || ""} ${d.nachname || ""}`;
         }
       });
 
@@ -321,35 +333,64 @@ window.antworten = async function (id, typ) {
   alert("Antwort gespeichert");
 };
 
-/* SPEICHERN */
+/* SPEICHERN + BEARBEITEN */
 window.speichern = async function () {
   if (userRolle !== "admin") {
     alert("Nur Admins dürfen speichern");
     return;
   }
 
-  const datum = document.getElementById("datum").value;
-  const von = document.getElementById("von").value;
-  const bis = document.getElementById("bis").value;
-
-  if (!datum || !von || !bis) {
-    alert("Bitte Datum + Uhrzeit ausfüllen");
-    return;
-  }
-
-  await push(diensteRef, {
-    datum,
-    von,
-    bis,
+  const daten = {
+    datum: document.getElementById("datum").value,
+    von: document.getElementById("von").value,
+    bis: document.getElementById("bis").value,
     ort: document.getElementById("ort").value || "",
     art: document.getElementById("art").value || "",
     auftraggeber: document.getElementById("auftraggeber").value || "",
     verantwortlich: document.getElementById("verantwortlich").value || "",
     personal: document.getElementById("personal").value || ""
-  });
+  };
 
-  alert("Dienst gespeichert");
-  location.reload();
+  if (!daten.datum || !daten.von || !daten.bis) {
+    alert("Bitte Datum + Uhrzeit ausfüllen");
+    return;
+  }
+
+  try {
+    if (bearbeiteID) {
+      await update(ref(db, "dienste/" + bearbeiteID), daten);
+      alert("Dienst aktualisiert");
+    } else {
+      await push(diensteRef, daten);
+      alert("Dienst gespeichert");
+    }
+
+    schliessen();
+    location.reload();
+
+  } catch (error) {
+    console.error(error);
+    alert("Fehler beim Speichern");
+  }
+};
+
+/* BEARBEITEN */
+window.bearbeiten = function (i) {
+  if (userRolle !== "admin") return;
+
+  const x = liste[i];
+  bearbeiteID = x.id;
+
+  document.getElementById("datum").value = x.datum || "";
+  document.getElementById("von").value = x.von || "";
+  document.getElementById("bis").value = x.bis || "";
+  document.getElementById("ort").value = x.ort || "";
+  document.getElementById("art").value = x.art || "";
+  document.getElementById("auftraggeber").value = x.auftraggeber || "";
+  document.getElementById("verantwortlich").value = x.verantwortlich || "";
+  document.getElementById("personal").value = x.personal || "";
+
+  document.getElementById("modal").style.display = "flex";
 };
 
 /* RENDER */
@@ -372,15 +413,10 @@ function render() {
         <h2>${formatDatum(x.datum)}</h2>
 
         <p><strong>Zeit:</strong> ${x.von || "-"} - ${x.bis || "-"} (${berechneDauer(x.von, x.bis)})</p>
-
         <p><strong>Ort:</strong> ${x.ort || "-"}</p>
-
         <p><strong>Art:</strong> ${x.art || "-"}</p>
-
         <p><strong>Auftraggeber:</strong> ${x.auftraggeber || "-"}</p>
-
         <p><strong>Ansprechpartner:</strong> ${x.verantwortlich || "-"}</p>
-
         <p><strong>Benötigtes Personal:</strong> ${aktuelleZusagen}/${maxPersonal || "-"}</p>
 
         <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
@@ -400,8 +436,11 @@ function render() {
             ❌ Absagen
           </button>
 
-        </div>
+          ${userRolle === "admin"
+            ? `<button class="admin-btn" onclick="bearbeiten(${i})">✏ Bearbeiten</button>`
+            : ""}
 
+        </div>
       </div>
     `;
   });
@@ -435,7 +474,7 @@ window.loeschen = async function (i) {
   }
 };
 
-/* AUTOMATISCH ALTE DIENSTE LÖSCHEN */
+/* AUTO LÖSCHEN */
 async function alteDiensteEntfernen() {
   const jetzt = new Date();
 
@@ -467,10 +506,7 @@ onValue(diensteRef, (snapshot) => {
     });
   });
 
-  /* DATUM AUFSTEIGEND SORTIERT */
-  liste.sort((a, b) => {
-    return new Date(a.datum) - new Date(b.datum);
-  });
+  liste.sort((a, b) => new Date(a.datum) - new Date(b.datum));
 
   render();
   alteDiensteEntfernen();
