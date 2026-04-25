@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dienst-Zusagen</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#111;
+  color:white;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+  font-size:42px;
+  margin-bottom:30px;
+}
+
+.top-bar{
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  margin-bottom:30px;
+  flex-wrap:wrap;
+}
+
+.admin-btn{
+  background:#2563eb;
+  color:white;
+  border:none;
+  padding:12px 20px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:16px;
+  font-weight:bold;
+  text-decoration:none;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:20px;
+  max-width:1200px;
+  margin:auto;
+}
+
+.card{
+  background:#1c1c1f;
+  border-radius:22px;
+  padding:20px;
+}
+
+.card h2{
+  font-size:24px;
+  margin-bottom:10px;
+}
+
+.card h3{
+  margin-top:18px;
+  margin-bottom:10px;
+  font-size:18px;
+}
+
+.person-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#151518;
+  padding:10px 12px;
+  border-radius:12px;
+  margin-bottom:8px;
+}
+
+.remove-btn{
+  background:#dc2626;
+  color:white;
+  border:none;
+  border-radius:8px;
+  padding:6px 10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.empty{
+  color:#aaa;
+  margin-bottom:8px;
+}
+</style>
+</head>
+<body>
+
+<h1>Dienst-Zusagen</h1>
+
+<div class="top-bar">
+  <a href="startseite.html" class="admin-btn">Zurück</a>
+  <a href="dienste.html" class="admin-btn">Zu den Diensten</a>
+</div>
+
+<div class="grid" id="container"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const diensteRef = ref(db, "dienste");
+
+let userRolle = "";
+let liste = [];
+
+onAuthStateChanged(auth, (user) => {
+  if(!user){
+    window.location.href = "index.html";
+    return;
+  }
+
+  onValue(ref(db, "benutzer"), (snapshot) => {
+    snapshot.forEach((child) => {
+      const daten = child.val();
+      if(daten.uid === user.uid){
+        userRolle = daten.rolle || "";
+      }
+    });
+
+    render();
+  }, {
+    onlyOnce:true
+  });
+});
+
+function formatDatum(datum){
+  if(!datum) return "";
+  const t = datum.split("-");
+  if(t.length !== 3) return datum;
+  return `${t[2]}.${t[1]}.${t[0]}`;
+}
+
+function renderPersonen(obj, typ, dienstId){
+  if(!obj) return `<p class="empty">-</p>`;
+
+  const eintraege = Object.entries(obj);
+  if(eintraege.length === 0) return `<p class="empty">-</p>`;
+
+  let html = "";
+
+  eintraege.forEach(([key, person]) => {
+    html += `
+      <div class="person-row">
+        <span>${person.name || "Unbekannt"}</span>
+        ${userRolle === "admin"
+          ? `<button class="remove-btn" onclick="entfernen('${dienstId}','${typ}','${key}')">X</button>`
+          : ""
+        }
+      </div>
+    `;
+  });
+
+  return html;
+}
+
+window.entfernen = async function(dienstId, typ, key){
+  if(userRolle !== "admin") return;
+
+  const ok = confirm("Eintrag wirklich entfernen?");
+  if(!ok) return;
+
+  try{
+    await remove(ref(db, `dienste/${dienstId}/${typ}/${key}`));
+    alert("Eintrag entfernt");
+  }catch(error){
+    console.error(error);
+    alert("Fehler beim Entfernen");
+  }
+};
+
+async function alteEintraegePruefen(){
+  const jetzt = new Date();
+
+  for(const dienst of liste){
+    if(!dienst.datum) continue;
+
+    const dienstDatum = new Date(dienst.datum);
+    dienstDatum.setDate(dienstDatum.getDate() + 2);
+    dienstDatum.setHours(23,59,59,999);
+
+    if(jetzt > dienstDatum){
+      try{
+        if(dienst.zusagen){
+          for(const key of Object.keys(dienst.zusagen)){
+            await remove(ref(db, `dienste/${dienst.id}/zusagen/${key}`));
+          }
+        }
+
+        if(dienst.absagen){
+          for(const key of Object.keys(dienst.absagen)){
+            await remove(ref(db, `dienste/${dienst.id}/absagen/${key}`));
+          }
+        }
+      }catch(error){
+        console.error(error);
+      }
+    }
+  }
+}
+
+function render(){
+  const c = document.getElementById("container");
+  c.innerHTML = "";
+
+  liste.forEach((x) => {
+    c.innerHTML += `
+      <div class="card">
+        <h2>${formatDatum(x.datum)} — ${x.ort || "Dienst"}</h2>
+        <p>${x.art || ""}</p>
+
+        <h3>✅ Zugesagt</h3>
+        ${renderPersonen(x.zusagen, "zusagen", x.id)}
+
+        <h3>❌ Abgesagt</h3>
+        ${renderPersonen(x.absagen, "absagen", x.id)}
+      </div>
+    `;
+  });
+}
+
+onValue(diensteRef, (snapshot) => {
+  liste = [];
+
+  snapshot.forEach((child) => {
+    liste.push({
+      id: child.key,
+      ...child.val()
+    });
+  });
+
+  liste.sort((a,b) => new Date(a.datum) - new Date(b.datum));
+
+  render();
+  alteEintraegePruefen();
+});
+</script>
+
+</body>
+</html>
