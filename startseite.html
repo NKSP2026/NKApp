@@ -232,6 +232,7 @@ body{
 }
 </style>
 </head>
+
 <body>
 
 <img src="icon-192.png" alt="NKSP Logo" class="logo">
@@ -254,7 +255,7 @@ body{
 
   <a class="admin-btn" href="bilder.html">Bilder</a>
 
-  <!-- Nur Admin -->
+  <!-- ADMIN -->
   <a
     href="benachrichtigungen.html"
     class="admin-btn"
@@ -313,8 +314,14 @@ body{
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+import {
+  getAuth,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 import {
   getDatabase,
@@ -359,7 +366,7 @@ document.getElementById("benachrichtigungenBtn");
 const papierkorbBtn =
 document.getElementById("papierkorbBtn");
 
-/* STANDARD AUSBLENDEN */
+/* STANDARD */
 adminBereichBtn.style.display = "none";
 benachrichtigungenBtn.style.display = "none";
 papierkorbBtn.style.display = "none";
@@ -373,9 +380,6 @@ async function pushAktivieren(userUid){
       await Notification.requestPermission();
 
     if(permission !== "granted"){
-      console.log(
-        "Benachrichtigungen nicht erlaubt"
-      );
       return;
     }
 
@@ -395,13 +399,8 @@ async function pushAktivieren(userUid){
       );
 
     if(!token){
-      console.log(
-        "Kein FCM Token erhalten"
-      );
       return;
     }
-
-    console.log("FCM Token:", token);
 
     const benutzerRef =
       ref(db, "benutzer");
@@ -459,10 +458,7 @@ async function pushAktivieren(userUid){
 
   }catch(error){
 
-    console.error(
-      "Push Fehler:",
-      error
-    );
+    console.error(error);
 
   }
 
@@ -473,11 +469,6 @@ onMessage(
   messaging,
 
   (payload) => {
-
-    console.log(
-      "Foreground Nachricht:",
-      payload
-    );
 
     if(payload.notification){
 
@@ -497,7 +488,7 @@ onMessage(
 onAuthStateChanged(
   auth,
 
-  (user) => {
+  async (user) => {
 
     if(!user){
 
@@ -513,95 +504,77 @@ onAuthStateChanged(
     const benutzerRef =
       ref(db, "benutzer");
 
-    /* LIVE ÜBERWACHUNG */
-    onValue(benutzerRef,
+    /* LIVE */
+    onValue(
+      benutzerRef,
 
       async (snapshot) => {
 
-        let gefunden = false;
+        let aktuellerUser = null;
+        let aktuellerKey = null;
 
-        snapshot.forEach(
-          async (child) => {
+        snapshot.forEach((child) => {
 
-            const daten =
-              child.val();
+          const daten = child.val();
 
-            if(
-              daten.uid === user.uid
-            ){
+          if(daten.uid === user.uid){
 
-              gefunden = true;
-
-              /* ONLINE */
-              await update(
-                ref(
-                  db,
-                  "benutzer/" +
-                  child.key
-                ),
-                {
-                  online:true,
-                  letzteAktivitaet:
-                    new Date()
-                    .toISOString()
-                }
-              );
-
-              console.log(
-                "ROLLE:",
-                daten.rolle
-              );
-
-              /* BUTTONS RESET */
-              adminBereichBtn
-                .style.display =
-                  "none";
-
-              benachrichtigungenBtn
-                .style.display =
-                  "none";
-
-              papierkorbBtn
-                .style.display =
-                  "none";
-
-              /* ADMIN PRÜFUNG */
-              if(
-                daten.rolle &&
-                daten.rolle
-                  .toLowerCase()
-                  .trim() ===
-                    "admin"
-              ){
-
-                console.log(
-                  "ADMIN ERKANNT"
-                );
-
-                adminBereichBtn
-                  .style.display =
-                    "flex";
-
-                benachrichtigungenBtn
-                  .style.display =
-                    "flex";
-
-                papierkorbBtn
-                  .style.display =
-                    "flex";
-
-              }
-
-            }
+            aktuellerUser = daten;
+            aktuellerKey = child.key;
 
           }
-        );
 
-        if(!gefunden){
+        });
+
+        if(!aktuellerUser){
 
           console.log(
             "Benutzer nicht gefunden"
           );
+
+          return;
+
+        }
+
+        /* ONLINE */
+        await update(
+          ref(
+            db,
+            "benutzer/" + aktuellerKey
+          ),
+          {
+            online:true,
+            letzteAktivitaet:
+              new Date().toISOString()
+          }
+        );
+
+        /* RESET */
+        adminBereichBtn.style.display = "none";
+        benachrichtigungenBtn.style.display = "none";
+        papierkorbBtn.style.display = "none";
+
+        /* ADMIN */
+        const rolle =
+          String(
+            aktuellerUser.rolle || ""
+          )
+          .trim()
+          .toLowerCase();
+
+        console.log("ROLLE:", rolle);
+
+        if(rolle === "admin"){
+
+          console.log(
+            "ADMIN ERKANNT"
+          );
+
+          adminBereichBtn.style.display = "flex";
+
+          benachrichtigungenBtn.style.display = "flex";
+
+          papierkorbBtn.style.display = "flex";
 
         }
 
@@ -707,4 +680,8 @@ async function(){
   }
 
 };
+
 </script>
+
+</body>
+</html>
