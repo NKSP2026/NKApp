@@ -315,9 +315,26 @@ body{
   
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { getDatabase, ref, onValue, update, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js";
+
+import {
+  getAuth,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  onValue,
+  update,
+  push
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+import {
+  getMessaging,
+  getToken,
+  onMessage
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -330,7 +347,7 @@ const firebaseConfig = {
 };
 
 const VAPID_KEY =
-  "BE-rnRFY8xtS5q9n0AbahJO6vKzHTx0qJWswxniLPEOT9vv151eaJEbaYwrRd-r1ijlEb7L5dwrKSa2e7hHKAaE";
+"BE-rnRFY8xtS5q9n0AbahJO6vKzHTx0qJWswxniLPEOT9vv151eaJEbaYwrRd-r1ijlEb7L5dwrKSa2e7hHKAaE";
 
 const app = initializeApp(firebaseConfig);
 
@@ -338,7 +355,7 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const messaging = getMessaging(app);
 
-/* PUSH BENACHRICHTIGUNGEN */
+/* PUSH */
 async function pushAktivieren(userUid){
 
   try{
@@ -347,9 +364,6 @@ async function pushAktivieren(userUid){
       await Notification.requestPermission();
 
     if(permission !== "granted"){
-
-      console.log("Benachrichtigungen nicht erlaubt");
-
       return;
     }
 
@@ -358,66 +372,58 @@ async function pushAktivieren(userUid){
         "/firebase-messaging-sw.js"
       );
 
-    const token = await getToken(messaging,{
-      vapidKey: VAPID_KEY,
-      serviceWorkerRegistration: registration
-    });
+    const token = await getToken(
+      messaging,
+      {
+        vapidKey: VAPID_KEY,
+        serviceWorkerRegistration: registration
+      }
+    );
 
-    if(!token){
-
-      console.log("Kein FCM Token erhalten");
-
-      return;
-    }
-
-    console.log("FCM Token:", token);
+    if(!token) return;
 
     const benutzerRef = ref(db, "benutzer");
 
-    onValue(benutzerRef, async (snapshot) => {
+    onValue(
+      benutzerRef,
 
-      snapshot.forEach(async (child) => {
+      async (snapshot) => {
 
-        const daten = child.val();
+        snapshot.forEach(async (child) => {
 
-        if(daten.uid === userUid){
+          const daten = child.val();
 
-          await update(
-            ref(db, "benutzer/" + child.key),
-            {
-              fcmToken: token
-            }
-          );
+          if(daten.uid === userUid){
 
-          await push(
-            ref(db, "pushSubscriptions"),
-            {
-              uid: userUid,
-              token: token,
-              erstelltAm: Date.now()
-            }
-          );
+            await update(
+              ref(db, "benutzer/" + child.key),
+              {
+                fcmToken: token
+              }
+            );
 
-        }
+          }
 
-      });
+        });
 
-    },{
-      onlyOnce:true
-    });
+      },
+
+      {
+        onlyOnce:true
+      }
+
+    );
 
   }catch(error){
 
-    console.error("Push Fehler:", error);
+    console.error(error);
 
   }
 
 }
 
-/* APP OFFEN */
+/* NACHRICHT WENN APP OFFEN */
 onMessage(messaging, (payload) => {
-
-  console.log("Foreground Nachricht:", payload);
 
   if(payload.notification){
 
@@ -445,68 +451,60 @@ onAuthStateChanged(auth, (user) => {
 
   const benutzerRef = ref(db, "benutzer");
 
-  /* 🔥 LIVE ÜBERWACHUNG */
-  onValue(benutzerRef, async (snapshot) => {
+  onValue(
+    benutzerRef,
 
-    let istAdmin = false;
+    async (snapshot) => {
 
-    snapshot.forEach(async (child) => {
+      let istAdmin = false;
 
-      const daten = child.val();
+      snapshot.forEach(async (child) => {
 
-      if(daten.uid === user.uid){
+        const daten = child.val();
 
-        await update(
-          ref(db, "benutzer/" + child.key),
-          {
-            online:true,
-            letzteAktivitaet:
-              new Date().toISOString()
+        if(daten.uid === user.uid){
+
+          /* ONLINE STATUS */
+          await update(
+            ref(db, "benutzer/" + child.key),
+            {
+              online:true,
+              letzteAktivitaet:
+                new Date().toISOString()
+            }
+          );
+
+          /* ADMIN PRÜFUNG */
+          if(
+            daten.rolle &&
+            daten.rolle.toLowerCase() === "admin"
+          ){
+            istAdmin = true;
           }
-        );
-
-        if(daten.rolle === "admin"){
-
-          istAdmin = true;
 
         }
 
-      }
+      });
 
-    });
-
-    /* ADMIN BUTTONS */
-    if(istAdmin){
-
+      /* ADMIN BUTTONS */
       document.getElementById(
         "adminBereichBtn"
-      ).style.display = "flex";
+      ).style.display =
+        istAdmin ? "flex" : "none";
 
       document.getElementById(
         "benachrichtigungenBtn"
-      ).style.display = "flex";
+      ).style.display =
+        istAdmin ? "flex" : "none";
 
       document.getElementById(
         "papierkorbBtn"
-      ).style.display = "flex";
-
-    }else{
-
-      document.getElementById(
-        "adminBereichBtn"
-      ).style.display = "none";
-
-      document.getElementById(
-        "benachrichtigungenBtn"
-      ).style.display = "none";
-
-      document.getElementById(
-        "papierkorbBtn"
-      ).style.display = "none";
+      ).style.display =
+        istAdmin ? "flex" : "none";
 
     }
 
-  });
+  );
 
 });
 
@@ -522,54 +520,40 @@ window.logout = async function(){
       const benutzerRef =
         ref(db, "benutzer");
 
-      await new Promise((resolve) => {
+      onValue(
+        benutzerRef,
 
-        onValue(
-          benutzerRef,
+        async (snapshot) => {
 
-          async (snapshot) => {
+          snapshot.forEach(async (child) => {
 
-            const updates = [];
+            const daten = child.val();
 
-            snapshot.forEach((child) => {
+            if(daten.uid === user.uid){
 
-              const daten = child.val();
+              await update(
+                ref(
+                  db,
+                  "benutzer/" + child.key
+                ),
+                {
+                  online:false,
+                  letzteAktivitaet:
+                    new Date().toISOString()
+                }
+              );
 
-              if(daten.uid === user.uid){
+            }
 
-                updates.push(
+          });
 
-                  update(
-                    ref(
-                      db,
-                      "benutzer/" + child.key
-                    ),
-                    {
-                      online:false,
-                      letzteAktivitaet:
-                        new Date().toISOString()
-                    }
-                  )
+        },
 
-                );
+        {
+          onlyOnce:true
+        }
 
-              }
-
-            });
-
-            await Promise.all(updates);
-
-            resolve();
-
-          },
-
-          {
-            onlyOnce:true
-          }
-
-        );
-
-      });
+      );
 
     }
 
