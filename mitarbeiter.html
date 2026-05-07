@@ -198,7 +198,7 @@ h1{text-align:center;margin-bottom:30px;font-size:48px;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
 const firebaseConfig = {
@@ -212,56 +212,79 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-const mitarbeiterRef = ref(db, 'mitarbeiter');
-const benutzerRef = ref(db, 'benutzer');
+const mitarbeiterRef = ref(db, "mitarbeiter");
+const benutzerRef = ref(db, "benutzer");
 
 let mitarbeiterListe = [];
 let userRolle = "";
+let bearbeiteID = null;
+let aktuellesBild = "";
 
-/* 🔐 LOGIN + ROLLE */
+/* LOGIN + ROLLE */
 onAuthStateChanged(auth, (user) => {
-  if(!user){
+
+  if (!user) {
     window.location.href = "index.html";
     return;
   }
 
   onValue(benutzerRef, (snapshot) => {
+
     snapshot.forEach((child) => {
+
       const daten = child.val();
 
-      if(daten.uid === user.uid){
+      if (daten.uid === user.uid) {
+
         userRolle = daten.rolle;
 
-        if(userRolle !== "admin"){
+        if (userRolle !== "admin") {
+
           const btn = document.querySelector(".top-bar button");
-          if(btn) btn.style.display = "none";
+
+          if (btn) {
+            btn.style.display = "none";
+          }
         }
 
         renderMitarbeiter();
       }
     });
-  }, { onlyOnce:true });
+
+  }, {
+    onlyOnce: true
+  });
+
 });
 
-/* 📊 ALTER */
-function berechneAlter(geburtsdatum){
-  if(!geburtsdatum || geburtsdatum.includes("?")) return "?";
+/* ALTER */
+function berechneAlter(geburtsdatum) {
 
-  if(geburtsdatum.includes(".")){
+  if (!geburtsdatum || geburtsdatum.includes("?")) {
+    return "?";
+  }
+
+  if (geburtsdatum.includes(".")) {
+
     const t = geburtsdatum.split(".");
-    const geburt = new Date(t[2], t[1]-1, t[0]);
+    const geburt = new Date(t[2], t[1] - 1, t[0]);
+
     const heute = new Date();
 
     let alter = heute.getFullYear() - geburt.getFullYear();
 
-    if(
+    if (
       heute.getMonth() < geburt.getMonth() ||
-      (heute.getMonth() === geburt.getMonth() && heute.getDate() < geburt.getDate())
-    ){
+      (
+        heute.getMonth() === geburt.getMonth() &&
+        heute.getDate() < geburt.getDate()
+      )
+    ) {
       alter--;
     }
 
@@ -271,122 +294,259 @@ function berechneAlter(geburtsdatum){
   return "?";
 }
 
-/* 🎨 RENDER */
-function renderMitarbeiter(){
+/* RENDER */
+function renderMitarbeiter() {
+
   const container = document.getElementById("mitarbeiterContainer");
+
   container.innerHTML = "";
 
   mitarbeiterListe.forEach((m, index) => {
+
     container.innerHTML += `
       <div class="card" onclick="showDetails(${index})">
-        ${userRolle === "admin" ? `<button class="remove-btn" onclick="event.stopPropagation(); loescheMitarbeiter(${index})">X</button>` : ""}
-        <img src="${m.bild}">
+
+        ${
+          userRolle === "admin"
+          ? `
+            <button
+              class="remove-btn"
+              style="right:10px;"
+              onclick="event.stopPropagation(); loescheMitarbeiter(${index})"
+            >
+              X
+            </button>
+
+            <button
+              class="admin-btn"
+              style="position:absolute;top:10px;right:55px;padding:6px 10px;font-size:13px;"
+              onclick="event.stopPropagation(); bearbeiteMitarbeiter(${index})"
+            >
+              ✏
+            </button>
+          `
+          : ""
+        }
+
+        <img src="${m.bild || ""}">
+
         <div>
-          <h2>${m.name}</h2>
+          <h2>${m.name || "-"}</h2>
           <p>${berechneAlter(m.geburtsdatum)} Jahre</p>
-          <p>${m.funktion}</p>
+          <p>${m.funktion || "-"}</p>
+          <p><strong>Rolle:</strong> ${m.rolle || "mitarbeiter"}</p>
         </div>
+
       </div>
     `;
   });
+
 }
 
-/* 🔍 DETAILS */
-window.showDetails = function(index){
+/* DETAILS */
+window.showDetails = function(index) {
+
   const m = mitarbeiterListe[index];
 
-  document.getElementById("detailBild").src = m.bild;
-  document.getElementById("detailName").innerText = m.name;
+  document.getElementById("detailBild").src = m.bild || "";
+  document.getElementById("detailName").innerText = m.name || "";
   document.getElementById("detailAlter").innerText = berechneAlter(m.geburtsdatum);
-  document.getElementById("detailWannNK").innerText = m.wannNK;
-  document.getElementById("detailGeburtsdatum").innerText = m.geburtsdatum;
-  document.getElementById("detailFunktion").innerText = m.funktion;
-  document.getElementById("detailBeruf").innerText = m.beruf;
-  document.getElementById("detailAusbildung").innerText = m.ausbildung;
-  document.getElementById("detailSicherheit").innerText = m.sicherheit;
-  document.getElementById("detailErsthelfer").innerText = m.ersthelfer;
-  document.getElementById("detailBrandschutz").innerText = m.brandschutz;
-  document.getElementById("detailDatenschutz").innerText = m.datenschutz;
-  document.getElementById("detailDetektivschein").innerText = m.detektivschein;
-  document.getElementById("detailFirma").innerText = m.firma;
-  document.getElementById("detailFuehrerschein").innerText = m.fuehrerschein;
-  document.getElementById("detailChef").innerText = m.chef;
+  document.getElementById("detailWannNK").innerText = m.wannNK || "";
+  document.getElementById("detailGeburtsdatum").innerText = m.geburtsdatum || "";
+  document.getElementById("detailFunktion").innerText = m.funktion || "";
+  document.getElementById("detailBeruf").innerText = m.beruf || "";
+  document.getElementById("detailAusbildung").innerText = m.ausbildung || "";
+  document.getElementById("detailSicherheit").innerText = m.sicherheit || "";
+  document.getElementById("detailErsthelfer").innerText = m.ersthelfer || "";
+  document.getElementById("detailBrandschutz").innerText = m.brandschutz || "";
+  document.getElementById("detailDatenschutz").innerText = m.datenschutz || "";
+  document.getElementById("detailDetektivschein").innerText = m.detektivschein || "";
+  document.getElementById("detailFirma").innerText = m.firma || "";
+  document.getElementById("detailFuehrerschein").innerText = m.fuehrerschein || "";
+  document.getElementById("detailChef").innerText = m.chef || "";
 
   document.getElementById("detailModal").style.display = "flex";
 };
 
-window.closeModal = function(){
+window.closeModal = function() {
+
   document.getElementById("detailModal").style.display = "none";
+
 };
 
-/* ➕ FORMULAR */
-window.oeffneFormular = function(){
-  if(userRolle !== "admin"){
+/* FORMULAR ÖFFNEN */
+window.oeffneFormular = function() {
+
+  if (userRolle !== "admin") {
     alert("Nur Admins dürfen hinzufügen");
     return;
+  }
+
+  bearbeiteID = null;
+  aktuellesBild = "";
+
+  document.querySelector(".form-content h2").innerText =
+    "Neuen Mitarbeiter anlegen";
+
+  document.getElementById("formName").value = "";
+  document.getElementById("formGeburtsdatum").value = "";
+  document.getElementById("formWannNK").value = "";
+  document.getElementById("formAlter").value = "";
+  document.getElementById("formFunktion").value = "";
+  document.getElementById("formBeruf").value = "";
+  document.getElementById("formAusbildung").value = "";
+  document.getElementById("formSicherheit").value = "";
+  document.getElementById("formErsthelfer").value = "";
+  document.getElementById("formBrandschutz").value = "";
+  document.getElementById("formDatenschutz").value = "";
+  document.getElementById("formDetektivschein").value = "";
+  document.getElementById("formFirma").value = "";
+  document.getElementById("formFuehrerschein").value = "";
+  document.getElementById("formChef").value = "";
+
+  if(document.getElementById("formRolle")){
+    document.getElementById("formRolle").value = "mitarbeiter";
   }
 
   document.getElementById("formularModal").style.display = "flex";
 };
 
-window.schliesseFormular = function(){
-  document.getElementById("formularModal").style.display = "none";
+/* BEARBEITEN */
+window.bearbeiteMitarbeiter = function(index) {
+
+  if (userRolle !== "admin") return;
+
+  const m = mitarbeiterListe[index];
+
+  bearbeiteID = m.id;
+  aktuellesBild = m.bild || "";
+
+  document.querySelector(".form-content h2").innerText =
+    "Mitarbeiter bearbeiten";
+
+  document.getElementById("formName").value = m.name || "";
+  document.getElementById("formGeburtsdatum").value = m.geburtsdatum || "";
+  document.getElementById("formWannNK").value = m.wannNK || "";
+  document.getElementById("formAlter").value = "";
+  document.getElementById("formFunktion").value = m.funktion || "";
+  document.getElementById("formBeruf").value = m.beruf || "";
+  document.getElementById("formAusbildung").value = m.ausbildung || "";
+  document.getElementById("formSicherheit").value = m.sicherheit || "";
+  document.getElementById("formErsthelfer").value = m.ersthelfer || "";
+  document.getElementById("formBrandschutz").value = m.brandschutz || "";
+  document.getElementById("formDatenschutz").value = m.datenschutz || "";
+  document.getElementById("formDetektivschein").value = m.detektivschein || "";
+  document.getElementById("formFirma").value = m.firma || "";
+  document.getElementById("formFuehrerschein").value = m.fuehrerschein || "";
+  document.getElementById("formChef").value = m.chef || "";
+
+  if(document.getElementById("formRolle")){
+    document.getElementById("formRolle").value =
+      m.rolle || "mitarbeiter";
+  }
+
+  document.getElementById("formularModal").style.display = "flex";
 };
 
-/* 💾 SPEICHERN */
-window.speichereMitarbeiter = async function(){
-  if(userRolle !== "admin") return alert("Nur Admin");
+/* FORMULAR SCHLIESSEN */
+window.schliesseFormular = function() {
 
-  const file = document.getElementById("formBild").files[0];
-  if(!file) return alert("Bild fehlt");
+  document.getElementById("formularModal").style.display = "none";
 
-  try{
-    const r = storageRef(storage,"mitarbeiterbilder/"+Date.now()+"_"+file.name);
-    await uploadBytes(r,file);
+};
 
-    const url = await getDownloadURL(r);
+/* SPEICHERN */
+window.speichereMitarbeiter = async function() {
 
-    await push(mitarbeiterRef,{
-      name: document.getElementById("formName").value,
-      geburtsdatum: document.getElementById("formGeburtsdatum").value,
-      wannNK: document.getElementById("formWannNK").value,
-      funktion: document.getElementById("formFunktion").value,
-      beruf: document.getElementById("formBeruf").value,
-      ausbildung: document.getElementById("formAusbildung").value,
-      sicherheit: document.getElementById("formSicherheit").value,
-      ersthelfer: document.getElementById("formErsthelfer").value,
-      brandschutz: document.getElementById("formBrandschutz").value,
-      datenschutz: document.getElementById("formDatenschutz").value,
-      detektivschein: document.getElementById("formDetektivschein").value,
-      firma: document.getElementById("formFirma").value,
-      fuehrerschein: document.getElementById("formFuehrerschein").value,
-      chef: document.getElementById("formChef").value,
-      bild: url
-    });
+  if (userRolle !== "admin") {
+    alert("Nur Admin");
+    return;
+  }
 
-    alert("Gespeichert");
-    location.reload();
+  try {
 
-  }catch(e){
+    let bildURL = aktuellesBild;
+
+    const file = document.getElementById("formBild").files[0];
+
+    if (file) {
+
+      const bildRef = storageRef(
+        storage,
+        "mitarbeiterbilder/" + Date.now() + "_" + file.name
+      );
+
+      await uploadBytes(bildRef, file);
+
+      bildURL = await getDownloadURL(bildRef);
+    }
+
+    const daten = {
+      name: document.getElementById("formName").value || "",
+      geburtsdatum: document.getElementById("formGeburtsdatum").value || "",
+      wannNK: document.getElementById("formWannNK").value || "",
+      funktion: document.getElementById("formFunktion").value || "",
+      beruf: document.getElementById("formBeruf").value || "",
+      ausbildung: document.getElementById("formAusbildung").value || "",
+      sicherheit: document.getElementById("formSicherheit").value || "",
+      ersthelfer: document.getElementById("formErsthelfer").value || "",
+      brandschutz: document.getElementById("formBrandschutz").value || "",
+      datenschutz: document.getElementById("formDatenschutz").value || "",
+      detektivschein: document.getElementById("formDetektivschein").value || "",
+      firma: document.getElementById("formFirma").value || "",
+      fuehrerschein: document.getElementById("formFuehrerschein").value || "",
+      chef: document.getElementById("formChef").value || "",
+      rolle: document.getElementById("formRolle")
+        ? document.getElementById("formRolle").value
+        : "mitarbeiter",
+      bild: bildURL
+    };
+
+    /* UPDATE */
+    if (bearbeiteID) {
+
+      await update(
+        ref(db, "mitarbeiter/" + bearbeiteID),
+        daten
+      );
+
+      alert("Mitarbeiter aktualisiert");
+
+      schliesseFormular();
+
+      return;
+    }
+
+    /* NEU */
+    await push(mitarbeiterRef, daten);
+
+    alert("Mitarbeiter gespeichert");
+
+    schliesseFormular();
+
+  } catch (e) {
+
     console.error(e);
-    alert("Fehler");
+    alert("Fehler beim Speichern");
   }
 };
 
-/* ❌ LÖSCHEN */
-/* ❌ LÖSCHEN */
-window.loescheMitarbeiter = async function(index){
-  if(userRolle !== "admin"){
+/* LÖSCHEN */
+window.loescheMitarbeiter = async function(index) {
+
+  if (userRolle !== "admin") {
     alert("Nur Admins dürfen löschen");
     return;
   }
 
   const ok = confirm("Wirklich löschen?");
-  if(!ok) return;
+
+  if (!ok) return;
 
   const eintrag = mitarbeiterListe[index];
 
-  try{
+  try {
+
     await push(ref(db, "papierkorb"), {
       ...eintrag,
       originalPfad: "mitarbeiter",
@@ -396,31 +556,42 @@ window.loescheMitarbeiter = async function(index){
     await remove(ref(db, "mitarbeiter/" + eintrag.id));
 
     alert("Mitarbeiter in Papierkorb verschoben");
-  }catch(error){
+
+  } catch (error) {
+
     console.error(error);
     alert("Fehler beim Löschen");
   }
 };
-  
-/* ❗ MODAL CLOSE */
-window.onclick = function(e){
-  if(e.target.id === "detailModal") closeModal();
-  if(e.target.id === "formularModal") schliesseFormular();
+
+/* MODAL CLOSE */
+window.onclick = function(e) {
+
+  if (e.target.id === "detailModal") {
+    closeModal();
+  }
+
+  if (e.target.id === "formularModal") {
+    schliesseFormular();
+  }
 };
 
-/* 🔥 LADEN + SORTIERUNG */
+/* LADEN */
 onValue(mitarbeiterRef, (snapshot) => {
+
   mitarbeiterListe = [];
 
   snapshot.forEach((child) => {
+
     mitarbeiterListe.push({
       id: child.key,
       ...child.val()
     });
+
   });
 
-  /* ⭐ SORTIERUNG */
   mitarbeiterListe.sort((a, b) => {
+
     const top = [
       "Nicole, Küttner",
       "Marcel, Maczeyzik",
@@ -430,13 +601,14 @@ onValue(mitarbeiterRef, (snapshot) => {
     const ia = top.indexOf(a.name);
     const ib = top.indexOf(b.name);
 
-    if(ia !== -1 && ib !== -1) return ia - ib;
-    if(ia !== -1) return -1;
-    if(ib !== -1) return 1;
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    if (ia !== -1) return -1;
+    if (ib !== -1) return 1;
 
-    return a.name.localeCompare(b.name, "de");
+    return (a.name || "").localeCompare(b.name || "", "de");
   });
 
   renderMitarbeiter();
+
 });
 </script>
