@@ -98,13 +98,11 @@
     .rolle{
       display:inline-block;
       margin-top:10px;
-      padding:10px 14px;
+      padding:8px 12px;
       border-radius:10px;
       font-size:14px;
       font-weight:bold;
-      cursor:pointer;
-      border:none;
-      color:white;
+      background:#374151;
     }
 
     .rolle.admin{
@@ -123,15 +121,12 @@
     }
 
     @media(max-width:700px){
-
       h1{
         font-size:32px;
       }
-
     }
   </style>
 </head>
-
 <body>
 
   <h1>Benutzerverwaltung</h1>
@@ -143,28 +138,10 @@
   <div class="container" id="container"></div>
   <div class="leer" id="leer"></div>
 
-<script type="module">
+  <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-
-import {
-  getAuth,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-
-import {
-  getDatabase,
-  ref,
-  onValue,
-  update,
-  push
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-
-import {
-  getMessaging,
-  getToken,
-  onMessage
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -176,351 +153,120 @@ const firebaseConfig = {
   appId: "1:328702502215:web:080148f3e768bfafc29862"
 };
 
-const VAPID_KEY =
-  "BE-rnRFY8xtS5q9n0AbahJO6vKzHTx0qJWswxniLPEOT9vv151eaJEbaYwrRd-r1ijlEb7L5dwrKSa2e7hHKAaE";
-
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
 const db = getDatabase(app);
-const messaging = getMessaging(app);
 
-/* PUSH BENACHRICHTIGUNGEN */
-async function pushAktivieren(userUid){
+const benutzerRef = ref(db, "benutzer");
 
-  try{
+let aktuellerBenutzer = null;
+let alleBenutzer = [];
+let eigenerEintragKey = "";
 
-    const permission =
-      await Notification.requestPermission();
-
-    if(permission !== "granted"){
-
-      console.log("Benachrichtigungen nicht erlaubt");
-
-      return;
-    }
-
-    const registration =
-      await navigator.serviceWorker.register(
-        "/firebase-messaging-sw.js"
-      );
-
-    const token = await getToken(
-      messaging,
-      {
-        vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: registration
-      }
-    );
-
-    if(!token){
-
-      console.log("Kein FCM Token erhalten");
-
-      return;
-    }
-
-    console.log("FCM Token:", token);
-
-    const benutzerRef = ref(db, "benutzer");
-
-    onValue(
-      benutzerRef,
-
-      async (snapshot) => {
-
-        snapshot.forEach(async (child) => {
-
-          const daten = child.val();
-
-          if(daten.uid === userUid){
-
-            await update(
-              ref(db, "benutzer/" + child.key),
-              {
-                fcmToken: token
-              }
-            );
-
-            await push(
-              ref(db, "pushSubscriptions"),
-              {
-                uid: userUid,
-                token: token,
-                erstelltAm: Date.now()
-              }
-            );
-
-          }
-
-        });
-
-      },
-
-      {
-        onlyOnce:true
-      }
-
-    );
-
-  }catch(error){
-
-    console.error("Push Fehler:", error);
-
-  }
-
-}
-
-/* APP OFFEN */
-onMessage(messaging, (payload) => {
-
-  console.log(
-    "Foreground Nachricht:",
-    payload
-  );
-
-  if(payload.notification){
-
-    alert(
-      payload.notification.title +
-      "\n\n" +
-      payload.notification.body
-    );
-
-  }
-
-});
-
-/* LOGIN */
-onAuthStateChanged(auth, async (user) => {
-
+/* LOGIN CHECK */
+onAuthStateChanged(auth, (user) => {
   if(!user){
-
     window.location.href = "index.html";
-
     return;
   }
 
-  pushAktivieren(user.uid);
-
-  const benutzerRef = ref(db, "benutzer");
-
-  /* LIVE ROLLEN ÜBERWACHUNG */
-  onValue(benutzerRef, (snapshot) => {
-
-    let istAdmin = false;
+  onValue(benutzerRef, async (snapshot) => {
+    alleBenutzer = [];
+    let aktuellerDatensatz = null;
 
     snapshot.forEach((child) => {
+      const daten = {
+        id: child.key,
+        ...child.val()
+      };
 
-      const daten = child.val();
+      alleBenutzer.push(daten);
 
       if(daten.uid === user.uid){
-
-        if(daten.rolle === "admin"){
-          istAdmin = true;
-        }
-
+        aktuellerDatensatz = daten;
+        eigenerEintragKey = child.key;
       }
-
     });
 
-    /* ADMIN BUTTONS */
-    document.getElementById(
-      "adminBereichBtn"
-    ).style.display =
-      istAdmin ? "flex" : "none";
-
-    document.getElementById(
-      "benachrichtigungenBtn"
-    ).style.display =
-      istAdmin ? "flex" : "none";
-
-    document.getElementById(
-      "papierkorbBtn"
-    ).style.display =
-      istAdmin ? "flex" : "none";
-
-  });
-
-  /* EINMAL ONLINE SETZEN */
-  const snapshot = await new Promise((resolve) => {
-
-    onValue(
-      benutzerRef,
-
-      (snap) => {
-        resolve(snap);
-      },
-
-      {
-        onlyOnce:true
-      }
-
-    );
-
-  });
-
-  snapshot.forEach(async (child) => {
-
-    const daten = child.val();
-
-    if(daten.uid === user.uid){
-
-      await update(
-        ref(db, "benutzer/" + child.key),
-        {
-          online:true,
-          letzteAktivitaet:
-            new Date().toISOString()
-        }
-      );
-
+    if(!aktuellerDatensatz || aktuellerDatensatz.rolle !== "admin"){
+      alert("Nur Admins dürfen diese Seite öffnen");
+      window.location.href = "startseite.html";
+      return;
     }
 
-  });
+    aktuellerBenutzer = aktuellerDatensatz;
 
+    /* 🔥 WICHTIG → sich selbst auf online setzen */
+    if(eigenerEintragKey){
+      await update(ref(db, "benutzer/" + eigenerEintragKey), {
+        online: true,
+        letzteAktivitaet: new Date().toISOString()
+      });
+    }
+
+    render();
+  });
 });
 
-/* TAB SCHLIESSEN */
-window.addEventListener(
-  "beforeunload",
-
-  async () => {
-
+/* 🔥 Beim Tab schließen → offline */
+window.addEventListener("beforeunload", async () => {
+  if(eigenerEintragKey){
     try{
-
-      const user = auth.currentUser;
-
-      if(!user) return;
-
-      const benutzerRef =
-        ref(db, "benutzer");
-
-      onValue(
-        benutzerRef,
-
-        async (snapshot) => {
-
-          snapshot.forEach(async (child) => {
-
-            const daten = child.val();
-
-            if(daten.uid === user.uid){
-
-              await update(
-                ref(
-                  db,
-                  "benutzer/" + child.key
-                ),
-                {
-                  online:false,
-                  letzteAktivitaet:
-                    new Date().toISOString()
-                }
-              );
-
-            }
-
-          });
-
-        },
-
-        {
-          onlyOnce:true
-        }
-
-      );
-
+      await update(ref(db, "benutzer/" + eigenerEintragKey), {
+        online: false,
+        letzteAktivitaet: new Date().toISOString()
+      });
     }catch(error){
-
       console.error(error);
-
     }
-
   }
+});
 
-);
-
-/* LOGOUT */
-window.logout = async function(){
+/* 🔥 Wenn Tab gewechselt wird */
+document.addEventListener("visibilitychange", async () => {
+  if(!eigenerEintragKey) return;
 
   try{
-
-    const user = auth.currentUser;
-
-    if(user){
-
-      const benutzerRef =
-        ref(db, "benutzer");
-
-      await new Promise((resolve) => {
-
-        onValue(
-
-          benutzerRef,
-
-          async (snapshot) => {
-
-            const updates = [];
-
-            snapshot.forEach((child) => {
-
-              const daten = child.val();
-
-              if(daten.uid === user.uid){
-
-                updates.push(
-
-                  update(
-                    ref(
-                      db,
-                      "benutzer/" + child.key
-                    ),
-                    {
-                      online:false,
-                      letzteAktivitaet:
-                        new Date().toISOString()
-                    }
-                  )
-
-                );
-
-              }
-
-            });
-
-            await Promise.all(updates);
-
-            resolve();
-
-          },
-
-          {
-            onlyOnce:true
-          }
-
-        );
-
+    if(document.visibilityState === "visible"){
+      await update(ref(db, "benutzer/" + eigenerEintragKey), {
+        online: true,
+        letzteAktivitaet: new Date().toISOString()
       });
-
+    }else{
+      await update(ref(db, "benutzer/" + eigenerEintragKey), {
+        online: false,
+        letzteAktivitaet: new Date().toISOString()
+      });
     }
-
-    await signOut(auth);
-
-    window.location.href = "index.html";
-
   }catch(error){
-
     console.error(error);
+  }
+});
 
-    alert("Fehler beim Logout");
+/* ANZEIGE */
+function render(){
+  const container = document.getElementById("container");
+  const leer = document.getElementById("leer");
 
+  container.innerHTML = "";
+
+  if(alleBenutzer.length === 0){
+    leer.innerText = "Keine Benutzer gefunden";
+    return;
   }
 
-};
+  leer.innerText = "";
+
+  alleBenutzer.forEach((user) => {
+    container.innerHTML += `
+      <div class="card">
+        <div class="status ${user.online ? "online" : ""}"></div>
+        <h2>${user.vorname || ""} ${user.nachname || ""}</h2>
+        <p><strong>E-Mail:</strong> ${user.email || "-"}</p>
+        <p><strong>Status:</strong> ${user.online ? "Online" : "Offline"}</p>
+        <span class="rolle ${user.rolle}">${user.rolle || "-"}</span>
+      </div>
+    `;
+  });
+}
 </script>
-      
-
-      
-
-  
