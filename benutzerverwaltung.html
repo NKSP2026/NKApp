@@ -235,7 +235,8 @@ import {
   getDatabase,
   ref,
   onValue,
-  update
+  update,
+  onDisconnect
 }
 from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
@@ -260,7 +261,7 @@ let alleBenutzer = [];
 let eigenerEintragKey = "";
 
 /* LOGIN */
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
 
   if(!user){
 
@@ -294,28 +295,46 @@ onAuthStateChanged(auth, (user) => {
     });
 
     /* NUR ADMIN */
-    if(!aktuellerDatensatz ||
-       aktuellerDatensatz.rolle !== "admin"){
+    if(
+      !aktuellerDatensatz ||
+      aktuellerDatensatz.rolle !== "admin"
+    ){
 
-      alert("Nur Admins dürfen diese Seite öffnen");
+      alert(
+        "Nur Admins dürfen diese Seite öffnen"
+      );
 
-      window.location.href = "startseite.html";
+      window.location.href =
+        "startseite.html";
 
       return;
 
     }
 
-    /* ONLINE */
+    /* ONLINE SETZEN */
     if(eigenerEintragKey){
 
-      await update(
-        ref(db, "benutzer/" + eigenerEintragKey),
-        {
-          online:true,
-          letzteAktivitaet:
-            new Date().toISOString()
-        }
+      const userStatusRef = ref(
+        db,
+        "benutzer/" + eigenerEintragKey
       );
+
+      await update(userStatusRef, {
+        online:true,
+        letzteAktivitaet:
+          new Date().toISOString()
+      });
+
+      /* AUTOMATISCH OFFLINE WENN:
+         - Browser geschlossen
+         - Internet weg
+         - Tab beendet
+      */
+      onDisconnect(userStatusRef).update({
+        online:false,
+        letzteAktivitaet:
+          new Date().toISOString()
+      });
 
     }
 
@@ -325,7 +344,7 @@ onAuthStateChanged(auth, (user) => {
 
 });
 
-/* OFFLINE */
+/* TAB VERLASSEN */
 window.addEventListener(
   "beforeunload",
   async () => {
@@ -335,13 +354,67 @@ window.addEventListener(
     try{
 
       await update(
-        ref(db, "benutzer/" + eigenerEintragKey),
+        ref(
+          db,
+          "benutzer/" +
+          eigenerEintragKey
+        ),
         {
           online:false,
           letzteAktivitaet:
             new Date().toISOString()
         }
       );
+
+    }catch(error){
+
+      console.error(error);
+
+    }
+
+  }
+);
+
+/* TAB WECHSEL */
+document.addEventListener(
+  "visibilitychange",
+  async () => {
+
+    if(!eigenerEintragKey) return;
+
+    try{
+
+      if(document.visibilityState === "visible"){
+
+        await update(
+          ref(
+            db,
+            "benutzer/" +
+            eigenerEintragKey
+          ),
+          {
+            online:true,
+            letzteAktivitaet:
+              new Date().toISOString()
+          }
+        );
+
+      }else{
+
+        await update(
+          ref(
+            db,
+            "benutzer/" +
+            eigenerEintragKey
+          ),
+          {
+            online:false,
+            letzteAktivitaet:
+              new Date().toISOString()
+          }
+        );
+
+      }
 
     }catch(error){
 
@@ -422,14 +495,14 @@ async function(id, aktuelleRolle){
     : "admin";
 
   const ok = confirm(
-    "Rolle ändern zu: " + neueRolle + " ?"
+    "Rolle ändern zu: " +
+    neueRolle + " ?"
   );
 
   if(!ok) return;
 
   try{
 
-    /* ADMIN RECHTE */
     let rechte = {};
 
     if(neueRolle === "admin"){
@@ -444,7 +517,11 @@ async function(id, aktuelleRolle){
         dokumente_download:true,
         dokumente_hinzufuegen:true,
 
-        dienstberichte_upload:true
+        dienstberichte_upload:true,
+
+        adminbereich:true,
+        papierkorb:true,
+        benachrichtigungen:true
 
       };
 
@@ -460,7 +537,11 @@ async function(id, aktuelleRolle){
         dokumente_download:true,
         dokumente_hinzufuegen:false,
 
-        dienstberichte_upload:true
+        dienstberichte_upload:true,
+
+        adminbereich:false,
+        papierkorb:false,
+        benachrichtigungen:false
 
       };
 
