@@ -294,8 +294,7 @@ import {
   ref,
   push,
   onValue,
-  remove,
-  set
+  remove
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 import {
@@ -333,6 +332,7 @@ const benutzerRef =
 
 let liste = [];
 let userRolle = "";
+let aktuellerName = "";
 
 /* LOGIN */
 onAuthStateChanged(auth, (user) => {
@@ -347,6 +347,7 @@ onAuthStateChanged(auth, (user) => {
   }
 
   onValue(
+
     benutzerRef,
 
     (snapshot) => {
@@ -358,19 +359,16 @@ onAuthStateChanged(auth, (user) => {
         if(daten.uid === user.uid){
 
           userRolle =
-            daten.rolle || "";
+            String(
+              daten.rolle || ""
+            )
+            .toLowerCase()
+            .trim();
 
-          if(
-            userRolle
-              .toLowerCase()
-              .trim() !== "admin"
-          ){
-
-            document.getElementById(
-              "uploadBtn"
-            ).style.display = "none";
-
-          }
+          aktuellerName =
+            (daten.vorname || "") +
+            " " +
+            (daten.nachname || "");
 
           render();
 
@@ -399,20 +397,6 @@ window.schliessen = function(){
 
 /* SPEICHERN */
 window.speichern = async function(){
-
-  if(
-    userRolle
-      .toLowerCase()
-      .trim() !== "admin"
-  ){
-
-    alert(
-      "Nur Admins dürfen speichern"
-    );
-
-    return;
-
-  }
 
   const titel =
     document.getElementById(
@@ -490,9 +474,10 @@ window.speichern = async function(){
 
         hochgeladenDatum:
           new Date(jetzt)
-          .toLocaleString(
-            "de-DE"
-          )
+          .toLocaleString("de-DE"),
+
+        uploader:
+          aktuellerName
       }
     );
 
@@ -545,7 +530,6 @@ async function pruefeBerichte(){
 
   for(const eintrag of liste){
 
-    /* 7 TAGE */
     const siebenTage =
       7 * 24 * 60 * 60 * 1000;
 
@@ -596,6 +580,7 @@ async function pruefeBerichte(){
 async function pruefePapierkorb(){
 
   onValue(
+
     papierkorbRef,
 
     async (snapshot) => {
@@ -626,7 +611,6 @@ async function pruefePapierkorb(){
 
             try{
 
-              /* DATEI STORAGE */
               if(
                 daten.storagePath
               ){
@@ -643,7 +627,6 @@ async function pruefePapierkorb(){
 
               }
 
-              /* DB */
               await remove(
                 ref(
                   db,
@@ -689,22 +672,20 @@ function render(){
       <div class="card">
 
         ${
-          userRolle
-            .toLowerCase()
-            .trim() === "admin"
+          userRolle === "admin"
 
-            ?
+          ?
 
-            `<button
-              class="remove-btn"
-              onclick="loescheDienstbericht(${i})"
-            >
-              X
-            </button>`
+          `<button
+            class="remove-btn"
+            onclick="loescheDienstbericht(${i})"
+          >
+            X
+          </button>`
 
-            :
+          :
 
-            ""
+          ""
         }
 
         <div class="left">
@@ -724,6 +705,11 @@ function render(){
           <p>
             <strong>Hochgeladen:</strong>
             ${x.hochgeladenDatum || "-"}
+          </p>
+
+          <p>
+            <strong>Von:</strong>
+            ${x.uploader || "-"}
           </p>
 
         </div>
@@ -751,11 +737,7 @@ function render(){
 window.loescheDienstbericht =
 async function(index){
 
-  if(
-    userRolle
-      .toLowerCase()
-      .trim() !== "admin"
-  ){
+  if(userRolle !== "admin"){
 
     alert(
       "Nur Admins dürfen löschen"
@@ -816,6 +798,7 @@ async function(index){
 
 /* LADEN */
 onValue(
+
   dienstberichteRef,
 
   async (snapshot) => {
@@ -842,6 +825,3 @@ onValue(
 );
 
 </script>
-
-</body>
-</html>
