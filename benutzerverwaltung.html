@@ -259,6 +259,7 @@ const benutzerRef = ref(db, "benutzer");
 
 let alleBenutzer = [];
 let eigenerEintragKey = "";
+let userStatusRef = null;
 
 /* LOGIN */
 onAuthStateChanged(auth, async (user) => {
@@ -297,7 +298,11 @@ onAuthStateChanged(auth, async (user) => {
     /* NUR ADMIN */
     if(
       !aktuellerDatensatz ||
-      aktuellerDatensatz.rolle !== "admin"
+      String(
+        aktuellerDatensatz.rolle || ""
+      )
+      .trim()
+      .toLowerCase() !== "admin"
     ){
 
       alert(
@@ -311,32 +316,25 @@ onAuthStateChanged(auth, async (user) => {
 
     }
 
-    /* ONLINE SETZEN */
-    if(eigenerEintragKey){
+    /* USER REFERENZ */
+    userStatusRef = ref(
+      db,
+      "benutzer/" + eigenerEintragKey
+    );
 
-      const userStatusRef = ref(
-        db,
-        "benutzer/" + eigenerEintragKey
-      );
+    /* ONLINE */
+    await update(userStatusRef, {
+      online:true,
+      letzteAktivitaet:
+        new Date().toISOString()
+    });
 
-      await update(userStatusRef, {
-        online:true,
-        letzteAktivitaet:
-          new Date().toISOString()
-      });
-
-      /* AUTOMATISCH OFFLINE WENN:
-         - Browser geschlossen
-         - Internet weg
-         - Tab beendet
-      */
-      onDisconnect(userStatusRef).update({
-        online:false,
-        letzteAktivitaet:
-          new Date().toISOString()
-      });
-
-    }
+    /* AUTOMATISCH OFFLINE */
+    onDisconnect(userStatusRef).update({
+      online:false,
+      letzteAktivitaet:
+        new Date().toISOString()
+    });
 
     render();
 
@@ -344,21 +342,18 @@ onAuthStateChanged(auth, async (user) => {
 
 });
 
-/* TAB VERLASSEN */
+/* TAB / BROWSER SCHLIESSEN */
 window.addEventListener(
   "beforeunload",
+
   async () => {
 
-    if(!eigenerEintragKey) return;
+    if(!userStatusRef) return;
 
     try{
 
       await update(
-        ref(
-          db,
-          "benutzer/" +
-          eigenerEintragKey
-        ),
+        userStatusRef,
         {
           online:false,
           letzteAktivitaet:
@@ -375,23 +370,20 @@ window.addEventListener(
   }
 );
 
-/* TAB WECHSEL */
+/* TAB SICHTBAR / NICHT SICHTBAR */
 document.addEventListener(
   "visibilitychange",
+
   async () => {
 
-    if(!eigenerEintragKey) return;
+    if(!userStatusRef) return;
 
     try{
 
       if(document.visibilityState === "visible"){
 
         await update(
-          ref(
-            db,
-            "benutzer/" +
-            eigenerEintragKey
-          ),
+          userStatusRef,
           {
             online:true,
             letzteAktivitaet:
@@ -402,11 +394,7 @@ document.addEventListener(
       }else{
 
         await update(
-          ref(
-            db,
-            "benutzer/" +
-            eigenerEintragKey
-          ),
+          userStatusRef,
           {
             online:false,
             letzteAktivitaet:
@@ -571,6 +559,3 @@ async function(id, aktuelleRolle){
 };
 
 </script>
-
-</body>
-</html>
