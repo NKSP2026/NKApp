@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NKSP Sicherheitsdienst</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="icon" type="image/png" href="icon-192.png">
+<title>NKSP Sicherheitsdienst</title>
+
+<link rel="icon" type="image/png" href="icon-192.png">
 
 <style>
 
@@ -22,6 +23,7 @@ body{
   min-height:100vh;
   padding:20px;
   text-align:center;
+
   position:relative;
   overflow-x:hidden;
 }
@@ -34,9 +36,9 @@ body::before{
 
   background-image:url("icon-512.png");
   background-repeat:repeat;
-  background-size:340px;
+  background-size:320px;
 
-  opacity:0.05;
+  opacity:0.045;
 
   filter:
     grayscale(100%)
@@ -71,16 +73,14 @@ body > *{
   margin:0 auto 40px auto;
 
   display:grid;
-
   grid-template-columns:
     repeat(auto-fit,minmax(220px,1fr));
 
   gap:18px;
-
   align-items:stretch;
 }
 
-/* 3D BUTTON */
+/* BUTTON */
 .admin-btn{
   position:relative;
   overflow:hidden;
@@ -111,8 +111,7 @@ body > *{
 
   transition:
     transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
+    box-shadow 0.15s ease;
 
   box-shadow:
     0 12px 0 #1e40af,
@@ -121,19 +120,14 @@ body > *{
     inset 0 -4px 8px rgba(0,0,0,0.25);
 
   transform:translateY(0);
-
-  backdrop-filter:blur(3px);
 }
 
 /* GLOW */
 .admin-btn::before{
   content:"";
-
   position:absolute;
-
   top:0;
   left:0;
-
   width:100%;
   height:50%;
 
@@ -157,7 +151,7 @@ body > *{
     inset 0 -4px 8px rgba(0,0,0,0.25);
 }
 
-/* BUTTON DRÜCKEN */
+/* KLICK */
 .admin-btn:active{
   transform:translateY(8px);
 
@@ -184,45 +178,24 @@ body > *{
     inset 0 -4px 8px rgba(0,0,0,0.25);
 }
 
-.logout-btn:hover{
-  box-shadow:
-    0 16px 0 #7f1d1d,
-    0 24px 38px rgba(0,0,0,0.55),
-    inset 0 2px 0 rgba(255,255,255,0.35),
-    inset 0 -4px 8px rgba(0,0,0,0.25);
-}
-
-.logout-btn:active{
-  box-shadow:
-    0 4px 0 #7f1d1d,
-    0 8px 16px rgba(0,0,0,0.35),
-    inset 0 2px 0 rgba(255,255,255,0.2),
-    inset 0 -2px 6px rgba(0,0,0,0.3);
-}
-
 /* FOOTER */
 .footer-text{
   max-width:1000px;
-
   margin:50px auto 0 auto;
 
   background:linear-gradient(
     180deg,
-    rgba(35,35,39,0.88),
-    rgba(26,26,29,0.88)
+    #232327,
+    #1a1a1d
   );
-
-  backdrop-filter:blur(8px);
 
   border-radius:28px;
 
   padding:35px 30px;
 
   color:#bdbdbd;
-
   font-size:15px;
   line-height:1.9;
-
   text-align:center;
 
   box-shadow:
@@ -242,13 +215,13 @@ body > *{
   }
 
   body::before{
-    background-size:240px;
+    background-size:220px;
     opacity:0.04;
   }
 
   .logo{
     margin-top:10px;
-    margin-bottom:24px;
+    margin-bottom:25px;
     border-radius:18px;
   }
 
@@ -258,30 +231,25 @@ body > *{
   }
 
   .admin-btn{
-    font-size:16px;
-    min-height:64px;
-    padding:14px 10px;
+    font-size:17px;
+    min-height:68px;
+    padding:16px 10px;
     border-radius:18px;
   }
 
   .footer-text{
-    padding:25px 20px;
+    padding:22px 18px;
     font-size:13px;
     margin-top:30px;
   }
-
 }
 
 /* HANDY */
 @media (max-width:480px){
 
-  body{
-    padding:10px;
-  }
-
   body::before{
-    background-size:170px;
-    opacity:0.03;
+    background-size:160px;
+    opacity:0.035;
   }
 
   .top-bar{
@@ -290,31 +258,16 @@ body > *{
   }
 
   .admin-btn{
-    font-size:14px;
-    min-height:54px;
-    padding:10px 8px;
+    font-size:15px;
+    min-height:58px;
+    padding:12px 8px;
     border-radius:14px;
-
-    box-shadow:
-      0 6px 0 #1e40af,
-      0 10px 18px rgba(0,0,0,0.35),
-      inset 0 2px 0 rgba(255,255,255,0.22),
-      inset 0 -3px 6px rgba(0,0,0,0.2);
-  }
-
-  .logout-btn{
-    box-shadow:
-      0 6px 0 #7f1d1d,
-      0 10px 18px rgba(0,0,0,0.35),
-      inset 0 2px 0 rgba(255,255,255,0.22),
-      inset 0 -3px 6px rgba(0,0,0,0.2);
   }
 
   .footer-text{
     font-size:12px;
     line-height:1.7;
   }
-
 }
 
 </style>
@@ -326,22 +279,39 @@ body > *{
 
 <div class="top-bar">
 
-  <a class="admin-btn" href="mitarbeiter.html">Mitarbeiter</a>
+  <a class="admin-btn" href="mitarbeiter.html">
+    Mitarbeiter
+  </a>
 
-  <a class="admin-btn" href="dienste.html">Dienste</a>
+  <a class="admin-btn" href="dienste.html">
+    Dienste
+  </a>
 
-  <a class="admin-btn" href="dienst-zusagen.html">Dienst-Zusagen</a>
+  <a class="admin-btn" href="dienst-zusagen.html">
+    Dienst-Zusagen
+  </a>
 
-  <a class="admin-btn" href="dienstberichte.html">Dienstberichte</a>
+  <a class="admin-btn" href="dienstberichte.html">
+    Dienstberichte
+  </a>
 
-  <a class="admin-btn" href="dokumente.html">Dokumente</a>
+  <a class="admin-btn" href="dokumente.html">
+    Dokumente
+  </a>
 
-  <a class="admin-btn" href="chat.html">Chat</a>
+  <a class="admin-btn" href="chat.html">
+    Chat
+  </a>
 
-  <a class="admin-btn" href="schulungen.html">Schulungen</a>
+  <a class="admin-btn" href="schulungen.html">
+    Schulungen
+  </a>
 
-  <a class="admin-btn" href="bilder.html">Bilder</a>
+  <a class="admin-btn" href="bilder.html">
+    Bilder
+  </a>
 
+  <!-- ADMIN -->
   <a
     href="benachrichtigungen.html"
     class="admin-btn"
@@ -415,20 +385,24 @@ body > *{
   </p>
 
   <p>
-    Alle dargestellten Mitarbeiterdaten dienen ausschließlich internen Zwecken.
+    Alle dargestellten Mitarbeiterdaten dienen
+    ausschließlich internen Zwecken.
   </p>
 
   <p>
-    Unbefugte Weitergabe, Speicherung oder Veröffentlichung der Daten ist untersagt.
+    Unbefugte Weitergabe, Speicherung oder
+    Veröffentlichung der Daten ist untersagt.
   </p>
 
   <p>
-    Der Zugriff auf diese Seite ist nur autorisierten Personen gestattet.
+    Der Zugriff auf diese Seite ist nur
+    autorisierten Personen gestattet.
   </p>
 
   <p>
-    Personenbezogene Daten sind vertraulich zu behandeln
-    und gemäß DSGVO nur intern zu verwenden.
+    Personenbezogene Daten sind vertraulich zu
+    behandeln und gemäß DSGVO nur intern zu
+    verwenden.
   </p>
 
   <p>
@@ -440,6 +414,214 @@ body > *{
   </p>
 
 </div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+
+import {
+  getAuth,
+  signOut,
+  onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  onValue,
+  update,
+  onDisconnect
+}
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
+
+const app =
+  initializeApp(firebaseConfig);
+
+const auth =
+  getAuth(app);
+
+const db =
+  getDatabase(app);
+
+const adminBereichBtn =
+document.getElementById(
+  "adminBereichBtn"
+);
+
+const benachrichtigungenBtn =
+document.getElementById(
+  "benachrichtigungenBtn"
+);
+
+const papierkorbBtn =
+document.getElementById(
+  "papierkorbBtn"
+);
+
+let eigenerUserRef = null;
+
+/* LOGIN */
+onAuthStateChanged(
+
+  auth,
+
+  async (user) => {
+
+    if(!user){
+
+      window.location.href =
+        "index.html";
+
+      return;
+
+    }
+
+    onValue(
+
+      ref(db, "benutzer"),
+
+      async (snapshot) => {
+
+        let aktuellerUser = null;
+        let aktuellerKey = null;
+
+        snapshot.forEach((child) => {
+
+          const daten = child.val();
+
+          if(daten.uid === user.uid){
+
+            aktuellerUser = daten;
+            aktuellerKey = child.key;
+
+          }
+
+        });
+
+        if(!aktuellerUser){
+          return;
+        }
+
+        /* RESET */
+        adminBereichBtn.style.display =
+          "none";
+
+        benachrichtigungenBtn.style.display =
+          "none";
+
+        papierkorbBtn.style.display =
+          "none";
+
+        /* ADMIN */
+        const rolle =
+          String(
+            aktuellerUser.rolle || ""
+          )
+          .trim()
+          .toLowerCase();
+
+        if(rolle === "admin"){
+
+          adminBereichBtn.style.display =
+            "flex";
+
+          benachrichtigungenBtn.style.display =
+            "flex";
+
+          papierkorbBtn.style.display =
+            "flex";
+
+        }
+
+        /* ONLINE */
+        if(!eigenerUserRef){
+
+          eigenerUserRef =
+            ref(
+              db,
+              "benutzer/" +
+              aktuellerKey
+            );
+
+          await update(
+            eigenerUserRef,
+            {
+              online:true,
+              letzteAktivitaet:
+                new Date()
+                .toISOString()
+            }
+          );
+
+          onDisconnect(
+            eigenerUserRef
+          ).update({
+            online:false,
+            letzteAktivitaet:
+              new Date()
+              .toISOString()
+          });
+
+        }
+
+      }
+
+    );
+
+  }
+
+);
+
+/* LOGOUT */
+window.logout =
+async function(){
+
+  try{
+
+    if(eigenerUserRef){
+
+      await update(
+        eigenerUserRef,
+        {
+          online:false,
+          letzteAktivitaet:
+            new Date()
+            .toISOString()
+        }
+      );
+
+    }
+
+    await signOut(auth);
+
+    window.location.href =
+      "index.html";
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "Fehler beim Logout"
+    );
+
+  }
+
+};
+
+</script>
 
 </body>
 </html>
