@@ -2,14 +2,27 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>Login - NKSP Sicherheitsdienst</title>
 
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#111111">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <meta
+    name="theme-color"
+    content="#111111"
+  >
+
+  <link
+    rel="apple-touch-icon"
+    href="icons/icon-192.png"
+  >
 
   <style>
+
     *{
       box-sizing:border-box;
       margin:0;
@@ -20,20 +33,29 @@
     body{
       background:#111;
       color:white;
+
       display:flex;
       justify-content:center;
       align-items:center;
+
       min-height:100vh;
+
       padding:20px;
     }
 
     .login-box{
       width:100%;
       max-width:500px;
+
       background:#1c1c1f;
+
       padding:40px;
+
       border-radius:24px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.5);
+
+      box-shadow:
+        0 10px 30px rgba(0,0,0,0.5);
+
       text-align:center;
     }
 
@@ -50,16 +72,22 @@
 
     input{
       width:100%;
+
       padding:14px;
+
       border-radius:12px;
+
       border:1px solid #444;
+
       background:#111;
+
       color:white;
+
       margin-bottom:20px;
+
       font-size:16px;
     }
 
-    /* 👁 Passwort Wrapper */
     .password-wrapper{
       position:relative;
     }
@@ -70,26 +98,43 @@
 
     .toggle-eye{
       position:absolute;
+
       right:15px;
       top:50%;
+
       transform:translateY(-50%);
+
       cursor:pointer;
+
       font-size:20px;
-      color:#dc2626; /* ROT */
+
+      color:#dc2626;
+
       user-select:none;
     }
 
     button{
       width:100%;
+
       padding:14px;
+
       background:#2563eb;
+
       color:white;
+
       border:none;
+
       border-radius:12px;
+
       font-size:18px;
+
       font-weight:bold;
+
       cursor:pointer;
+
       margin-bottom:15px;
+
+      transition:0.2s;
     }
 
     button:hover{
@@ -116,104 +161,164 @@
       line-height:1.8;
       margin-top:20px;
     }
+
   </style>
 </head>
+
 <body>
 
 <div class="login-box">
+
   <h1>NKSP Sicherheitsdienst</h1>
 
-  <p>Zugriff nur für autorisierte Personen.</p>
+  <p>
+    Zugriff nur für autorisierte Personen.
+  </p>
 
-  <form id="loginForm" autocomplete="on">
-
-  <input
-    type="email"
-    id="email"
-    name="email"
-    placeholder="E-Mail"
-    autocomplete="username email"
-    inputmode="email"
-    autocapitalize="off"
-    spellcheck="false"
-    required
+  <!-- WICHTIG FÜR PASSWORT SPEICHERN -->
+  <form
+    id="loginForm"
+    autocomplete="on"
+    method="post"
   >
 
-  <div class="password-wrapper">
-
     <input
-      type="password"
-      id="passwort"
-      name="password"
-      placeholder="Passwort"
-      autocomplete="current-password"
+      type="email"
+      id="email"
+      name="email"
+      placeholder="E-Mail"
+      autocomplete="username"
+      inputmode="email"
+      autocapitalize="off"
+      spellcheck="false"
       required
     >
 
-    <span
-      class="toggle-eye"
-      id="eye"
-      onclick="togglePasswort()"
-    >
-      👁
-    </span>
+    <div class="password-wrapper">
 
-  </div>
+      <input
+        type="password"
+        id="passwort"
+        name="password"
+        placeholder="Passwort"
+        autocomplete="current-password"
+        required
+      >
 
-  <div class="error" id="fehler"></div>
+      <span
+        class="toggle-eye"
+        id="eye"
+        onclick="togglePasswort()"
+      >
+        👁
+      </span>
 
-  <button type="submit">
-    Anmelden
+    </div>
+
+    <div
+      class="error"
+      id="fehler"
+    ></div>
+
+    <button type="submit">
+      Anmelden
+    </button>
+
+  </form>
+
+  <button
+    class="register-btn"
+    onclick="window.location.href='registrierung.html'"
+  >
+    Noch nicht registriert?
   </button>
 
-</form>
-
-<button
-  class="register-btn"
-  onclick="window.location.href='registrierung.html'"
->
-  Noch nicht registriert?
-</button>
-
   <div class="footer-text">
-    <p>Diese Seite wurde erstellt von Ronny Winkler.</p>
-    <p>Pflege und Aktualisierung durch Nicole Küttner, Marcel Maczeyzik und Ronny Winkler.</p>
-    <p>Alle dargestellten Mitarbeiterdaten dienen ausschließlich internen Zwecken.</p>
-    <p>Unbefugte Weitergabe, Speicherung oder Veröffentlichung der Daten ist untersagt.</p>
-    <p>Der Zugriff auf diese Seite ist nur autorisierten Personen gestattet.</p>
-    <p>Personenbezogene Daten sind vertraulich zu behandeln und gemäß DSGVO nur intern zu verwenden.</p>
-    <p>© 2026 NKSP Sicherheitsdienst</p>
+
+    <p>
+      Diese Seite wurde erstellt von Ronny Winkler.
+    </p>
+
+    <p>
+      Pflege und Aktualisierung durch Nicole Küttner,
+      Marcel Maczeyzik und Ronny Winkler.
+    </p>
+
+    <p>
+      Alle dargestellten Mitarbeiterdaten dienen
+      ausschließlich internen Zwecken.
+    </p>
+
+    <p>
+      Unbefugte Weitergabe, Speicherung oder
+      Veröffentlichung der Daten ist untersagt.
+    </p>
+
+    <p>
+      Der Zugriff auf diese Seite ist nur
+      autorisierten Personen gestattet.
+    </p>
+
+    <p>
+      Personenbezogene Daten sind vertraulich zu
+      behandeln und gemäß DSGVO nur intern zu verwenden.
+    </p>
+
+    <p>
+      © 2026 NKSP Sicherheitsdienst
+    </p>
+
   </div>
+
 </div>
 
 <script>
-/* 👁 Passwort anzeigen/verstecken */
+
+/* PASSWORT ANZEIGEN */
 function togglePasswort(){
-  const input = document.getElementById("passwort");
-  const eye = document.getElementById("eye");
+
+  const input =
+    document.getElementById(
+      "passwort"
+    );
+
+  const eye =
+    document.getElementById(
+      "eye"
+    );
 
   if(input.type === "password"){
+
     input.type = "text";
-    eye.style.color = "#22c55e"; // GRÜN
+
+    eye.style.color =
+      "#22c55e";
+
   }else{
+
     input.type = "password";
-    eye.style.color = "#dc2626"; // ROT
+
+    eye.style.color =
+      "#dc2626";
+
   }
+
 }
+
 </script>
 
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 
 import {
   getAuth,
   signInWithEmailAndPassword,
   setPersistence,
   browserLocalPersistence
-}
-from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 import {
   getDatabase,
@@ -221,8 +326,7 @@ import {
   onValue,
   update,
   onDisconnect
-}
-from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -234,10 +338,14 @@ const firebaseConfig = {
   appId: "1:328702502215:web:080148f3e768bfafc29862"
 };
 
-const app = initializeApp(firebaseConfig);
+const app =
+  initializeApp(firebaseConfig);
 
-const auth = getAuth(app);
-const db = getDatabase(app);
+const auth =
+  getAuth(app);
+
+const db =
+  getDatabase(app);
 
 /* ANGEMELDET BLEIBEN */
 await setPersistence(
@@ -245,7 +353,35 @@ await setPersistence(
   browserLocalPersistence
 );
 
-/* FORM LOGIN */
+/* LETZTE EMAIL */
+window.addEventListener(
+
+  "load",
+
+  () => {
+
+    const letzteEmail =
+      localStorage.getItem(
+        "letzteEmail"
+      );
+
+    if(letzteEmail){
+
+      document.getElementById(
+        "email"
+      ).value = letzteEmail;
+
+      document.getElementById(
+        "passwort"
+      ).focus();
+
+    }
+
+  }
+
+);
+
+/* ENTER TASTE */
 document
   .getElementById("loginForm")
   .addEventListener(
@@ -261,7 +397,7 @@ document
     }
 
 );
-  
+
 /* LOGIN */
 window.login = async function(){
 
@@ -304,7 +440,7 @@ window.login = async function(){
     const user =
       userCredential.user;
 
-    /* EMAIL SPEICHERN */
+    /* EMAIL MERKEN */
     localStorage.setItem(
       "letzteEmail",
       email
@@ -373,6 +509,18 @@ window.login = async function(){
 
     );
 
+    /* PASSKEY / FINGERABDRUCK HINWEIS */
+    if(
+      window.PasswordCredential ||
+      window.PublicKeyCredential
+    ){
+
+      console.log(
+        "Browser unterstützt Passwortmanager/Fingerabdruck"
+      );
+
+    }
+
     window.location.href =
       "startseite.html";
 
@@ -415,40 +563,6 @@ window.login = async function(){
 
 };
 
-/* LETZTE EMAIL AUTOMATISCH */
-window.addEventListener(
-
-  "load",
-
-  () => {
-
-    const letzteEmail =
-      localStorage.getItem(
-        "letzteEmail"
-      );
-
-    if(letzteEmail){
-
-      document.getElementById(
-        "email"
-      ).value = letzteEmail;
-
-      document.getElementById(
-        "passwort"
-      ).focus();
-
-    }else{
-
-      document.getElementById(
-        "email"
-      ).focus();
-
-    }
-
-  }
-
-);
-
 /* SERVICE WORKER */
 if("serviceWorker" in navigator){
 
@@ -486,3 +600,6 @@ if("serviceWorker" in navigator){
 }
 
 </script>
+
+</body>
+</html>
