@@ -315,27 +315,32 @@ body{
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 
 import {
   getAuth,
   signOut,
   onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+}
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 import {
   getDatabase,
   ref,
   onValue,
   update,
-  push
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+  push,
+  onDisconnect
+}
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 import {
   getMessaging,
   getToken,
   onMessage
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js";
+}
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -504,7 +509,7 @@ onAuthStateChanged(
     const benutzerRef =
       ref(db, "benutzer");
 
-    /* LIVE */
+    /* LIVE ÜBERWACHUNG */
     onValue(
       benutzerRef,
 
@@ -549,12 +554,24 @@ onAuthStateChanged(
           }
         );
 
+        /* AUTOMATISCH OFFLINE */
+        onDisconnect(
+          ref(
+            db,
+            "benutzer/" + aktuellerKey
+          )
+        ).update({
+          online:false,
+          letzteAktivitaet:
+            new Date().toISOString()
+        });
+
         /* RESET */
         adminBereichBtn.style.display = "none";
         benachrichtigungenBtn.style.display = "none";
         papierkorbBtn.style.display = "none";
 
-        /* ADMIN */
+        /* ROLLE */
         const rolle =
           String(
             aktuellerUser.rolle || ""
@@ -562,19 +579,26 @@ onAuthStateChanged(
           .trim()
           .toLowerCase();
 
-        console.log("ROLLE:", rolle);
+        console.log(
+          "ROLLE:",
+          rolle
+        );
 
+        /* ADMIN */
         if(rolle === "admin"){
 
           console.log(
             "ADMIN ERKANNT"
           );
 
-          adminBereichBtn.style.display = "flex";
+          adminBereichBtn.style.display =
+            "flex";
 
-          benachrichtigungenBtn.style.display = "flex";
+          benachrichtigungenBtn.style.display =
+            "flex";
 
-          papierkorbBtn.style.display = "flex";
+          papierkorbBtn.style.display =
+            "flex";
 
         }
 
@@ -682,6 +706,3 @@ async function(){
 };
 
 </script>
-
-</body>
-</html>
