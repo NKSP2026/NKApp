@@ -1,18 +1,11 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chat - NKSP Sicherheitsdienst</title>
 
 <style>
-
 *{
   margin:0;
   padding:0;
@@ -32,7 +25,6 @@ h1{
   margin-bottom:25px;
 }
 
-/* TOP */
 .top-bar{
   display:flex;
   justify-content:center;
@@ -41,179 +33,61 @@ h1{
   margin-bottom:25px;
 }
 
-/* 3D BUTTON */
 .admin-btn{
-  position:relative;
-  overflow:hidden;
-
-  background:linear-gradient(
-    180deg,
-    #3b82f6 0%,
-    #2563eb 45%,
-    #1d4ed8 100%
-  );
-
+  background:#2563eb;
   color:white;
   border:none;
-
-  padding:14px 22px;
-
-  border-radius:16px;
-
+  padding:12px 20px;
+  border-radius:12px;
   cursor:pointer;
-
   font-size:16px;
   font-weight:bold;
-
   text-decoration:none;
-
-  box-shadow:
-    0 8px 0 #1e40af,
-    0 14px 22px rgba(0,0,0,0.35),
-    inset 0 2px 0 rgba(255,255,255,0.2);
-
-  transition:0.15s;
 }
 
-.admin-btn:hover{
-  transform:translateY(-3px);
-
-  box-shadow:
-    0 11px 0 #1e40af,
-    0 18px 28px rgba(0,0,0,0.45),
-    inset 0 2px 0 rgba(255,255,255,0.25);
+.delete-btn{
+  background:#dc2626;
 }
 
-.admin-btn:active{
-  transform:translateY(5px);
-
-  box-shadow:
-    0 3px 0 #1e40af,
-    0 7px 12px rgba(0,0,0,0.35);
-}
-
-/* AUSWAHL */
 .chat-select{
   max-width:900px;
   margin:0 auto 20px auto;
 }
 
-select,
-input,
-button{
+select,input,button{
   width:100%;
-
   padding:12px;
-
   border-radius:12px;
-
   border:1px solid #444;
-
   background:#1c1c1f;
-
   color:white;
-
   font-size:15px;
 }
 
-/* ONLINE BOX */
-.online-box{
-  max-width:900px;
-
-  margin:20px auto;
-
-  background:#1c1c1f;
-
-  border-radius:20px;
-
-  padding:20px;
-
-  box-shadow:
-    0 10px 25px rgba(0,0,0,0.35);
-}
-
-.online-box h2{
-  margin-bottom:15px;
-  font-size:22px;
-}
-
-.online-user{
-  margin-bottom:10px;
-  color:#ccc;
-
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.status-dot{
-  width:12px;
-  height:12px;
-  border-radius:50%;
-  background:#22c55e;
-
-  box-shadow:
-    0 0 10px rgba(34,197,94,0.8);
-}
-
-/* CHAT BOX */
 .chat-box{
   max-width:900px;
-
   margin:auto;
-
   background:#1c1c1f;
-
   border-radius:20px;
-
   padding:20px;
-
   min-height:500px;
-
   display:flex;
   flex-direction:column;
-
-  box-shadow:
-    0 10px 25px rgba(0,0,0,0.35);
 }
 
 .messages{
   flex:1;
-
   max-height:500px;
-
   overflow-y:auto;
-
   margin-bottom:20px;
 }
 
-/* NACHRICHT */
 .message{
   background:#151518;
-
-  border-radius:18px;
-
+  border-radius:16px;
   padding:15px;
-
   margin-bottom:12px;
-
   position:relative;
-
-  animation:fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn{
-
-  from{
-    opacity:0;
-    transform:translateY(10px);
-  }
-
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
-
 }
 
 .message h3{
@@ -231,29 +105,19 @@ button{
   color:#888;
 }
 
-/* DELETE */
 .remove-btn{
   position:absolute;
-
   top:10px;
   right:10px;
-
   background:#dc2626;
-
   color:white;
-
   border:none;
-
   border-radius:8px;
-
   padding:4px 8px;
-
   cursor:pointer;
-
   width:auto;
 }
 
-/* SENDEN */
 .send-area{
   display:flex;
   gap:10px;
@@ -269,9 +133,25 @@ button{
   min-width:160px;
 }
 
-/* MOBILE */
-@media(max-width:800px){
+.online-box{
+  max-width:900px;
+  margin:20px auto;
+  background:#1c1c1f;
+  border-radius:20px;
+  padding:15px;
+}
 
+.online-box h2{
+  margin-bottom:10px;
+  font-size:20px;
+}
+
+.online-user{
+  margin-bottom:8px;
+  color:#ccc;
+}
+
+@media(max-width:800px){
   .send-area{
     flex-direction:column;
   }
@@ -279,538 +159,197 @@ button{
   .send-area button{
     width:100%;
   }
-
 }
-
 </style>
 </head>
-
 <body>
 
 <h1>Chat</h1>
 
 <div class="top-bar">
-
-  <a
-    href="startseite.html"
-    class="admin-btn"
-  >
-    Zurück
-  </a>
-
+  <a href="startseite.html" class="admin-btn">Zurück</a>
 </div>
 
-<!-- CHAT AUSWAHL -->
 <div class="chat-select">
-
-  <select
-    id="chatRaum"
-    onchange="wechselChat()"
-  >
-
-    <option value="allgemein">
-      Allgemeiner Chat
-    </option>
-
-    <option value="dienst">
-      Dienst Chat
-    </option>
-
-    <option value="ausbildung">
-      Ausbildungs Chat
-    </option>
-
-    <option value="einsatz">
-      Einsatzbesprechung
-    </option>
-
+  <select id="chatRaum" onchange="wechselChat()">
+    <option value="allgemein">Allgemeiner Chat</option>
+    <option value="dienst">Dienst Chat</option>
+    <option value="ausbildung">Ausbildungs Chat</option>
+    <option value="einsatz">Einsatzbesprechung</option>
   </select>
-
 </div>
 
-<!-- ONLINE -->
 <div class="online-box">
-
-  <h2>
-    Online Mitarbeiter
-  </h2>
-
+  <h2>Online Mitarbeiter</h2>
   <div id="onlineContainer"></div>
-
 </div>
 
-<!-- CHAT -->
 <div class="chat-box">
-
-  <div
-    class="messages"
-    id="messages"
-  ></div>
+  <div class="messages" id="messages"></div>
 
   <div class="send-area">
-
-    <input
-      id="nachricht"
-      placeholder="Nachricht schreiben..."
-    >
-
-    <button
-      class="admin-btn"
-      onclick="senden()"
-    >
-      Senden
-    </button>
-
+    <input id="nachricht" placeholder="Nachricht schreiben...">
+    <button class="admin-btn" onclick="senden()">Senden</button>
   </div>
-
 </div>
 
 <script type="module">
-
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-
-import {
-  getAuth,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-
-import {
-  getDatabase,
-  ref,
-  push,
-  onValue,
-  remove,
-  update,
-  onDisconnect
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
-
-  apiKey:
-  "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
-
-  authDomain:
-  "nksp-app.firebaseapp.com",
-
-  databaseURL:
-  "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
-
-  projectId:
-  "nksp-app",
-
-  storageBucket:
-  "nksp-app.firebasestorage.app",
-
-  messagingSenderId:
-  "328702502215",
-
-  appId:
-  "1:328702502215:web:080148f3e768bfafc29862"
-
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
 };
 
-const app =
-  initializeApp(firebaseConfig);
-
-const auth =
-  getAuth(app);
-
-const db =
-  getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
 let aktuellerUser = null;
-
 let userName = "";
-
 let userRolle = "";
-
-let aktuellerRaum =
-  "allgemein";
-
+let aktuellerRaum = "allgemein";
 let aktuelleListe = [];
 
-/* ZEIT */
 function zeitFormat(){
-
-  const now =
-    new Date();
-
-  return now.toLocaleString(
-    "de-DE"
-  );
-
+  const now = new Date();
+  return now.toLocaleString("de-DE");
 }
 
-/* CHAT LADEN */
 function ladeChat(){
+  const chatRef = ref(db, "chat/" + aktuellerRaum);
 
-  const chatRef =
-    ref(
-      db,
-      "chat/" + aktuellerRaum
-    );
+  onValue(chatRef, (snapshot) => {
+    aktuelleListe = [];
 
-  onValue(
+    snapshot.forEach((child) => {
+      aktuelleListe.push({
+        id: child.key,
+        ...child.val()
+      });
+    });
 
-    chatRef,
-
-    (snapshot) => {
-
-      aktuelleListe = [];
-
-      snapshot.forEach(
-        (child) => {
-
-          aktuelleListe.push({
-
-            id: child.key,
-
-            ...child.val()
-
-          });
-
-        }
-      );
-
-      render();
-
-    }
-
-  );
-
+    render();
+  });
 }
 
-/* CHAT RENDERN */
 function render(){
-
-  const container =
-    document.getElementById(
-      "messages"
-    );
-
+  const container = document.getElementById("messages");
   container.innerHTML = "";
 
-  aktuelleListe.forEach(
-    (msg, index) => {
+  aktuelleListe.forEach((msg, index) => {
+    container.innerHTML += `
+      <div class="message">
+        ${userRolle === "admin"
+          ? `<button class="remove-btn" onclick="loeschen(${index})">X</button>`
+          : ""}
 
-      container.innerHTML += `
+        <h3>${msg.name || "Unbekannt"}</h3>
+        <p>${msg.text || ""}</p>
+        <small>${msg.zeit || ""}</small>
+      </div>
+    `;
+  });
 
-        <div class="message">
-
-          ${
-            userRolle === "admin"
-
-            ?
-
-            `<button
-              class="remove-btn"
-              onclick="loeschen(${index})"
-            >
-              X
-            </button>`
-
-            :
-
-            ""
-          }
-
-          <h3>
-            ${msg.name || "Unbekannt"}
-          </h3>
-
-          <p>
-            ${msg.text || ""}
-          </p>
-
-          <small>
-            ${msg.zeit || ""}
-          </small>
-
-        </div>
-
-      `;
-
-    }
-
-  );
-
-  container.scrollTop =
-    container.scrollHeight;
-
+  container.scrollTop = container.scrollHeight;
 }
 
-/* CHAT WECHSEL */
-window.wechselChat =
-function(){
-
-  aktuellerRaum =
-    document.getElementById(
-      "chatRaum"
-    ).value;
-
+window.wechselChat = function(){
+  aktuellerRaum = document.getElementById("chatRaum").value;
   ladeChat();
-
 };
 
-/* SENDEN */
-window.senden =
-async function(){
-
-  const text =
-    document
-      .getElementById(
-        "nachricht"
-      )
-      .value
-      .trim();
+window.senden = async function(){
+  const text = document.getElementById("nachricht").value.trim();
 
   if(!text) return;
 
   try{
+    await push(ref(db, "chat/" + aktuellerRaum), {
+      name: userName,
+      text: text,
+      zeit: zeitFormat(),
+      uid: aktuellerUser.uid
+    });
 
-    await push(
+    /* ADMIN BENACHRICHTIGUNG */
+    await push(ref(db, "benachrichtigungen"), {
+      titel: "Neue Chatnachricht",
+      name: userName,
+      typ: "Chat",
+      text: `${userName} schrieb im Chat "${aktuellerRaum}"`,
+      zeit: Date.now()
+    });
 
-      ref(
-        db,
-        "chat/" + aktuellerRaum
-      ),
-
-      {
-        name:userName,
-        text:text,
-        zeit:zeitFormat(),
-        uid:aktuellerUser.uid
-      }
-
-    );
-
-    /* BENACHRICHTIGUNG */
-    await push(
-
-      ref(
-        db,
-        "benachrichtigungen"
-      ),
-
-      {
-        titel:
-          "Neue Chatnachricht",
-
-        name:
-          userName,
-
-        typ:
-          "Chat",
-
-        text:
-          `${userName} schrieb im Chat "${aktuellerRaum}"`,
-
-        zeit:
-          Date.now()
-      }
-
-    );
-
-    document.getElementById(
-      "nachricht"
-    ).value = "";
+    document.getElementById("nachricht").value = "";
 
   }catch(error){
-
     console.error(error);
-
-    alert(
-      "Fehler beim Senden"
-    );
-
+    alert("Fehler beim Senden");
   }
-
 };
 
-/* ENTER SENDEN */
-document
-  .getElementById("nachricht")
-  .addEventListener(
-
-    "keypress",
-
-    (event) => {
-
-      if(event.key === "Enter"){
-
-        senden();
-
-      }
-
-    }
-
-);
-
-/* LÖSCHEN */
-window.loeschen =
-async function(index){
-
+window.loeschen = async function(index){
   if(userRolle !== "admin"){
-
-    alert(
-      "Nur Admins dürfen löschen"
-    );
-
+    alert("Nur Admins dürfen löschen");
     return;
-
   }
 
-  const ok =
-    confirm(
-      "Nachricht wirklich löschen?"
-    );
-
+  const ok = confirm("Nachricht wirklich löschen?");
   if(!ok) return;
 
   try{
-
     await remove(
-
       ref(
-
         db,
-
-        "chat/" +
-        aktuellerRaum +
-        "/" +
-        aktuelleListe[index].id
-
+        "chat/" + aktuellerRaum + "/" + aktuelleListe[index].id
       )
-
     );
-
   }catch(error){
-
     console.error(error);
-
-    alert(
-      "Fehler beim Löschen"
-    );
-
+    alert("Fehler beim Löschen");
   }
-
 };
 
-/* LOGIN */
-onAuthStateChanged(
-
-  auth,
-
-  async (user) => {
-
-    if(!user){
-
-      window.location.href =
-        "index.html";
-
-      return;
-
-    }
-
-    aktuellerUser = user;
-
-    onValue(
-
-      ref(db, "benutzer"),
-
-      async (snapshot) => {
-
-        const onlineContainer =
-          document.getElementById(
-            "onlineContainer"
-          );
-
-        onlineContainer.innerHTML = "";
-
-        snapshot.forEach(
-          async (child) => {
-
-            const daten =
-              child.val();
-
-            /* AKTUELLER USER */
-            if(
-              daten.uid === user.uid
-            ){
-
-              userName =
-                `${daten.vorname || ""} ${daten.nachname || ""}`.trim();
-
-              userRolle =
-                daten.rolle || "";
-
-              const userRef =
-                ref(
-                  db,
-                  "benutzer/" +
-                  child.key
-                );
-
-              /* SOFORT ONLINE */
-              await update(
-                userRef,
-                {
-                  online:true,
-                  letzteAktivitaet:
-                    new Date()
-                    .toISOString()
-                }
-              );
-
-              /* AUTO OFFLINE */
-              onDisconnect(
-                userRef
-              ).update({
-                online:false,
-                letzteAktivitaet:
-                  new Date()
-                  .toISOString()
-              });
-
-            }
-
-            /* ONLINE LISTE */
-            if(daten.online){
-
-              onlineContainer.innerHTML += `
-
-                <div class="online-user">
-
-                  <div class="status-dot"></div>
-
-                  <span>
-                    ${daten.vorname || ""}
-                    ${daten.nachname || ""}
-                  </span>
-
-                </div>
-
-              `;
-
-            }
-
-          }
-
-        );
-
-        ladeChat();
-
-      }
-
-    );
-
+onAuthStateChanged(auth, (user) => {
+  if(!user){
+    window.location.href = "index.html";
+    return;
   }
 
-);
+  aktuellerUser = user;
 
+  onValue(ref(db, "benutzer"), (snapshot) => {
+    const onlineContainer = document.getElementById("onlineContainer");
+    onlineContainer.innerHTML = "";
+
+    snapshot.forEach((child) => {
+      const daten = child.val();
+
+      if(daten.uid === user.uid){
+        userName =
+          `${daten.vorname || ""} ${daten.nachname || ""}`.trim();
+
+        userRolle = daten.rolle || "";
+      }
+
+      if(daten.online){
+        onlineContainer.innerHTML += `
+          <div class="online-user">
+            • ${daten.vorname || ""} ${daten.nachname || ""}
+          </div>
+        `;
+      }
+    });
+
+    ladeChat();
+  });
+});
 </script>
-
-</body>
-</html>
