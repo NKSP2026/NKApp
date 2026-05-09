@@ -125,12 +125,27 @@
 
   <p>Zugriff nur für autorisierte Personen.</p>
 
-  <input type="email" id="email" placeholder="E-Mail">
+  <input
+  type="email"
+  id="email"
+  placeholder="E-Mail"
+  autocomplete="email"
+  inputmode="email"
+  autocapitalize="off"
+  spellcheck="false"
+>
 
   <!-- 👁 Passwortfeld mit Auge -->
   <div class="password-wrapper">
-    <input type="password" id="passwort" placeholder="Passwort">
-    <span class="toggle-eye" id="eye" onclick="togglePasswort()">👁</span>
+  
+  <input
+  type="password"
+  id="passwort"
+  placeholder="Passwort"
+  autocomplete="current-password"
+>
+  <span class="toggle-eye" id="eye" onclick="togglePasswort()">👁</span>
+  
   </div>
 
   <div class="error" id="fehler"></div>
@@ -202,23 +217,47 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-/* WICHTIG */
+/* ANGEMELDET BLEIBEN */
 await setPersistence(
   auth,
   browserLocalPersistence
+);
+
+/* ENTERTASTE */
+document.addEventListener(
+
+  "keydown",
+
+  (event) => {
+
+    if(event.key === "Enter"){
+
+      login();
+
+    }
+
+  }
+
 );
 
 /* LOGIN */
 window.login = async function(){
 
   const email =
-    document.getElementById("email").value;
+    document
+      .getElementById("email")
+      .value
+      .trim();
 
   const passwort =
-    document.getElementById("passwort").value;
+    document
+      .getElementById("passwort")
+      .value;
 
   const fehler =
-    document.getElementById("fehler");
+    document.getElementById(
+      "fehler"
+    );
 
   fehler.innerText = "";
 
@@ -243,6 +282,12 @@ window.login = async function(){
     const user =
       userCredential.user;
 
+    /* EMAIL SPEICHERN */
+    localStorage.setItem(
+      "letzteEmail",
+      email
+    );
+
     /* BENUTZER SUCHEN */
     const benutzerRef =
       ref(db, "benutzer");
@@ -254,6 +299,7 @@ window.login = async function(){
       async (snapshot) => {
 
         snapshot.forEach(
+
           async (child) => {
 
             const daten =
@@ -294,6 +340,7 @@ window.login = async function(){
             }
 
           }
+
         );
 
       },
@@ -346,10 +393,45 @@ window.login = async function(){
 
 };
 
+/* LETZTE EMAIL AUTOMATISCH */
+window.addEventListener(
+
+  "load",
+
+  () => {
+
+    const letzteEmail =
+      localStorage.getItem(
+        "letzteEmail"
+      );
+
+    if(letzteEmail){
+
+      document.getElementById(
+        "email"
+      ).value = letzteEmail;
+
+      document.getElementById(
+        "passwort"
+      ).focus();
+
+    }else{
+
+      document.getElementById(
+        "email"
+      ).focus();
+
+    }
+
+  }
+
+);
+
 /* SERVICE WORKER */
 if("serviceWorker" in navigator){
 
   window.addEventListener(
+
     "load",
 
     () => {
