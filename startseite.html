@@ -376,6 +376,8 @@ adminBereichBtn.style.display = "none";
 benachrichtigungenBtn.style.display = "none";
 papierkorbBtn.style.display = "none";
 
+let eigenerUserRef = null;
+
 /* PUSH */
 async function pushAktivieren(userUid){
 
@@ -469,7 +471,7 @@ async function pushAktivieren(userUid){
 
 }
 
-/* FOREGROUND PUSH */
+/* PUSH NACHRICHT */
 onMessage(
   messaging,
 
@@ -509,8 +511,8 @@ onAuthStateChanged(
     const benutzerRef =
       ref(db, "benutzer");
 
-    /* LIVE ÜBERWACHUNG */
     onValue(
+
       benutzerRef,
 
       async (snapshot) => {
@@ -532,44 +534,8 @@ onAuthStateChanged(
         });
 
         if(!aktuellerUser){
-
-          console.log(
-            "Benutzer nicht gefunden"
-          );
-
           return;
-
         }
-
-        /* ONLINE */
-        await update(
-          ref(
-            db,
-            "benutzer/" + aktuellerKey
-          ),
-          {
-            online:true,
-            letzteAktivitaet:
-              new Date().toISOString()
-          }
-        );
-
-        /* AUTOMATISCH OFFLINE */
-        onDisconnect(
-          ref(
-            db,
-            "benutzer/" + aktuellerKey
-          )
-        ).update({
-          online:false,
-          letzteAktivitaet:
-            new Date().toISOString()
-        });
-
-        /* RESET */
-        adminBereichBtn.style.display = "none";
-        benachrichtigungenBtn.style.display = "none";
-        papierkorbBtn.style.display = "none";
 
         /* ROLLE */
         const rolle =
@@ -579,17 +545,18 @@ onAuthStateChanged(
           .trim()
           .toLowerCase();
 
-        console.log(
-          "ROLLE:",
-          rolle
-        );
+        /* RESET */
+        adminBereichBtn.style.display =
+          "none";
+
+        benachrichtigungenBtn.style.display =
+          "none";
+
+        papierkorbBtn.style.display =
+          "none";
 
         /* ADMIN */
         if(rolle === "admin"){
-
-          console.log(
-            "ADMIN ERKANNT"
-          );
 
           adminBereichBtn.style.display =
             "flex";
@@ -602,6 +569,34 @@ onAuthStateChanged(
 
         }
 
+        /* NUR EINMAL STATUS SETZEN */
+        if(!eigenerUserRef){
+
+          eigenerUserRef = ref(
+            db,
+            "benutzer/" + aktuellerKey
+          );
+
+          await update(
+            eigenerUserRef,
+            {
+              online:true,
+              letzteAktivitaet:
+                new Date().toISOString()
+            }
+          );
+
+          /* AUTO OFFLINE */
+          onDisconnect(
+            eigenerUserRef
+          ).update({
+            online:false,
+            letzteAktivitaet:
+              new Date().toISOString()
+          });
+
+        }
+
       }
 
     );
@@ -610,79 +605,48 @@ onAuthStateChanged(
 
 );
 
+/* TAB SCHLIESSEN */
+window.addEventListener(
+  "beforeunload",
+
+  async () => {
+
+    if(!eigenerUserRef) return;
+
+    try{
+
+      await update(
+        eigenerUserRef,
+        {
+          online:false,
+          letzteAktivitaet:
+            new Date().toISOString()
+        }
+      );
+
+    }catch(error){
+
+      console.error(error);
+
+    }
+
+  }
+);
+
 /* LOGOUT */
 window.logout =
 async function(){
 
   try{
 
-    const user =
-      auth.currentUser;
+    if(eigenerUserRef){
 
-    if(user){
-
-      const benutzerRef =
-        ref(db, "benutzer");
-
-      await new Promise(
-        (resolve) => {
-
-          onValue(
-
-            benutzerRef,
-
-            async (snapshot) => {
-
-              const updates = [];
-
-              snapshot.forEach(
-                (child) => {
-
-                  const daten =
-                    child.val();
-
-                  if(
-                    daten.uid ===
-                    user.uid
-                  ){
-
-                    updates.push(
-
-                      update(
-                        ref(
-                          db,
-                          "benutzer/" +
-                          child.key
-                        ),
-                        {
-                          online:false,
-                          letzteAktivitaet:
-                            new Date()
-                            .toISOString()
-                        }
-                      )
-
-                    );
-
-                  }
-
-                }
-              );
-
-              await Promise.all(
-                updates
-              );
-
-              resolve();
-
-            },
-
-            {
-              onlyOnce:true
-            }
-
-          );
-
+      await update(
+        eigenerUserRef,
+        {
+          online:false,
+          letzteAktivitaet:
+            new Date().toISOString()
         }
       );
 
