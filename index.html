@@ -166,66 +166,219 @@ function togglePasswort(){
 </script>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
-    authDomain: "nksp-app.firebaseapp.com",
-    databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "nksp-app",
-    storageBucket: "nksp-app.firebasestorage.app",
-    messagingSenderId: "328702502215",
-    appId: "1:328702502215:web:080148f3e768bfafc29862"
-  };
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  setPersistence,
+  browserLocalPersistence
+}
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
-  await setPersistence(auth, browserSessionPersistence);
+import {
+  getDatabase,
+  ref,
+  onValue,
+  update,
+  onDisconnect
+}
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
-  window.login = async function(){
-    const email = document.getElementById('email').value;
-    const passwort = document.getElementById('passwort').value;
-    const fehler = document.getElementById('fehler');
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
 
-    fehler.innerText = '';
+const app = initializeApp(firebaseConfig);
 
-    if(!email || !passwort){
-      fehler.innerText = 'Bitte E-Mail und Passwort eingeben';
-      return;
-    }
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-    try{
-      await signInWithEmailAndPassword(auth, email, passwort);
-      window.location.href = 'startseite.html';
-    }catch(error){
-      console.error(error);
+/* WICHTIG */
+await setPersistence(
+  auth,
+  browserLocalPersistence
+);
 
-      if(error.code === 'auth/invalid-credential'){
-        fehler.innerText = 'E-Mail oder Passwort falsch';
-      }else if(error.code === 'auth/user-not-found'){
-        fehler.innerText = 'Benutzer nicht gefunden';
-      }else if(error.code === 'auth/wrong-password'){
-        fehler.innerText = 'Passwort falsch';
-      }else{
-        fehler.innerText = 'Anmeldung fehlgeschlagen';
+/* LOGIN */
+window.login = async function(){
+
+  const email =
+    document.getElementById("email").value;
+
+  const passwort =
+    document.getElementById("passwort").value;
+
+  const fehler =
+    document.getElementById("fehler");
+
+  fehler.innerText = "";
+
+  if(!email || !passwort){
+
+    fehler.innerText =
+      "Bitte E-Mail und Passwort eingeben";
+
+    return;
+
+  }
+
+  try{
+
+    const userCredential =
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        passwort
+      );
+
+    const user =
+      userCredential.user;
+
+    /* BENUTZER SUCHEN */
+    const benutzerRef =
+      ref(db, "benutzer");
+
+    onValue(
+
+      benutzerRef,
+
+      async (snapshot) => {
+
+        snapshot.forEach(
+          async (child) => {
+
+            const daten =
+              child.val();
+
+            if(
+              daten.uid === user.uid
+            ){
+
+              const userRef =
+                ref(
+                  db,
+                  "benutzer/" +
+                  child.key
+                );
+
+              /* ONLINE */
+              await update(
+                userRef,
+                {
+                  online:true,
+                  letzteAktivitaet:
+                    new Date()
+                    .toISOString()
+                }
+              );
+
+              /* AUTO OFFLINE */
+              onDisconnect(
+                userRef
+              ).update({
+                online:false,
+                letzteAktivitaet:
+                  new Date()
+                  .toISOString()
+              });
+
+            }
+
+          }
+        );
+
+      },
+
+      {
+        onlyOnce:true
       }
+
+    );
+
+    window.location.href =
+      "startseite.html";
+
+  }catch(error){
+
+    console.error(error);
+
+    if(
+      error.code ===
+      "auth/invalid-credential"
+    ){
+
+      fehler.innerText =
+        "E-Mail oder Passwort falsch";
+
+    }else if(
+      error.code ===
+      "auth/user-not-found"
+    ){
+
+      fehler.innerText =
+        "Benutzer nicht gefunden";
+
+    }else if(
+      error.code ===
+      "auth/wrong-password"
+    ){
+
+      fehler.innerText =
+        "Passwort falsch";
+
+    }else{
+
+      fehler.innerText =
+        "Anmeldung fehlgeschlagen";
+
     }
+
   }
 
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js')
-        .then(registration => {
-          console.log('Service Worker registriert:', registration);
+};
+
+/* SERVICE WORKER */
+if("serviceWorker" in navigator){
+
+  window.addEventListener(
+    "load",
+
+    () => {
+
+      navigator.serviceWorker
+        .register("./service-worker.js")
+
+        .then((registration) => {
+
+          console.log(
+            "Service Worker registriert:",
+            registration
+          );
+
         })
-        .catch(error => {
-          console.log('Service Worker Fehler:', error);
-        });
-    });
-  }
-</script>
 
-</body>
-</html>
+        .catch((error) => {
+
+          console.log(
+            "Service Worker Fehler:",
+            error
+          );
+
+        });
+
+    }
+
+  );
+
+}
+
+</script>
