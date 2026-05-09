@@ -125,33 +125,55 @@
 
   <p>Zugriff nur für autorisierte Personen.</p>
 
-  <input
-  type="email"
-  id="email"
-  placeholder="E-Mail"
-  autocomplete="email"
-  inputmode="email"
-  autocapitalize="off"
-  spellcheck="false"
->
+  <form id="loginForm" autocomplete="on">
 
-  <!-- 👁 Passwortfeld mit Auge -->
-  <div class="password-wrapper">
-  
   <input
-  type="password"
-  id="passwort"
-  placeholder="Passwort"
-  autocomplete="current-password"
->
-  <span class="toggle-eye" id="eye" onclick="togglePasswort()">👁</span>
-  
+    type="email"
+    id="email"
+    name="email"
+    placeholder="E-Mail"
+    autocomplete="username email"
+    inputmode="email"
+    autocapitalize="off"
+    spellcheck="false"
+    required
+  >
+
+  <div class="password-wrapper">
+
+    <input
+      type="password"
+      id="passwort"
+      name="password"
+      placeholder="Passwort"
+      autocomplete="current-password"
+      required
+    >
+
+    <span
+      class="toggle-eye"
+      id="eye"
+      onclick="togglePasswort()"
+    >
+      👁
+    </span>
+
   </div>
 
   <div class="error" id="fehler"></div>
 
-  <button onclick="login()">Anmelden</button>
-  <button class="register-btn" onclick="window.location.href='registrierung.html'">Noch nicht registriert?</button>
+  <button type="submit">
+    Anmelden
+  </button>
+
+</form>
+
+<button
+  class="register-btn"
+  onclick="window.location.href='registrierung.html'"
+>
+  Noch nicht registriert?
+</button>
 
   <div class="footer-text">
     <p>Diese Seite wurde erstellt von Ronny Winkler.</p>
@@ -223,23 +245,23 @@ await setPersistence(
   browserLocalPersistence
 );
 
-/* ENTERTASTE */
-document.addEventListener(
+/* FORM LOGIN */
+document
+  .getElementById("loginForm")
+  .addEventListener(
 
-  "keydown",
+    "submit",
 
-  (event) => {
+    async (event) => {
 
-    if(event.key === "Enter"){
+      event.preventDefault();
 
       login();
 
     }
 
-  }
-
 );
-
+  
 /* LOGIN */
 window.login = async function(){
 
