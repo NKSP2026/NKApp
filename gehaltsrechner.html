@@ -26,17 +26,11 @@ body::before{
     content:"";
     position:fixed;
     inset:0;
-
     background-image:url("icon-512.png");
     background-repeat:repeat;
     background-size:260px;
-
     opacity:0.03;
-
-    filter:
-      grayscale(100%)
-      brightness(220%);
-
+    filter:grayscale(100%) brightness(220%);
     pointer-events:none;
     z-index:0;
 }
@@ -321,8 +315,10 @@ const standardVeranstaltungen = [
 
 const app = document.getElementById("app");
 
-/* DATENLISTEN */
-document.body.innerHTML += `
+/* DATENLISTEN FIX */
+const datalistContainer = document.createElement("div");
+
+datalistContainer.innerHTML = `
 
 <datalist id="orteListe">
 ${standardOrte.map(x =>
@@ -336,6 +332,9 @@ ${standardVeranstaltungen.map(x =>
 
 `;
 
+document.body.appendChild(datalistContainer);
+
+/* MONATE ERSTELLEN */
 monate.forEach((monat, index) => {
 
     app.innerHTML += `
@@ -415,6 +414,7 @@ monate.forEach((monat, index) => {
 
 });
 
+/* MONAT ÖFFNEN */
 function toggleMonat(index){
 
     const box =
@@ -422,9 +422,7 @@ function toggleMonat(index){
         "monat" + index
     );
 
-    if(
-        box.style.display === "block"
-    ){
+    if(box.style.display === "block"){
 
         box.style.display = "none";
 
@@ -436,6 +434,7 @@ function toggleMonat(index){
 
 }
 
+/* ZEILE */
 function neueZeileHTML(nummer){
 
     return `
@@ -445,25 +444,21 @@ function neueZeileHTML(nummer){
         <td>${nummer}</td>
 
         <td>
-
             <input
                 type="text"
                 class="veranstaltung"
                 list="veranstaltungenListe"
                 placeholder="Veranstaltung"
             >
-
         </td>
 
         <td>
-
             <input
                 type="text"
                 class="ort"
                 list="orteListe"
                 placeholder="Ort"
             >
-
         </td>
 
         <td>
@@ -492,6 +487,7 @@ function neueZeileHTML(nummer){
 
 }
 
+/* ZEILE HINZUFÜGEN */
 function zeileHinzufuegen(monatIndex){
 
     const tbody =
@@ -503,8 +499,10 @@ function zeileHinzufuegen(monatIndex){
     tbody.querySelectorAll("tr")
     .length + 1;
 
-    tbody.innerHTML +=
-    neueZeileHTML(nummer);
+    tbody.insertAdjacentHTML(
+        "beforeend",
+        neueZeileHTML(nummer)
+    );
 
     eventsNeu();
 
@@ -515,12 +513,14 @@ function zeileHinzufuegen(monatIndex){
 window.zeileHinzufuegen =
 zeileHinzufuegen;
 
+/* STANDARDZEILEN */
 for(let i=0;i<12;i++){
 
     zeileHinzufuegen(i);
 
 }
 
+/* BERECHNUNG */
 function berechnen(){
 
     let jahrDienste = 0;
@@ -627,6 +627,7 @@ function berechnen(){
 
 }
 
+/* SPEICHERN */
 function speichern(){
 
     const daten = [];
@@ -680,6 +681,7 @@ function speichern(){
 
 }
 
+/* LADEN */
 function laden(){
 
     const datenGesamt =
@@ -707,12 +709,14 @@ function laden(){
         const datenMonat =
         datenGesamt.daten[monatIndex];
 
-        datenMonat.forEach(
+        (datenMonat || []).forEach(
         (eintrag, rowIndex) => {
 
-            tbody.innerHTML +=
-            neueZeileHTML(
-                rowIndex + 1
+            tbody.insertAdjacentHTML(
+                "beforeend",
+                neueZeileHTML(
+                    rowIndex + 1
+                )
             );
 
         });
@@ -766,6 +770,7 @@ function laden(){
 
 }
 
+/* LÖSCHEN */
 function allesLoeschen(){
 
     if(
@@ -784,6 +789,7 @@ function allesLoeschen(){
 
 }
 
+/* MANUELL SPEICHERN */
 function manuellSpeichern(){
 
     speichern();
@@ -794,6 +800,7 @@ function manuellSpeichern(){
 
 }
 
+/* PDF */
 async function pdfExport(){
 
     const { jsPDF } =
@@ -892,6 +899,7 @@ async function pdfExport(){
 
 }
 
+/* EVENTS */
 function eventsNeu(){
 
     document
@@ -912,6 +920,7 @@ function eventsNeu(){
 
 }
 
+/* START */
 laden();
 
 eventsNeu();
