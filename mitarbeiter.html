@@ -3,9 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Mitarbeiter Übersicht</title>
 
 <style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
 
 body{
   font-family:Arial,sans-serif;
@@ -103,6 +111,18 @@ h1{
   cursor:pointer;
 }
 
+.edit-btn{
+  position:absolute;
+  top:10px;
+  right:55px;
+  background:#2563eb;
+  color:white;
+  border:none;
+  border-radius:8px;
+  padding:5px 10px;
+  cursor:pointer;
+}
+
 .modal{
   display:none;
   position:fixed;
@@ -156,7 +176,6 @@ h1{
   font-size:34px;
   color:black;
   cursor:pointer;
-  z-index:10;
 }
 
 .form-modal{
@@ -193,8 +212,8 @@ h1{
 
 .form-content label{
   display:block;
+  margin-top:12px;
   margin-bottom:8px;
-  margin-top:10px;
   font-weight:bold;
 }
 
@@ -203,7 +222,7 @@ h1{
   border:1px solid #444;
   border-radius:12px;
   padding:12px;
-  margin-bottom:15px;
+  margin-bottom:14px;
 }
 
 .checkbox-box label{
@@ -247,7 +266,11 @@ h1{
     Zurück
   </a>
 
-  <button class="admin-btn" onclick="oeffneFormular()">
+  <button
+    class="admin-btn"
+    id="addMitarbeiterBtn"
+    onclick="oeffneFormular()"
+  >
     + Mitarbeiter hinzufügen
   </button>
 
@@ -264,7 +287,7 @@ h1{
 
     <button
       class="admin-btn"
-      style="position:absolute;top:15px;left:15px;z-index:10;"
+      style="position:absolute;top:15px;left:15px;"
       onclick="closeModal()"
     >
       Zurück
@@ -306,7 +329,9 @@ h1{
 
   <div class="form-content">
 
-    <h2>Neuen Mitarbeiter anlegen</h2>
+    <h2 id="formularTitel">
+      Neuen Mitarbeiter anlegen
+    </h2>
 
     <input type="text" id="formName" placeholder="Name">
 
@@ -331,45 +356,21 @@ h1{
 
     <div class="checkbox-box">
 
-      <label>
-        <input type="checkbox" class="sicherheitCheck" value="GSSK">
-        GSSK
-      </label>
+      <label><input type="checkbox" class="sicherheitCheck" value="GSSK"> GSSK</label>
 
-      <label>
-        <input type="checkbox" class="sicherheitCheck" value="Sachkunde 34a geprüft">
-        Sachkunde 34a geprüft
-      </label>
+      <label><input type="checkbox" class="sicherheitCheck" value="Sachkunde 34a geprüft"> Sachkunde 34a geprüft</label>
 
-      <label>
-        <input type="checkbox" class="sicherheitCheck" value="Unterrichtung 34a">
-        Unterrichtung 34a
-      </label>
+      <label><input type="checkbox" class="sicherheitCheck" value="Unterrichtung 34a"> Unterrichtung 34a</label>
 
-      <label>
-        <input type="checkbox" class="sicherheitCheck" value="Fachkraft für Schutz und Sicherheit">
-        Fachkraft für Schutz und Sicherheit
-      </label>
+      <label><input type="checkbox" class="sicherheitCheck" value="Fachkraft für Schutz und Sicherheit"> Fachkraft für Schutz und Sicherheit</label>
 
-      <label>
-        <input type="checkbox" class="sicherheitCheck" value="Servicekraft für Schutz und Sicherheit">
-        Servicekraft für Schutz und Sicherheit
-      </label>
+      <label><input type="checkbox" class="sicherheitCheck" value="Servicekraft für Schutz und Sicherheit"> Servicekraft für Schutz und Sicherheit</label>
 
-      <label>
-        <input type="checkbox" class="sicherheitCheck" value="Werkschutzfachkraft">
-        Werkschutzfachkraft
-      </label>
+      <label><input type="checkbox" class="sicherheitCheck" value="Werkschutzfachkraft"> Werkschutzfachkraft</label>
 
-      <label>
-        <input type="checkbox" class="sicherheitCheck" value="Objektschutz">
-        Objektschutz
-      </label>
+      <label><input type="checkbox" class="sicherheitCheck" value="Objektschutz"> Objektschutz</label>
 
-      <label>
-        <input type="checkbox" class="sicherheitCheck" value="Veranstaltungsschutz">
-        Veranstaltungsschutz
-      </label>
+      <label><input type="checkbox" class="sicherheitCheck" value="Veranstaltungsschutz"> Veranstaltungsschutz</label>
 
     </div>
 
@@ -384,30 +385,15 @@ h1{
 
     <div class="checkbox-box">
 
-      <label>
-        <input type="checkbox" class="ersthelferCheck" value="KFZ Ersthelfer">
-        KFZ Ersthelfer
-      </label>
+      <label><input type="checkbox" class="ersthelferCheck" value="KFZ Ersthelfer"> KFZ Ersthelfer</label>
 
-      <label>
-        <input type="checkbox" class="ersthelferCheck" value="Rettungshelfer">
-        Rettungshelfer
-      </label>
+      <label><input type="checkbox" class="ersthelferCheck" value="Rettungshelfer"> Rettungshelfer</label>
 
-      <label>
-        <input type="checkbox" class="ersthelferCheck" value="Rettungssanitäter">
-        Rettungssanitäter
-      </label>
+      <label><input type="checkbox" class="ersthelferCheck" value="Rettungssanitäter"> Rettungssanitäter</label>
 
-      <label>
-        <input type="checkbox" class="ersthelferCheck" value="Notfallsanitäter">
-        Notfallsanitäter
-      </label>
+      <label><input type="checkbox" class="ersthelferCheck" value="Notfallsanitäter"> Notfallsanitäter</label>
 
-      <label>
-        <input type="checkbox" class="ersthelferCheck" value="Medizinischer Bereich">
-        Medizinischer Bereich
-      </label>
+      <label><input type="checkbox" class="ersthelferCheck" value="Medizinischer Bereich"> Medizinischer Bereich</label>
 
     </div>
 
@@ -470,15 +456,9 @@ h1{
 
     <div class="checkbox-box">
 
-      <label>
-        <input type="checkbox" class="fuehrerscheinCheck" value="B">
-        B
-      </label>
+      <label><input type="checkbox" class="fuehrerscheinCheck" value="B"> B</label>
 
-      <label>
-        <input type="checkbox" class="fuehrerscheinCheck" value="C">
-        C
-      </label>
+      <label><input type="checkbox" class="fuehrerscheinCheck" value="C"> C</label>
 
     </div>
 
@@ -493,15 +473,9 @@ h1{
 
     <div class="checkbox-box">
 
-      <label>
-        <input type="checkbox" class="chefCheck" value="Nicole Küttner">
-        Nicole Küttner
-      </label>
+      <label><input type="checkbox" class="chefCheck" value="Nicole Küttner"> Nicole Küttner</label>
 
-      <label>
-        <input type="checkbox" class="chefCheck" value="Marcel Maczeyzik">
-        Marcel Maczeyzik
-      </label>
+      <label><input type="checkbox" class="chefCheck" value="Marcel Maczeyzik"> Marcel Maczeyzik</label>
 
     </div>
 
@@ -522,9 +496,60 @@ h1{
 
 </div>
 
-<script>
+<script type="module">
 
-/* CHECKBOX -> TEXT */
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  push,
+  onValue,
+  remove,
+  update
+}
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL
+}
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
+
+const mitarbeiterRef = ref(db, "mitarbeiter");
+const benutzerRef = ref(db, "benutzer");
+
+let mitarbeiterListe = [];
+let userRolle = "";
+let bearbeiteID = null;
+let aktuellesBild = "";
+
+/* CHECKBOXEN */
 
 function updateCheckboxText(checkboxClass, textfeldId){
 
@@ -540,34 +565,330 @@ function updateCheckboxText(checkboxClass, textfeldId){
 document.addEventListener("change", (e) => {
 
   if(e.target.classList.contains("sicherheitCheck")){
-    updateCheckboxText(
-      "sicherheitCheck",
-      "formSicherheit"
-    );
+    updateCheckboxText("sicherheitCheck","formSicherheit");
   }
 
   if(e.target.classList.contains("ersthelferCheck")){
-    updateCheckboxText(
-      "ersthelferCheck",
-      "formErsthelfer"
-    );
+    updateCheckboxText("ersthelferCheck","formErsthelfer");
   }
 
   if(e.target.classList.contains("fuehrerscheinCheck")){
-    updateCheckboxText(
-      "fuehrerscheinCheck",
-      "formFuehrerschein"
-    );
+    updateCheckboxText("fuehrerscheinCheck","formFuehrerschein");
   }
 
   if(e.target.classList.contains("chefCheck")){
-    updateCheckboxText(
-      "chefCheck",
-      "formChef"
-    );
+    updateCheckboxText("chefCheck","formChef");
   }
 
 });
+
+/* LOGIN */
+
+onAuthStateChanged(auth, (user) => {
+
+  if(!user){
+    window.location.href = "index.html";
+    return;
+  }
+
+  onValue(benutzerRef, (snapshot) => {
+
+    snapshot.forEach((child) => {
+
+      const daten = child.val();
+
+      if(daten.uid === user.uid){
+
+        userRolle = daten.rolle || "mitarbeiter";
+
+        if(userRolle !== "admin"){
+          document.getElementById("addMitarbeiterBtn").style.display = "none";
+        }
+
+      }
+
+    });
+
+  });
+
+});
+
+/* ALTER */
+
+function berechneAlter(geburtsdatum){
+
+  if(!geburtsdatum || !geburtsdatum.includes(".")){
+    return "?";
+  }
+
+  const teile = geburtsdatum.split(".");
+
+  const geburt = new Date(
+    teile[2],
+    teile[1]-1,
+    teile[0]
+  );
+
+  const heute = new Date();
+
+  let alter =
+    heute.getFullYear() -
+    geburt.getFullYear();
+
+  if(
+    heute.getMonth() < geburt.getMonth() ||
+    (
+      heute.getMonth() === geburt.getMonth() &&
+      heute.getDate() < geburt.getDate()
+    )
+  ){
+    alter--;
+  }
+
+  return alter;
+
+}
+
+/* RENDER */
+
+function renderMitarbeiter(){
+
+  const container =
+    document.getElementById("mitarbeiterContainer");
+
+  container.innerHTML = "";
+
+  mitarbeiterListe.forEach((m,index) => {
+
+    container.innerHTML += `
+      <div class="card" onclick="showDetails(${index})">
+
+        ${
+          userRolle === "admin"
+          ?
+          `
+          <button
+            class="remove-btn"
+            onclick="event.stopPropagation(); loescheMitarbeiter(${index})"
+          >
+            X
+          </button>
+
+          <button
+            class="edit-btn"
+            onclick="event.stopPropagation(); bearbeiteMitarbeiter(${index})"
+          >
+            ✏
+          </button>
+          `
+          :
+          ""
+        }
+
+        <img src="${m.bild || ""}">
+
+        <div>
+          <h2>${m.name || ""}</h2>
+          <p>${berechneAlter(m.geburtsdatum)} Jahre</p>
+          <p>${m.funktion || ""}</p>
+        </div>
+
+      </div>
+    `;
+
+  });
+
+}
+
+/* LADEN */
+
+onValue(mitarbeiterRef, (snapshot) => {
+
+  mitarbeiterListe = [];
+
+  snapshot.forEach((child) => {
+
+    mitarbeiterListe.push({
+      id: child.key,
+      ...child.val()
+    });
+
+  });
+
+  renderMitarbeiter();
+
+});
+
+/* DETAILS */
+
+window.showDetails = function(index){
+
+  const m = mitarbeiterListe[index];
+
+  document.getElementById("detailBild").src = m.bild || "";
+  document.getElementById("detailName").innerText = m.name || "";
+  document.getElementById("detailAlter").innerText = berechneAlter(m.geburtsdatum);
+  document.getElementById("detailWannNK").innerText = m.wannNK || "";
+  document.getElementById("detailGeburtsdatum").innerText = m.geburtsdatum || "";
+  document.getElementById("detailFunktion").innerText = m.funktion || "";
+  document.getElementById("detailBeruf").innerText = m.beruf || "";
+  document.getElementById("detailAusbildung").innerText = m.ausbildung || "";
+  document.getElementById("detailSicherheit").innerText = m.sicherheit || "";
+  document.getElementById("detailErsthelfer").innerText = m.ersthelfer || "";
+  document.getElementById("detailBrandschutz").innerText = m.brandschutz || "";
+  document.getElementById("detailDatenschutz").innerText = m.datenschutz || "";
+  document.getElementById("detailDetektivschein").innerText = m.detektivschein || "";
+  document.getElementById("detailFirma").innerText = m.firma || "";
+  document.getElementById("detailFuehrerschein").innerText = m.fuehrerschein || "";
+  document.getElementById("detailChef").innerText = m.chef || "";
+
+  document.getElementById("detailModal").style.display = "flex";
+
+};
+
+window.closeModal = function(){
+
+  document.getElementById("detailModal").style.display = "none";
+
+};
+
+window.oeffneFormular = function(){
+
+  bearbeiteID = null;
+
+  document.getElementById("formularModal").style.display = "flex";
+
+};
+
+window.schliesseFormular = function(){
+
+  document.getElementById("formularModal").style.display = "none";
+
+};
+
+/* SPEICHERN */
+
+window.speichereMitarbeiter = async function(){
+
+  try{
+
+    let bildURL = aktuellesBild;
+
+    const file =
+      document.getElementById("formBild").files[0];
+
+    if(file){
+
+      const bildRef = storageRef(
+        storage,
+        "mitarbeiterbilder/" +
+        Date.now() +
+        "_" +
+        file.name
+      );
+
+      await uploadBytes(bildRef,file);
+
+      bildURL = await getDownloadURL(bildRef);
+
+    }
+
+    const daten = {
+
+      name:
+        document.getElementById("formName").value || "",
+
+      geburtsdatum:
+        document.getElementById("formGeburtsdatum").value || "",
+
+      wannNK:
+        document.getElementById("formWannNK").value || "",
+
+      funktion:
+        document.getElementById("formFunktion").value || "",
+
+      beruf:
+        document.getElementById("formBeruf").value || "",
+
+      ausbildung:
+        document.getElementById("formAusbildung").value || "",
+
+      sicherheit:
+        document.getElementById("formSicherheit").value || "",
+
+      ersthelfer:
+        document.getElementById("formErsthelfer").value || "",
+
+      brandschutz:
+        document.getElementById("formBrandschutz").value +
+        " " +
+        document.getElementById("formBrandschutzText").value,
+
+      datenschutz:
+        document.getElementById("formDatenschutz").value +
+        " " +
+        document.getElementById("formDatenschutzText").value,
+
+      detektivschein:
+        document.getElementById("formDetektivschein").value +
+        " " +
+        document.getElementById("formDetektivscheinText").value,
+
+      firma:
+        document.getElementById("formFirma").value || "",
+
+      fuehrerschein:
+        document.getElementById("formFuehrerschein").value || "",
+
+      chef:
+        document.getElementById("formChef").value || "",
+
+      bild:
+        bildURL
+
+    };
+
+    await push(mitarbeiterRef,daten);
+
+    alert("Mitarbeiter gespeichert");
+
+    schliesseFormular();
+
+  }catch(error){
+
+    console.error(error);
+
+    alert("Fehler beim Speichern");
+
+  }
+
+};
+
+/* LÖSCHEN */
+
+window.loescheMitarbeiter = async function(index){
+
+  const ok = confirm("Wirklich löschen?");
+
+  if(!ok) return;
+
+  try{
+
+    await remove(
+      ref(
+        db,
+        "mitarbeiter/" +
+        mitarbeiterListe[index].id
+      )
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+};
 
 </script>
 
