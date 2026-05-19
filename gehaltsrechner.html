@@ -243,11 +243,6 @@ button,
     font-size:15px;
 }
 
-datalist{
-    background:white;
-    color:black;
-}
-
 @media(max-width:900px){
 
     body{
@@ -286,6 +281,12 @@ datalist{
 </head>
 
 <body>
+
+<datalist id="veranstaltungenListe">
+</datalist>
+
+<datalist id="orteListe">
+</datalist>
 
 <h1>Dienst- & Gehaltsrechner 2026</h1>
 
@@ -373,9 +374,6 @@ datalist{
 
 </div>
 
-<datalist id="veranstaltungenListe"></datalist>
-<datalist id="orteListe"></datalist>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -420,11 +418,8 @@ const db =
 
 let aktuelleUid = "";
 
-const veranstaltungenSet =
-new Set();
-
-const orteSet =
-new Set();
+const veranstaltungenSet = new Set();
+const orteSet = new Set();
 
 const monate = [
 "Januar","Februar","März","April","Mai","Juni",
@@ -433,44 +428,6 @@ const monate = [
 
 const app =
   document.getElementById("app");
-
-function aktualisiereVorschlaege(){
-
-    const veranstaltungenListe =
-    document.getElementById(
-      "veranstaltungenListe"
-    );
-
-    veranstaltungenListe.innerHTML = "";
-
-    veranstaltungenSet.forEach(
-      eintrag => {
-
-        veranstaltungenListe.innerHTML += `
-        <option value="${eintrag}">
-        `;
-
-      }
-    );
-
-    const orteListe =
-    document.getElementById(
-      "orteListe"
-    );
-
-    orteListe.innerHTML = "";
-
-    orteSet.forEach(
-      eintrag => {
-
-        orteListe.innerHTML += `
-        <option value="${eintrag}">
-        `;
-
-      }
-    );
-
-}
 
 function zeilenHTML(nummer){
 
@@ -485,6 +442,7 @@ function zeilenHTML(nummer){
                 class="veranstaltung"
                 placeholder="Veranstaltung"
                 list="veranstaltungenListe"
+                autocomplete="off"
             >
         </td>
 
@@ -494,6 +452,7 @@ function zeilenHTML(nummer){
                 class="ort"
                 placeholder="Ort"
                 list="orteListe"
+                autocomplete="off"
             >
         </td>
 
@@ -636,12 +595,55 @@ window.zeileHinzufuegen = function(button){
     const aktuelleZeilen =
       tbody.querySelectorAll("tr").length;
 
+    const neueNummer =
+      aktuelleZeilen + 1;
+
     tbody.insertAdjacentHTML(
       "beforeend",
-      zeilenHTML(aktuelleZeilen + 1)
+      zeilenHTML(neueNummer)
     );
 
+    berechnen();
+
 };
+
+function aktualisiereVorschlaege(){
+
+    const veranstaltungenListe =
+    document.getElementById(
+      "veranstaltungenListe"
+    );
+
+    veranstaltungenListe.innerHTML = "";
+
+    Array.from(veranstaltungenSet)
+    .sort()
+    .forEach(eintrag => {
+
+        veranstaltungenListe.innerHTML += `
+        <option value="${eintrag}">
+        `;
+
+    });
+
+    const orteListe =
+    document.getElementById(
+      "orteListe"
+    );
+
+    orteListe.innerHTML = "";
+
+    Array.from(orteSet)
+    .sort()
+    .forEach(eintrag => {
+
+        orteListe.innerHTML += `
+        <option value="${eintrag}">
+        `;
+
+    });
+
+}
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -673,6 +675,9 @@ function berechnen(){
         document.getElementById("stundenlohn").value
       ) || 0;
 
+    veranstaltungenSet.clear();
+    orteSet.clear();
+
     document.querySelectorAll(".monat")
     .forEach(monat => {
 
@@ -684,25 +689,17 @@ function berechnen(){
         .forEach(row => {
 
             const veranstaltung =
-            row.querySelector(".veranstaltung")
-            .value
-            .trim();
+              row.querySelector(".veranstaltung").value.trim();
 
             const ort =
-            row.querySelector(".ort")
-            .value
-            .trim();
+              row.querySelector(".ort").value.trim();
 
-            if(veranstaltung){
-                veranstaltungenSet.add(
-                  veranstaltung
-                );
+            if(veranstaltung.length > 2){
+                veranstaltungenSet.add(veranstaltung);
             }
 
-            if(ort){
-                orteSet.add(
-                  ort
-                );
+            if(ort.length > 2){
+                orteSet.add(ort);
             }
 
             const von =
@@ -960,8 +957,6 @@ async function laden(){
 
         });
 
-        berechnen();
-
         document.getElementById("statusText")
         .innerText =
           "Daten geladen";
@@ -1013,21 +1008,29 @@ async function(){
 
     if(!ok) return;
 
-    document.querySelectorAll("tbody")
-    .forEach(tbody => {
+    try{
 
-        tbody.innerHTML =
-          zeilenHTML(1);
+        document.querySelectorAll("tbody")
+        .forEach(tbody => {
 
-    });
+            tbody.innerHTML =
+              zeilenHTML(1);
 
-    berechnen();
+        });
 
-    await speichernAutomatisch();
+        berechnen();
 
-    alert(
-      "Neues Jahr wurde gestartet"
-    );
+        await speichernAutomatisch();
+
+        alert(
+          "Neues Jahr wurde gestartet"
+        );
+
+    }catch(error){
+
+        console.error(error);
+
+    }
 
 };
 
@@ -1036,6 +1039,12 @@ async function(){
 
     try{
 
+        const status =
+          document.getElementById("statusText");
+
+        status.innerText =
+          "PDF wird erstellt...";
+
         document.querySelectorAll(".monat")
         .forEach(monat => {
 
@@ -1043,11 +1052,15 @@ async function(){
 
         });
 
+        const element =
+          document.body;
+
         const canvas =
           await html2canvas(
-            document.body,
+            element,
             {
               scale:2,
+              useCORS:true,
               backgroundColor:"#0f172a"
             }
           );
@@ -1123,6 +1136,9 @@ async function(){
           "NKSP_Gehaltsrechner_2026.pdf"
         );
 
+        status.innerText =
+          "PDF erfolgreich erstellt";
+
     }catch(error){
 
         console.error(error);
@@ -1139,9 +1155,15 @@ document.addEventListener(
 
     "input",
 
-    () => {
+    (event) => {
 
-        berechnen();
+        if(
+          event.target.matches("input")
+        ){
+
+            berechnen();
+
+        }
 
     }
 
