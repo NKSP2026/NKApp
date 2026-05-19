@@ -88,7 +88,6 @@ h1{
     border-radius:18px;
 }
 
-/* MONAT BUTTON */
 .monat-toggle{
     width:100%;
     background:#2563eb;
@@ -112,13 +111,11 @@ h1{
     background:#1d4ed8;
 }
 
-/* INHALT */
 .monat-content{
     display:none;
     margin-top:20px;
 }
 
-/* GEÖFFNET */
 .monat.active .monat-content{
     display:block;
 }
@@ -337,9 +334,9 @@ button,
 
     <button
         class="export"
-        onclick="datenExportieren()"
+        onclick="pdfExportieren()"
     >
-        📁 Daten exportieren
+        📄 Als PDF speichern
     </button>
 
 </div>
@@ -370,6 +367,10 @@ button,
     </div>
 
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script type="module">
 
@@ -419,7 +420,6 @@ const monate = [
 const app =
   document.getElementById("app");
 
-/* ZEILE HTML */
 function zeilenHTML(nummer){
 
     return `
@@ -476,7 +476,6 @@ function zeilenHTML(nummer){
     `;
 }
 
-/* MONATE ERSTELLEN */
 monate.forEach(monat => {
 
     let html = `
@@ -563,7 +562,6 @@ monate.forEach(monat => {
 
 });
 
-/* MONAT ÖFFNEN */
 window.toggleMonat = function(button){
 
     const monat =
@@ -573,7 +571,6 @@ window.toggleMonat = function(button){
 
 };
 
-/* ZEILE HINZUFÜGEN */
 window.zeileHinzufuegen = function(button){
 
     const monat =
@@ -597,7 +594,6 @@ window.zeileHinzufuegen = function(button){
 
 };
 
-/* LOGIN */
 onAuthStateChanged(auth, async (user) => {
 
     if(!user){
@@ -617,7 +613,6 @@ onAuthStateChanged(auth, async (user) => {
 
 });
 
-/* BERECHNEN */
 function berechnen(){
 
     let jahrDienste = 0;
@@ -714,7 +709,6 @@ function berechnen(){
 
 }
 
-/* DATEN SAMMELN */
 function datenSammeln(){
 
     const daten = [];
@@ -763,7 +757,6 @@ function datenSammeln(){
 
 }
 
-/* AUTO SPEICHERN */
 async function speichernAutomatisch(){
 
     if(!aktuelleUid) return;
@@ -793,7 +786,6 @@ async function speichernAutomatisch(){
 
 }
 
-/* MANUELL */
 window.manuellSpeichern =
 async function(){
 
@@ -805,7 +797,6 @@ async function(){
 
 };
 
-/* LADEN */
 async function laden(){
 
     try{
@@ -908,7 +899,6 @@ async function laden(){
 
 }
 
-/* ALLES LÖSCHEN */
 window.allesLoeschen =
 async function(){
 
@@ -938,7 +928,6 @@ async function(){
 
 };
 
-/* NEUES JAHR */
 window.neuesJahrStarten =
 async function(){
 
@@ -975,39 +964,123 @@ async function(){
 
 };
 
-/* EXPORT */
-window.datenExportieren =
-function(){
+window.pdfExportieren =
+async function(){
 
-    const daten =
-      JSON.stringify(
-        datenSammeln(),
-        null,
-        2
-      );
+    try{
 
-    const blob =
-      new Blob(
-        [daten],
-        {
-          type:"application/json"
+        const status =
+          document.getElementById("statusText");
+
+        status.innerText =
+          "PDF wird erstellt...";
+
+        document.querySelectorAll(".monat")
+        .forEach(monat => {
+
+            monat.classList.add("active");
+
+        });
+
+        const element =
+          document.body;
+
+        const canvas =
+          await html2canvas(
+            element,
+            {
+              scale:2,
+              useCORS:true,
+              backgroundColor:"#0f172a"
+            }
+          );
+
+        const imgData =
+          canvas.toDataURL(
+            "image/jpeg",
+            1.0
+          );
+
+        const {
+          jsPDF
+        } = window.jspdf;
+
+        const pdf =
+          new jsPDF(
+            "p",
+            "mm",
+            "a4"
+          );
+
+        const pdfWidth =
+          pdf.internal.pageSize.getWidth();
+
+        const pdfHeight =
+          pdf.internal.pageSize.getHeight();
+
+        const imgWidth =
+          pdfWidth;
+
+        const imgHeight =
+          canvas.height *
+          imgWidth /
+          canvas.width;
+
+        let heightLeft =
+          imgHeight;
+
+        let position = 0;
+
+        pdf.addImage(
+          imgData,
+          "JPEG",
+          0,
+          position,
+          imgWidth,
+          imgHeight
+        );
+
+        heightLeft -= pdfHeight;
+
+        while(heightLeft > 0){
+
+            position =
+              heightLeft - imgHeight;
+
+            pdf.addPage();
+
+            pdf.addImage(
+              imgData,
+              "JPEG",
+              0,
+              position,
+              imgWidth,
+              imgHeight
+            );
+
+            heightLeft -= pdfHeight;
+
         }
-      );
 
-    const a =
-      document.createElement("a");
+        pdf.save(
+          "NKSP_Gehaltsrechner_2026.pdf"
+        );
 
-    a.href =
-      URL.createObjectURL(blob);
+        status.innerText =
+          "PDF erfolgreich erstellt";
 
-    a.download =
-      "gehaltsrechner_backup.json";
+    }catch(error){
 
-    a.click();
+        console.error(error);
+
+        alert(
+          "Fehler beim PDF Export"
+        );
+
+    }
 
 };
 
-/* AUTO BERECHNUNG */
 document.addEventListener(
 
     "input",
