@@ -595,19 +595,52 @@ function updateCheckboxText(checkboxClass, textfeldId){
 document.addEventListener("change", (e) => {
 
   if(e.target.classList.contains("sicherheitCheck")){
-    updateCheckboxText("sicherheitCheck","formSicherheit");
+    updateCheckboxText(
+      "sicherheitCheck",
+      "formSicherheit"
+    );
   }
 
   if(e.target.classList.contains("ersthelferCheck")){
-    updateCheckboxText("ersthelferCheck","formErsthelfer");
+    updateCheckboxText(
+      "ersthelferCheck",
+      "formErsthelfer"
+    );
+  }
+
+  if(e.target.classList.contains("brandschutzhelferCheck")){
+    updateCheckboxText(
+      "brandschutzhelferCheck",
+      "formBrandschutzhelfer"
+    );
+  }
+
+  if(e.target.classList.contains("datenschutzbeauftragterCheck")){
+    updateCheckboxText(
+      "datenschutzbeauftragterCheck",
+      "formDatenschutzbeauftragter"
+    );
+  }
+
+  if(e.target.classList.contains("detektivscheinCheck")){
+    updateCheckboxText(
+      "detektivscheinCheck",
+      "formDetektivschein"
+    );
   }
 
   if(e.target.classList.contains("fuehrerscheinCheck")){
-    updateCheckboxText("fuehrerscheinCheck","formFuehrerschein");
+    updateCheckboxText(
+      "fuehrerscheinCheck",
+      "formFuehrerschein"
+    );
   }
 
   if(e.target.classList.contains("chefCheck")){
-    updateCheckboxText("chefCheck","formChef");
+    updateCheckboxText(
+      "chefCheck",
+      "formChef"
+    );
   }
 
 });
@@ -619,8 +652,10 @@ document.addEventListener("change", (e) => {
 onAuthStateChanged(auth, (user) => {
 
   if(!user){
+
     window.location.href = "index.html";
     return;
+
   }
 
   onValue(benutzerRef, (snapshot) => {
@@ -873,9 +908,9 @@ window.oeffneFormular = function(){
   document.getElementById("formAusbildung").value = "";
   document.getElementById("formSicherheit").value = "";
   document.getElementById("formErsthelfer").value = "";
-  document.getElementById("formBrandschutzText").value = "";
-  document.getElementById("formDatenschutzText").value = "";
-  document.getElementById("formDetektivscheinText").value = "";
+  document.getElementById("formBrandschutzhelfer").value = "";
+  document.getElementById("formDatenschutzbeauftragter").value = "";
+  document.getElementById("formDetektivschein").value = "";
   document.getElementById("formFirma").value = "";
   document.getElementById("formFuehrerschein").value = "";
   document.getElementById("formChef").value = "";
@@ -934,13 +969,13 @@ window.bearbeiteMitarbeiter = function(index){
   document.getElementById("formErsthelfer").value =
     m.ersthelfer || "";
 
-  document.getElementById("formBrandschutzText").value =
+  document.getElementById("formBrandschutzhelfer").value =
     m.brandschutz || "";
 
-  document.getElementById("formDatenschutzText").value =
+  document.getElementById("formDatenschutzbeauftragter").value =
     m.datenschutz || "";
 
-  document.getElementById("formDetektivscheinText").value =
+  document.getElementById("formDetektivschein").value =
     m.detektivschein || "";
 
   document.getElementById("formFirma").value =
@@ -1013,19 +1048,13 @@ window.speichereMitarbeiter = async function(){
         document.getElementById("formErsthelfer").value || "",
 
       brandschutz:
-        document.getElementById("formBrandschutz").value +
-        " " +
-        document.getElementById("formBrandschutzText").value,
+        document.getElementById("formBrandschutzhelfer").value || "",
 
       datenschutz:
-        document.getElementById("formDatenschutz").value +
-        " " +
-        document.getElementById("formDatenschutzText").value,
+        document.getElementById("formDatenschutzbeauftragter").value || "",
 
       detektivschein:
-        document.getElementById("formDetektivschein").value +
-        " " +
-        document.getElementById("formDetektivscheinText").value,
+        document.getElementById("formDetektivschein").value || "",
 
       firma:
         document.getElementById("formFirma").value || "",
@@ -1040,8 +1069,6 @@ window.speichereMitarbeiter = async function(){
         bildURL
 
     };
-
-    /* UPDATE */
 
     if(bearbeiteID){
 
