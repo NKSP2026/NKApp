@@ -599,7 +599,7 @@ onAuthStateChanged(auth, (user) => {
 
       if(daten.uid === user.uid){
 
-        userRolle = daten.rolle || "mitarbeiter";
+        userRolle = (daten.rolle || "mitarbeiter").toLowerCase();
 
         if(userRolle !== "admin"){
           document.getElementById("addMitarbeiterBtn").style.display = "none";
@@ -676,6 +676,17 @@ function renderMitarbeiter(){
 
           <button
             class="edit-btn"
+            style="
+              position:absolute;
+              top:10px;
+              right:55px;
+              background:#2563eb;
+              color:white;
+              border:none;
+              border-radius:8px;
+              padding:5px 8px;
+              cursor:pointer;
+            "
             onclick="event.stopPropagation(); bearbeiteMitarbeiter(${index})"
           >
             ✏
@@ -755,6 +766,10 @@ window.closeModal = function(){
 window.oeffneFormular = function(){
 
   bearbeiteID = null;
+  aktuellesBild = "";
+
+  document.getElementById("formularTitel").innerText =
+    "Neuen Mitarbeiter anlegen";
 
   document.getElementById("formularModal").style.display = "flex";
 
@@ -763,6 +778,37 @@ window.oeffneFormular = function(){
 window.schliesseFormular = function(){
 
   document.getElementById("formularModal").style.display = "none";
+
+};
+
+/* BEARBEITEN */
+
+window.bearbeiteMitarbeiter = function(index){
+
+  const m = mitarbeiterListe[index];
+
+  bearbeiteID = m.id;
+  aktuellesBild = m.bild || "";
+
+  document.getElementById("formularTitel").innerText =
+    "Mitarbeiter bearbeiten";
+
+  document.getElementById("formName").value = m.name || "";
+  document.getElementById("formGeburtsdatum").value = m.geburtsdatum || "";
+  document.getElementById("formWannNK").value = m.wannNK || "";
+  document.getElementById("formFunktion").value = m.funktion || "";
+  document.getElementById("formBeruf").value = m.beruf || "";
+  document.getElementById("formAusbildung").value = m.ausbildung || "";
+  document.getElementById("formSicherheit").value = m.sicherheit || "";
+  document.getElementById("formErsthelfer").value = m.ersthelfer || "";
+  document.getElementById("formBrandschutzText").value = m.brandschutz || "";
+  document.getElementById("formDatenschutzText").value = m.datenschutz || "";
+  document.getElementById("formDetektivscheinText").value = m.detektivschein || "";
+  document.getElementById("formFirma").value = m.firma || "";
+  document.getElementById("formFuehrerschein").value = m.fuehrerschein || "";
+  document.getElementById("formChef").value = m.chef || "";
+
+  document.getElementById("formularModal").style.display = "flex";
 
 };
 
@@ -848,9 +894,23 @@ window.speichereMitarbeiter = async function(){
 
     };
 
-    await push(mitarbeiterRef,daten);
+    /* BEARBEITEN */
+    if(bearbeiteID){
 
-    alert("Mitarbeiter gespeichert");
+      await update(
+        ref(db, "mitarbeiter/" + bearbeiteID),
+        daten
+      );
+
+      alert("Mitarbeiter aktualisiert");
+
+    }else{
+
+      await push(mitarbeiterRef,daten);
+
+      alert("Mitarbeiter gespeichert");
+
+    }
 
     schliesseFormular();
 
