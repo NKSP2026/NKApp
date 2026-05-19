@@ -88,11 +88,43 @@ h1{
     border-radius:18px;
 }
 
-.monat h2{
+/* MONAT BUTTON */
+.monat-toggle{
+    width:100%;
     background:#2563eb;
-    padding:14px;
+    color:white;
+    border:none;
+    padding:16px;
     border-radius:14px;
     font-size:24px;
+    font-weight:bold;
+    cursor:pointer;
+    text-align:left;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    transition:0.2s;
+}
+
+.monat-toggle:hover{
+    background:#1d4ed8;
+}
+
+/* INHALT */
+.monat-content{
+    display:none;
+    margin-top:20px;
+}
+
+/* GEÖFFNET */
+.monat.active .monat-content{
+    display:block;
+}
+
+.monat.active .monat-toggle{
+    background:#1e40af;
 }
 
 .table-wrapper{
@@ -103,7 +135,7 @@ table{
     width:100%;
     border-collapse:collapse;
     margin-top:20px;
-    min-width:1200px;
+    min-width:1100px;
 }
 
 th{
@@ -199,6 +231,11 @@ button,
     background:#475569;
 }
 
+.speicher-unten{
+    margin-top:20px;
+    width:100%;
+}
+
 .status{
     margin-top:15px;
     color:#94a3b8;
@@ -216,15 +253,16 @@ button,
     }
 
     table{
-        min-width:1050px;
+        min-width:950px;
     }
 
     .monat{
         padding:15px;
     }
 
-    .monat h2{
+    .monat-toggle{
         font-size:20px;
+        padding:14px;
     }
 
     .box{
@@ -276,7 +314,7 @@ button,
         class="save"
         onclick="manuellSpeichern()"
     >
-        💾 Jetzt speichern
+        💾 Alles speichern
     </button>
 
     <button
@@ -377,13 +415,21 @@ const monate = [
 const app =
   document.getElementById("app");
 
-/* MONATE */
+/* MONATE ERSTELLEN */
 monate.forEach(monat => {
 
     let html = `
     <div class="monat">
 
-        <h2>${monat}</h2>
+        <button
+            class="monat-toggle"
+            onclick="toggleMonat(this)"
+        >
+            <span>${monat}</span>
+            <span>▼</span>
+        </button>
+
+        <div class="monat-content">
 
         <div class="table-wrapper">
 
@@ -409,58 +455,8 @@ monate.forEach(monat => {
 
     for(let i=1;i<=6;i++){
 
-        html += `
-        <tr>
+        html += zeilenHTML(i);
 
-            <td>${i}</td>
-
-            <td>
-                <input
-                    type="text"
-                    class="veranstaltung"
-                    placeholder="z.B. Konzert"
-                >
-            </td>
-
-            <td>
-                <input
-                    type="text"
-                    class="ort"
-                    placeholder="z.B. Leipzig"
-                >
-            </td>
-
-            <td>
-                <input
-                    type="date"
-                    class="datum"
-                >
-            </td>
-
-            <td>
-                <input
-                    type="time"
-                    class="von"
-                >
-            </td>
-
-            <td>
-                <input
-                    type="time"
-                    class="bis"
-                >
-            </td>
-
-            <td class="stunden">
-                0.00
-            </td>
-
-            <td class="verdienst">
-                0.00 €
-            </td>
-
-        </tr>
-        `;
     }
 
     html += `
@@ -469,6 +465,20 @@ monate.forEach(monat => {
         </table>
 
         </div>
+
+        <button
+            class="export speicher-unten"
+            onclick="zeileHinzufuegen(this)"
+        >
+            ➕ Weitere Zeile hinzufügen
+        </button>
+
+        <button
+            class="save speicher-unten"
+            onclick="manuellSpeichern()"
+        >
+            💾 ${monat} speichern
+        </button>
 
         <div class="zusammenfassung">
 
@@ -489,12 +499,105 @@ monate.forEach(monat => {
 
         </div>
 
+        </div>
+
     </div>
     `;
 
     app.innerHTML += html;
 
 });
+
+/* ZEILEN HTML */
+function zeilenHTML(nummer){
+
+    return `
+    <tr>
+
+        <td>${nummer}</td>
+
+        <td>
+            <input
+                type="text"
+                class="veranstaltung"
+                placeholder="z.B. Konzert"
+            >
+        </td>
+
+        <td>
+            <input
+                type="text"
+                class="ort"
+                placeholder="z.B. Leipzig"
+            >
+        </td>
+
+        <td>
+            <input
+                type="date"
+                class="datum"
+            >
+        </td>
+
+        <td>
+            <input
+                type="time"
+                class="von"
+            >
+        </td>
+
+        <td>
+            <input
+                type="time"
+                class="bis"
+            >
+        </td>
+
+        <td class="stunden">
+            0.00
+        </td>
+
+        <td class="verdienst">
+            0.00 €
+        </td>
+
+    </tr>
+    `;
+}
+
+/* MONAT ÖFFNEN */
+window.toggleMonat = function(button){
+
+    const monat =
+      button.closest(".monat");
+
+    monat.classList.toggle("active");
+
+};
+
+/* ZEILE HINZUFÜGEN */
+window.zeileHinzufuegen = function(button){
+
+    const monat =
+      button.closest(".monat");
+
+    const tbody =
+      monat.querySelector("tbody");
+
+    const aktuelleZeilen =
+      tbody.querySelectorAll("tr").length;
+
+    const neueNummer =
+      aktuelleZeilen + 1;
+
+    tbody.insertAdjacentHTML(
+      "beforeend",
+      zeilenHTML(neueNummer)
+    );
+
+    berechnen();
+
+};
 
 /* LOGIN */
 onAuthStateChanged(auth, async (user) => {
@@ -613,7 +716,7 @@ function berechnen(){
 
 }
 
-/* DATEN */
+/* DATEN SAMMELN */
 function datenSammeln(){
 
     const daten = [];
@@ -740,11 +843,38 @@ async function laden(){
         document.querySelectorAll(".monat")
         .forEach((monat, monatIndex) => {
 
-            monat.querySelectorAll("tbody tr")
+            const tbody =
+              monat.querySelector("tbody");
+
+            tbody.innerHTML = "";
+
+            const monatDaten =
+              daten[monatIndex] || [];
+
+            if(monatDaten.length === 0){
+
+                for(let i=1;i<=6;i++){
+                    tbody.innerHTML += zeilenHTML(i);
+                }
+
+            }else{
+
+                monatDaten.forEach(
+                  (datenRow, rowIndex) => {
+
+                    tbody.innerHTML +=
+                      zeilenHTML(rowIndex + 1);
+
+                  }
+                );
+
+            }
+
+            tbody.querySelectorAll("tr")
             .forEach((row, rowIndex) => {
 
                 const datenRow =
-                  daten?.[monatIndex]?.[rowIndex];
+                  monatDaten[rowIndex];
 
                 if(datenRow){
 
