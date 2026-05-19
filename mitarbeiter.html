@@ -549,7 +549,9 @@ let userRolle = "";
 let bearbeiteID = null;
 let aktuellesBild = "";
 
-/* CHECKBOXEN */
+/* ===================================================== */
+/* CHECKBOX TEXT */
+/* ===================================================== */
 
 function updateCheckboxText(checkboxClass, textfeldId){
 
@@ -582,7 +584,9 @@ document.addEventListener("change", (e) => {
 
 });
 
+/* ===================================================== */
 /* LOGIN */
+/* ===================================================== */
 
 onAuthStateChanged(auth, (user) => {
 
@@ -599,11 +603,22 @@ onAuthStateChanged(auth, (user) => {
 
       if(daten.uid === user.uid){
 
-        userRolle = (daten.rolle || "mitarbeiter").toLowerCase();
+        userRolle =
+          String(daten.rolle || "")
+          .trim()
+          .toLowerCase();
+
+        console.log("ROLLE:", userRolle);
 
         if(userRolle !== "admin"){
-          document.getElementById("addMitarbeiterBtn").style.display = "none";
+
+          document.getElementById(
+            "addMitarbeiterBtn"
+          ).style.display = "none";
+
         }
+
+        renderMitarbeiter();
 
       }
 
@@ -613,7 +628,9 @@ onAuthStateChanged(auth, (user) => {
 
 });
 
+/* ===================================================== */
 /* ALTER */
+/* ===================================================== */
 
 function berechneAlter(geburtsdatum){
 
@@ -649,7 +666,9 @@ function berechneAlter(geburtsdatum){
 
 }
 
+/* ===================================================== */
 /* RENDER */
+/* ===================================================== */
 
 function renderMitarbeiter(){
 
@@ -660,58 +679,66 @@ function renderMitarbeiter(){
 
   mitarbeiterListe.forEach((m,index) => {
 
+    let adminButtons = "";
+
+    if(userRolle === "admin"){
+
+      adminButtons = `
+
+        <button
+          class="remove-btn"
+          onclick="event.stopPropagation(); loescheMitarbeiter(${index})"
+        >
+          X
+        </button>
+
+        <button
+          class="edit-btn"
+          onclick="event.stopPropagation(); bearbeiteMitarbeiter(${index})"
+        >
+          ✏
+        </button>
+
+      `;
+
+    }
+
     container.innerHTML += `
-      <div class="card" onclick="showDetails(${index})">
 
-        ${
-          userRolle === "admin"
-          ?
-          `
-          <button
-            class="remove-btn"
-            onclick="event.stopPropagation(); loescheMitarbeiter(${index})"
-          >
-            X
-          </button>
+      <div
+        class="card"
+        onclick="showDetails(${index})"
+      >
 
-          <button
-            class="edit-btn"
-            style="
-              position:absolute;
-              top:10px;
-              right:55px;
-              background:#2563eb;
-              color:white;
-              border:none;
-              border-radius:8px;
-              padding:5px 8px;
-              cursor:pointer;
-            "
-            onclick="event.stopPropagation(); bearbeiteMitarbeiter(${index})"
-          >
-            ✏
-          </button>
-          `
-          :
-          ""
-        }
+        ${adminButtons}
 
         <img src="${m.bild || ""}">
 
         <div>
+
           <h2>${m.name || ""}</h2>
-          <p>${berechneAlter(m.geburtsdatum)} Jahre</p>
-          <p>${m.funktion || ""}</p>
+
+          <p>
+            ${berechneAlter(m.geburtsdatum)} Jahre
+          </p>
+
+          <p>
+            ${m.funktion || ""}
+          </p>
+
         </div>
 
       </div>
+
     `;
 
   });
 
 }
 
+/* ===================================================== */
 /* LADEN */
+/* ===================================================== */
 
 onValue(mitarbeiterRef, (snapshot) => {
 
@@ -730,38 +757,77 @@ onValue(mitarbeiterRef, (snapshot) => {
 
 });
 
+/* ===================================================== */
 /* DETAILS */
+/* ===================================================== */
 
 window.showDetails = function(index){
 
   const m = mitarbeiterListe[index];
 
-  document.getElementById("detailBild").src = m.bild || "";
-  document.getElementById("detailName").innerText = m.name || "";
-  document.getElementById("detailAlter").innerText = berechneAlter(m.geburtsdatum);
-  document.getElementById("detailWannNK").innerText = m.wannNK || "";
-  document.getElementById("detailGeburtsdatum").innerText = m.geburtsdatum || "";
-  document.getElementById("detailFunktion").innerText = m.funktion || "";
-  document.getElementById("detailBeruf").innerText = m.beruf || "";
-  document.getElementById("detailAusbildung").innerText = m.ausbildung || "";
-  document.getElementById("detailSicherheit").innerText = m.sicherheit || "";
-  document.getElementById("detailErsthelfer").innerText = m.ersthelfer || "";
-  document.getElementById("detailBrandschutz").innerText = m.brandschutz || "";
-  document.getElementById("detailDatenschutz").innerText = m.datenschutz || "";
-  document.getElementById("detailDetektivschein").innerText = m.detektivschein || "";
-  document.getElementById("detailFirma").innerText = m.firma || "";
-  document.getElementById("detailFuehrerschein").innerText = m.fuehrerschein || "";
-  document.getElementById("detailChef").innerText = m.chef || "";
+  document.getElementById("detailBild").src =
+    m.bild || "";
 
-  document.getElementById("detailModal").style.display = "flex";
+  document.getElementById("detailName").innerText =
+    m.name || "";
+
+  document.getElementById("detailAlter").innerText =
+    berechneAlter(m.geburtsdatum);
+
+  document.getElementById("detailWannNK").innerText =
+    m.wannNK || "";
+
+  document.getElementById("detailGeburtsdatum").innerText =
+    m.geburtsdatum || "";
+
+  document.getElementById("detailFunktion").innerText =
+    m.funktion || "";
+
+  document.getElementById("detailBeruf").innerText =
+    m.beruf || "";
+
+  document.getElementById("detailAusbildung").innerText =
+    m.ausbildung || "";
+
+  document.getElementById("detailSicherheit").innerText =
+    m.sicherheit || "";
+
+  document.getElementById("detailErsthelfer").innerText =
+    m.ersthelfer || "";
+
+  document.getElementById("detailBrandschutz").innerText =
+    m.brandschutz || "";
+
+  document.getElementById("detailDatenschutz").innerText =
+    m.datenschutz || "";
+
+  document.getElementById("detailDetektivschein").innerText =
+    m.detektivschein || "";
+
+  document.getElementById("detailFirma").innerText =
+    m.firma || "";
+
+  document.getElementById("detailFuehrerschein").innerText =
+    m.fuehrerschein || "";
+
+  document.getElementById("detailChef").innerText =
+    m.chef || "";
+
+  document.getElementById("detailModal").style.display =
+    "flex";
 
 };
 
 window.closeModal = function(){
 
-  document.getElementById("detailModal").style.display = "none";
+  document.getElementById("detailModal").style.display =
+    "none";
 
 };
+
+/* ===================================================== */
+/* FORMULAR */
+/* ===================================================== */
 
 window.oeffneFormular = function(){
 
@@ -771,17 +837,40 @@ window.oeffneFormular = function(){
   document.getElementById("formularTitel").innerText =
     "Neuen Mitarbeiter anlegen";
 
-  document.getElementById("formularModal").style.display = "flex";
+  document.getElementById("formName").value = "";
+  document.getElementById("formGeburtsdatum").value = "";
+  document.getElementById("formWannNK").value = "";
+  document.getElementById("formFunktion").value = "";
+  document.getElementById("formBeruf").value = "";
+  document.getElementById("formAusbildung").value = "";
+  document.getElementById("formSicherheit").value = "";
+  document.getElementById("formErsthelfer").value = "";
+  document.getElementById("formBrandschutzText").value = "";
+  document.getElementById("formDatenschutzText").value = "";
+  document.getElementById("formDetektivscheinText").value = "";
+  document.getElementById("formFirma").value = "";
+  document.getElementById("formFuehrerschein").value = "";
+  document.getElementById("formChef").value = "";
+  document.getElementById("formBild").value = "";
+
+  document.querySelectorAll("input[type='checkbox']")
+    .forEach(cb => cb.checked = false);
+
+  document.getElementById("formularModal").style.display =
+    "flex";
 
 };
 
 window.schliesseFormular = function(){
 
-  document.getElementById("formularModal").style.display = "none";
+  document.getElementById("formularModal").style.display =
+    "none";
 
 };
 
+/* ===================================================== */
 /* BEARBEITEN */
+/* ===================================================== */
 
 window.bearbeiteMitarbeiter = function(index){
 
@@ -793,26 +882,56 @@ window.bearbeiteMitarbeiter = function(index){
   document.getElementById("formularTitel").innerText =
     "Mitarbeiter bearbeiten";
 
-  document.getElementById("formName").value = m.name || "";
-  document.getElementById("formGeburtsdatum").value = m.geburtsdatum || "";
-  document.getElementById("formWannNK").value = m.wannNK || "";
-  document.getElementById("formFunktion").value = m.funktion || "";
-  document.getElementById("formBeruf").value = m.beruf || "";
-  document.getElementById("formAusbildung").value = m.ausbildung || "";
-  document.getElementById("formSicherheit").value = m.sicherheit || "";
-  document.getElementById("formErsthelfer").value = m.ersthelfer || "";
-  document.getElementById("formBrandschutzText").value = m.brandschutz || "";
-  document.getElementById("formDatenschutzText").value = m.datenschutz || "";
-  document.getElementById("formDetektivscheinText").value = m.detektivschein || "";
-  document.getElementById("formFirma").value = m.firma || "";
-  document.getElementById("formFuehrerschein").value = m.fuehrerschein || "";
-  document.getElementById("formChef").value = m.chef || "";
+  document.getElementById("formName").value =
+    m.name || "";
 
-  document.getElementById("formularModal").style.display = "flex";
+  document.getElementById("formGeburtsdatum").value =
+    m.geburtsdatum || "";
+
+  document.getElementById("formWannNK").value =
+    m.wannNK || "";
+
+  document.getElementById("formFunktion").value =
+    m.funktion || "";
+
+  document.getElementById("formBeruf").value =
+    m.beruf || "";
+
+  document.getElementById("formAusbildung").value =
+    m.ausbildung || "";
+
+  document.getElementById("formSicherheit").value =
+    m.sicherheit || "";
+
+  document.getElementById("formErsthelfer").value =
+    m.ersthelfer || "";
+
+  document.getElementById("formBrandschutzText").value =
+    m.brandschutz || "";
+
+  document.getElementById("formDatenschutzText").value =
+    m.datenschutz || "";
+
+  document.getElementById("formDetektivscheinText").value =
+    m.detektivschein || "";
+
+  document.getElementById("formFirma").value =
+    m.firma || "";
+
+  document.getElementById("formFuehrerschein").value =
+    m.fuehrerschein || "";
+
+  document.getElementById("formChef").value =
+    m.chef || "";
+
+  document.getElementById("formularModal").style.display =
+    "flex";
 
 };
 
+/* ===================================================== */
 /* SPEICHERN */
+/* ===================================================== */
 
 window.speichereMitarbeiter = async function(){
 
@@ -894,7 +1013,8 @@ window.speichereMitarbeiter = async function(){
 
     };
 
-    /* BEARBEITEN */
+    /* UPDATE */
+
     if(bearbeiteID){
 
       await update(
@@ -906,7 +1026,10 @@ window.speichereMitarbeiter = async function(){
 
     }else{
 
-      await push(mitarbeiterRef,daten);
+      await push(
+        mitarbeiterRef,
+        daten
+      );
 
       alert("Mitarbeiter gespeichert");
 
@@ -924,11 +1047,14 @@ window.speichereMitarbeiter = async function(){
 
 };
 
+/* ===================================================== */
 /* LÖSCHEN */
+/* ===================================================== */
 
 window.loescheMitarbeiter = async function(index){
 
-  const ok = confirm("Wirklich löschen?");
+  const ok =
+    confirm("Wirklich löschen?");
 
   if(!ok) return;
 
@@ -942,15 +1068,16 @@ window.loescheMitarbeiter = async function(index){
       )
     );
 
+    alert("Mitarbeiter gelöscht");
+
   }catch(error){
 
     console.error(error);
+
+    alert("Fehler beim Löschen");
 
   }
 
 };
 
 </script>
-
-</body>
-</html>
