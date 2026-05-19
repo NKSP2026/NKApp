@@ -7,10 +7,6 @@
 
 <style>
 
-*{
-  box-sizing:border-box;
-}
-
 body{
   font-family:Arial,sans-serif;
   background:#111;
@@ -176,7 +172,7 @@ h1{
 .form-content{
   background:#1c1c1f;
   width:90%;
-  max-width:650px;
+  max-width:700px;
   border-radius:20px;
   padding:25px;
   max-height:90vh;
@@ -192,18 +188,33 @@ h1{
   border:1px solid #444;
   background:#111;
   color:white;
-  font-size:16px;
+  font-size:15px;
 }
 
 .form-content label{
   display:block;
-  margin-bottom:6px;
+  margin-bottom:8px;
+  margin-top:10px;
   font-weight:bold;
-  color:#ddd;
 }
 
-.multi-select{
-  height:130px;
+.checkbox-box{
+  background:#111;
+  border:1px solid #444;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:15px;
+}
+
+.checkbox-box label{
+  display:block;
+  margin-bottom:8px;
+  font-weight:normal;
+}
+
+.checkbox-box input[type="checkbox"]{
+  width:auto;
+  margin-right:10px;
 }
 
 @media(max-width:800px){
@@ -221,19 +232,6 @@ h1{
     text-align:center;
   }
 
-  .card img{
-    width:140px;
-    height:170px;
-  }
-
-  .card h2{
-    font-size:26px;
-  }
-
-  .card p{
-    font-size:16px;
-  }
-
 }
 
 </style>
@@ -249,10 +247,7 @@ h1{
     Zurück
   </a>
 
-  <button
-    class="admin-btn"
-    onclick="oeffneFormular()"
-  >
+  <button class="admin-btn" onclick="oeffneFormular()">
     + Mitarbeiter hinzufügen
   </button>
 
@@ -286,31 +281,18 @@ h1{
       <h2 id="detailName"></h2>
 
       <p><strong>Alter:</strong> <span id="detailAlter"></span></p>
-
       <p><strong>bei NK angefangen:</strong> <span id="detailWannNK"></span></p>
-
       <p><strong>Geburtsdatum:</strong> <span id="detailGeburtsdatum"></span></p>
-
       <p><strong>Funktion:</strong> <span id="detailFunktion"></span></p>
-
       <p><strong>Beruf:</strong> <span id="detailBeruf"></span></p>
-
       <p><strong>Ausbildung:</strong> <span id="detailAusbildung"></span></p>
-
       <p><strong>Sicherheitsdienst:</strong> <span id="detailSicherheit"></span></p>
-
       <p><strong>Ersthelfer/in:</strong> <span id="detailErsthelfer"></span></p>
-
       <p><strong>Brandschutzhelfer/in:</strong> <span id="detailBrandschutz"></span></p>
-
       <p><strong>Datenschutzbeauftragter/in:</strong> <span id="detailDatenschutz"></span></p>
-
       <p><strong>Detektivschein:</strong> <span id="detailDetektivschein"></span></p>
-
       <p><strong>Funktion innerhalb der Firma:</strong> <span id="detailFirma"></span></p>
-
       <p><strong>Führerschein:</strong> <span id="detailFuehrerschein"></span></p>
-
       <p><strong>Vorgesetzter:</strong> <span id="detailChef"></span></p>
 
     </div>
@@ -338,67 +320,138 @@ h1{
 
     <input type="text" id="formAusbildung" placeholder="Ausbildung">
 
+    <!-- SICHERHEIT -->
     <label>Sicherheitsdienst</label>
 
-    <select
+    <input
+      type="text"
       id="formSicherheit"
-      multiple
-      class="multi-select"
+      placeholder="Ausgewählte Qualifikationen"
     >
 
-      <option>GSSK</option>
-      <option>Sachkunde 34a geprüft</option>
-      <option>Unterrichtung 34a</option>
-      <option>Fachkraft für Schutz und Sicherheit</option>
-      <option>Servicekraft für Schutz und Sicherheit</option>
-      <option>Werkschutzfachkraft</option>
-      <option>Objektschutz</option>
-      <option>Veranstaltungsschutz</option>
+    <div class="checkbox-box">
 
-    </select>
+      <label>
+        <input type="checkbox" class="sicherheitCheck" value="GSSK">
+        GSSK
+      </label>
 
+      <label>
+        <input type="checkbox" class="sicherheitCheck" value="Sachkunde 34a geprüft">
+        Sachkunde 34a geprüft
+      </label>
+
+      <label>
+        <input type="checkbox" class="sicherheitCheck" value="Unterrichtung 34a">
+        Unterrichtung 34a
+      </label>
+
+      <label>
+        <input type="checkbox" class="sicherheitCheck" value="Fachkraft für Schutz und Sicherheit">
+        Fachkraft für Schutz und Sicherheit
+      </label>
+
+      <label>
+        <input type="checkbox" class="sicherheitCheck" value="Servicekraft für Schutz und Sicherheit">
+        Servicekraft für Schutz und Sicherheit
+      </label>
+
+      <label>
+        <input type="checkbox" class="sicherheitCheck" value="Werkschutzfachkraft">
+        Werkschutzfachkraft
+      </label>
+
+      <label>
+        <input type="checkbox" class="sicherheitCheck" value="Objektschutz">
+        Objektschutz
+      </label>
+
+      <label>
+        <input type="checkbox" class="sicherheitCheck" value="Veranstaltungsschutz">
+        Veranstaltungsschutz
+      </label>
+
+    </div>
+
+    <!-- ERSTHELFER -->
     <label>Ersthelfer/in</label>
 
-    <select
+    <input
+      type="text"
       id="formErsthelfer"
-      multiple
-      class="multi-select"
+      placeholder="Ausgewählte Qualifikationen"
     >
 
-      <option>KFZ Ersthelfer</option>
-      <option>Rettungshelfer</option>
-      <option>Rettungssanitäter</option>
-      <option>Notfallsanitäter</option>
-      <option>Medizinischer Bereich</option>
+    <div class="checkbox-box">
 
-    </select>
+      <label>
+        <input type="checkbox" class="ersthelferCheck" value="KFZ Ersthelfer">
+        KFZ Ersthelfer
+      </label>
 
+      <label>
+        <input type="checkbox" class="ersthelferCheck" value="Rettungshelfer">
+        Rettungshelfer
+      </label>
+
+      <label>
+        <input type="checkbox" class="ersthelferCheck" value="Rettungssanitäter">
+        Rettungssanitäter
+      </label>
+
+      <label>
+        <input type="checkbox" class="ersthelferCheck" value="Notfallsanitäter">
+        Notfallsanitäter
+      </label>
+
+      <label>
+        <input type="checkbox" class="ersthelferCheck" value="Medizinischer Bereich">
+        Medizinischer Bereich
+      </label>
+
+    </div>
+
+    <!-- BRANDSCHUTZ -->
     <label>Brandschutzhelfer/in</label>
 
     <select id="formBrandschutz">
-
       <option>Nein</option>
       <option>Ja</option>
-
     </select>
 
+    <input
+      type="text"
+      id="formBrandschutzText"
+      placeholder="Zusätzliche Angaben"
+    >
+
+    <!-- DATENSCHUTZ -->
     <label>Datenschutzbeauftragter/in</label>
 
     <select id="formDatenschutz">
-
       <option>Nein</option>
       <option>Ja</option>
-
     </select>
 
+    <input
+      type="text"
+      id="formDatenschutzText"
+      placeholder="Zusätzliche Angaben"
+    >
+
+    <!-- DETEKTIV -->
     <label>Detektivschein</label>
 
     <select id="formDetektivschein">
-
       <option>Nein</option>
       <option>Ja</option>
-
     </select>
+
+    <input
+      type="text"
+      id="formDetektivscheinText"
+      placeholder="Zusätzliche Angaben"
+    >
 
     <input
       type="text"
@@ -406,42 +459,55 @@ h1{
       placeholder="Funktion innerhalb der Firma"
     >
 
+    <!-- FÜHRERSCHEIN -->
     <label>Führerschein</label>
 
-    <select
+    <input
+      type="text"
       id="formFuehrerschein"
-      multiple
-      class="multi-select"
+      placeholder="Ausgewählte Führerscheine"
     >
 
-      <option>B</option>
-      <option>C</option>
+    <div class="checkbox-box">
 
-    </select>
+      <label>
+        <input type="checkbox" class="fuehrerscheinCheck" value="B">
+        B
+      </label>
 
+      <label>
+        <input type="checkbox" class="fuehrerscheinCheck" value="C">
+        C
+      </label>
+
+    </div>
+
+    <!-- CHEF -->
     <label>Vorgesetzter</label>
 
-    <select
-      id="formChef"
-      multiple
-      class="multi-select"
-    >
-
-      <option>Nicole Küttner</option>
-      <option>Marcel Maczeyzik</option>
-
-    </select>
-
     <input
-      type="file"
-      id="formBild"
-      accept="image/*"
+      type="text"
+      id="formChef"
+      placeholder="Ausgewählte Vorgesetzte"
     >
 
-    <button
-      class="admin-btn"
-      onclick="speichereMitarbeiter()"
-    >
+    <div class="checkbox-box">
+
+      <label>
+        <input type="checkbox" class="chefCheck" value="Nicole Küttner">
+        Nicole Küttner
+      </label>
+
+      <label>
+        <input type="checkbox" class="chefCheck" value="Marcel Maczeyzik">
+        Marcel Maczeyzik
+      </label>
+
+    </div>
+
+    <input type="file" id="formBild" accept="image/*">
+
+    <button class="admin-btn" onclick="speichereMitarbeiter()">
       Speichern
     </button>
 
@@ -456,657 +522,52 @@ h1{
 
 </div>
 
-<script type="module">
+<script>
 
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+/* CHECKBOX -> TEXT */
 
-import {
-  getAuth,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+function updateCheckboxText(checkboxClass, textfeldId){
 
-import {
-  getDatabase,
-  ref,
-  push,
-  onValue,
-  remove,
-  update
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+  const checked = Array.from(
+    document.querySelectorAll("." + checkboxClass + ":checked")
+  ).map(cb => cb.value);
 
-import {
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+  document.getElementById(textfeldId).value =
+    checked.join(", ");
 
-const firebaseConfig = {
+}
 
-  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+document.addEventListener("change", (e) => {
 
-  authDomain: "nksp-app.firebaseapp.com",
-
-  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
-
-  projectId: "nksp-app",
-
-  storageBucket: "nksp-app.firebasestorage.app",
-
-  messagingSenderId: "328702502215",
-
-  appId: "1:328702502215:web:080148f3e768bfafc29862"
-
-};
-
-const app = initializeApp(firebaseConfig);
-
-const db = getDatabase(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
-
-const mitarbeiterRef = ref(db, "mitarbeiter");
-const benutzerRef = ref(db, "benutzer");
-
-let mitarbeiterListe = [];
-let userRolle = "";
-let bearbeiteID = null;
-let aktuellesBild = "";
-
-/* LOGIN */
-onAuthStateChanged(auth, (user) => {
-
-  if(!user){
-
-    window.location.href = "index.html";
-    return;
-
+  if(e.target.classList.contains("sicherheitCheck")){
+    updateCheckboxText(
+      "sicherheitCheck",
+      "formSicherheit"
+    );
   }
 
-  onValue(
+  if(e.target.classList.contains("ersthelferCheck")){
+    updateCheckboxText(
+      "ersthelferCheck",
+      "formErsthelfer"
+    );
+  }
 
-    benutzerRef,
+  if(e.target.classList.contains("fuehrerscheinCheck")){
+    updateCheckboxText(
+      "fuehrerscheinCheck",
+      "formFuehrerschein"
+    );
+  }
 
-    (snapshot) => {
-
-      snapshot.forEach((child) => {
-
-        const daten = child.val();
-
-        if(daten.uid === user.uid){
-
-          userRolle = daten.rolle || "";
-
-          if(userRolle !== "admin"){
-
-            const btn =
-              document.querySelector(".top-bar button");
-
-            if(btn){
-              btn.style.display = "none";
-            }
-
-          }
-
-          renderMitarbeiter();
-
-        }
-
-      });
-
-    },
-
-    {
-      onlyOnce:true
-    }
-
-  );
+  if(e.target.classList.contains("chefCheck")){
+    updateCheckboxText(
+      "chefCheck",
+      "formChef"
+    );
+  }
 
 });
-
-/* ALTER */
-function berechneAlter(geburtsdatum){
-
-  if(!geburtsdatum) return "?";
-
-  if(geburtsdatum.includes(".")){
-
-    const t = geburtsdatum.split(".");
-
-    const geburt =
-      new Date(t[2], t[1]-1, t[0]);
-
-    const heute =
-      new Date();
-
-    let alter =
-      heute.getFullYear() -
-      geburt.getFullYear();
-
-    if(
-      heute.getMonth() <
-      geburt.getMonth()
-    ||
-      (
-        heute.getMonth() ===
-        geburt.getMonth()
-      &&
-        heute.getDate() <
-        geburt.getDate()
-      )
-    ){
-      alter--;
-    }
-
-    return alter;
-  }
-
-  return "?";
-}
-
-/* MULTI SELECT */
-function getMultiValues(id){
-
-  return Array.from(
-    document.getElementById(id).selectedOptions
-  )
-  .map(option => option.value)
-  .join(", ");
-
-}
-
-function setMultiSelect(id, values){
-
-  if(!values) return;
-
-  const arr =
-    values.split(",");
-
-  const select =
-    document.getElementById(id);
-
-  Array.from(select.options)
-  .forEach(option => {
-
-    option.selected =
-      arr
-      .map(v => v.trim())
-      .includes(option.value);
-
-  });
-
-}
-
-/* RENDER */
-function renderMitarbeiter(){
-
-  const container =
-    document.getElementById(
-      "mitarbeiterContainer"
-    );
-
-  container.innerHTML = "";
-
-  mitarbeiterListe.forEach((m,index) => {
-
-    container.innerHTML += `
-
-      <div
-        class="card"
-        onclick="showDetails(${index})"
-      >
-
-        ${
-          userRolle === "admin"
-
-          ?
-
-          `
-          <button
-            class="remove-btn"
-            style="right:10px;"
-            onclick="event.stopPropagation(); loescheMitarbeiter(${index})"
-          >
-            X
-          </button>
-
-          <button
-            class="admin-btn"
-            style="position:absolute;top:10px;right:55px;padding:6px 10px;font-size:13px;"
-            onclick="event.stopPropagation(); bearbeiteMitarbeiter(${index})"
-          >
-            ✏
-          </button>
-          `
-
-          :
-
-          ""
-
-        }
-
-        <img src="${m.bild || ""}">
-
-        <div>
-
-          <h2>${m.name || "-"}</h2>
-
-          <p>
-            ${berechneAlter(m.geburtsdatum)} Jahre
-          </p>
-
-          <p>
-            ${m.funktion || "-"}
-          </p>
-
-        </div>
-
-      </div>
-
-    `;
-
-  });
-
-}
-
-/* DETAILS */
-window.showDetails = function(index){
-
-  const m = mitarbeiterListe[index];
-
-  document.getElementById("detailBild").src = m.bild || "";
-  document.getElementById("detailName").innerText = m.name || "";
-  document.getElementById("detailAlter").innerText = berechneAlter(m.geburtsdatum);
-  document.getElementById("detailWannNK").innerText = m.wannNK || "";
-  document.getElementById("detailGeburtsdatum").innerText = m.geburtsdatum || "";
-  document.getElementById("detailFunktion").innerText = m.funktion || "";
-  document.getElementById("detailBeruf").innerText = m.beruf || "";
-  document.getElementById("detailAusbildung").innerText = m.ausbildung || "";
-  document.getElementById("detailSicherheit").innerText = m.sicherheit || "";
-  document.getElementById("detailErsthelfer").innerText = m.ersthelfer || "";
-  document.getElementById("detailBrandschutz").innerText = m.brandschutz || "";
-  document.getElementById("detailDatenschutz").innerText = m.datenschutz || "";
-  document.getElementById("detailDetektivschein").innerText = m.detektivschein || "";
-  document.getElementById("detailFirma").innerText = m.firma || "";
-  document.getElementById("detailFuehrerschein").innerText = m.fuehrerschein || "";
-  document.getElementById("detailChef").innerText = m.chef || "";
-
-  document.getElementById("detailModal").style.display = "flex";
-
-};
-
-window.closeModal = function(){
-
-  document.getElementById(
-    "detailModal"
-  ).style.display = "none";
-
-};
-
-/* FORMULAR */
-window.oeffneFormular = function(){
-
-  if(userRolle !== "admin"){
-
-    alert(
-      "Nur Admins dürfen hinzufügen"
-    );
-
-    return;
-
-  }
-
-  bearbeiteID = null;
-  aktuellesBild = "";
-
-  document.querySelector(
-    ".form-content h2"
-  ).innerText =
-    "Neuen Mitarbeiter anlegen";
-
-  document.getElementById("formName").value = "";
-  document.getElementById("formGeburtsdatum").value = "";
-  document.getElementById("formWannNK").value = "";
-  document.getElementById("formFunktion").value = "";
-  document.getElementById("formBeruf").value = "";
-  document.getElementById("formAusbildung").value = "";
-  document.getElementById("formFirma").value = "";
-
-  document.getElementById("formBrandschutz").value = "Nein";
-  document.getElementById("formDatenschutz").value = "Nein";
-  document.getElementById("formDetektivschein").value = "Nein";
-
-  setMultiSelect("formSicherheit", "");
-  setMultiSelect("formErsthelfer", "");
-  setMultiSelect("formFuehrerschein", "");
-  setMultiSelect("formChef", "");
-
-  document.getElementById(
-    "formularModal"
-  ).style.display = "flex";
-
-};
-
-window.bearbeiteMitarbeiter = function(index){
-
-  if(userRolle !== "admin") return;
-
-  const m = mitarbeiterListe[index];
-
-  bearbeiteID = m.id;
-  aktuellesBild = m.bild || "";
-
-  document.querySelector(
-    ".form-content h2"
-  ).innerText =
-    "Mitarbeiter bearbeiten";
-
-  document.getElementById("formName").value = m.name || "";
-  document.getElementById("formGeburtsdatum").value = m.geburtsdatum || "";
-  document.getElementById("formWannNK").value = m.wannNK || "";
-  document.getElementById("formFunktion").value = m.funktion || "";
-  document.getElementById("formBeruf").value = m.beruf || "";
-  document.getElementById("formAusbildung").value = m.ausbildung || "";
-  document.getElementById("formFirma").value = m.firma || "";
-
-  document.getElementById("formBrandschutz").value = m.brandschutz || "Nein";
-  document.getElementById("formDatenschutz").value = m.datenschutz || "Nein";
-  document.getElementById("formDetektivschein").value = m.detektivschein || "Nein";
-
-  setMultiSelect("formSicherheit", m.sicherheit);
-  setMultiSelect("formErsthelfer", m.ersthelfer);
-  setMultiSelect("formFuehrerschein", m.fuehrerschein);
-  setMultiSelect("formChef", m.chef);
-
-  document.getElementById(
-    "formularModal"
-  ).style.display = "flex";
-
-};
-
-window.schliesseFormular = function(){
-
-  document.getElementById(
-    "formularModal"
-  ).style.display = "none";
-
-};
-
-/* SPEICHERN */
-window.speichereMitarbeiter = async function(){
-
-  if(userRolle !== "admin"){
-
-    alert("Nur Admin");
-
-    return;
-
-  }
-
-  try{
-
-    let bildURL = aktuellesBild;
-
-    const file =
-      document.getElementById(
-        "formBild"
-      ).files[0];
-
-    if(file){
-
-      const bildRef =
-        storageRef(
-          storage,
-          "mitarbeiterbilder/" +
-          Date.now() +
-          "_" +
-          file.name
-        );
-
-      await uploadBytes(
-        bildRef,
-        file
-      );
-
-      bildURL =
-        await getDownloadURL(
-          bildRef
-        );
-
-    }
-
-    const daten = {
-
-      name:
-        document.getElementById("formName").value || "",
-
-      geburtsdatum:
-        document.getElementById("formGeburtsdatum").value || "",
-
-      wannNK:
-        document.getElementById("formWannNK").value || "",
-
-      funktion:
-        document.getElementById("formFunktion").value || "",
-
-      beruf:
-        document.getElementById("formBeruf").value || "",
-
-      ausbildung:
-        document.getElementById("formAusbildung").value || "",
-
-      sicherheit:
-        getMultiValues("formSicherheit"),
-
-      ersthelfer:
-        getMultiValues("formErsthelfer"),
-
-      brandschutz:
-        document.getElementById("formBrandschutz").value || "",
-
-      datenschutz:
-        document.getElementById("formDatenschutz").value || "",
-
-      detektivschein:
-        document.getElementById("formDetektivschein").value || "",
-
-      firma:
-        document.getElementById("formFirma").value || "",
-
-      fuehrerschein:
-        getMultiValues("formFuehrerschein"),
-
-      chef:
-        getMultiValues("formChef"),
-
-      bild:
-        bildURL
-
-    };
-
-    /* UPDATE */
-    if(bearbeiteID){
-
-      await update(
-        ref(
-          db,
-          "mitarbeiter/" +
-          bearbeiteID
-        ),
-        daten
-      );
-
-      alert(
-        "Mitarbeiter aktualisiert"
-      );
-
-      schliesseFormular();
-
-      return;
-
-    }
-
-    /* NEU */
-    await push(
-      mitarbeiterRef,
-      daten
-    );
-
-    alert(
-      "Mitarbeiter gespeichert"
-    );
-
-    schliesseFormular();
-
-  }catch(error){
-
-    console.error(error);
-
-    alert(
-      "Fehler beim Speichern"
-    );
-
-  }
-
-};
-
-/* LÖSCHEN */
-window.loescheMitarbeiter = async function(index){
-
-  if(userRolle !== "admin"){
-
-    alert(
-      "Nur Admins dürfen löschen"
-    );
-
-    return;
-
-  }
-
-  const ok =
-    confirm(
-      "Wirklich löschen?"
-    );
-
-  if(!ok) return;
-
-  const eintrag =
-    mitarbeiterListe[index];
-
-  try{
-
-    await push(
-      ref(db, "papierkorb"),
-      {
-        ...eintrag,
-        originalPfad:"mitarbeiter",
-        geloeschtAm:Date.now()
-      }
-    );
-
-    await remove(
-      ref(
-        db,
-        "mitarbeiter/" +
-        eintrag.id
-      )
-    );
-
-    alert(
-      "Mitarbeiter in Papierkorb verschoben"
-    );
-
-  }catch(error){
-
-    console.error(error);
-
-    alert(
-      "Fehler beim Löschen"
-    );
-
-  }
-
-};
-
-/* CLOSE */
-window.onclick = function(e){
-
-  if(
-    e.target.id ===
-    "detailModal"
-  ){
-    closeModal();
-  }
-
-  if(
-    e.target.id ===
-    "formularModal"
-  ){
-    schliesseFormular();
-  }
-
-};
-
-/* LADEN */
-onValue(
-
-  mitarbeiterRef,
-
-  (snapshot) => {
-
-    mitarbeiterListe = [];
-
-    snapshot.forEach((child) => {
-
-      mitarbeiterListe.push({
-        id: child.key,
-        ...child.val()
-      });
-
-    });
-
-    mitarbeiterListe.sort((a,b) => {
-
-      const top = [
-
-        "Nicole, Küttner",
-
-        "Marcel, Maczeyzik",
-
-        "Ronny, Winkler"
-
-      ];
-
-      const ia =
-        top.indexOf(a.name);
-
-      const ib =
-        top.indexOf(b.name);
-
-      if(
-        ia !== -1 &&
-        ib !== -1
-      ) return ia - ib;
-
-      if(ia !== -1) return -1;
-      if(ib !== -1) return 1;
-
-      return (
-        a.name || ""
-      ).localeCompare(
-        b.name || "",
-        "de"
-      );
-
-    });
-
-    renderMitarbeiter();
-
-  }
-
-);
 
 </script>
 
