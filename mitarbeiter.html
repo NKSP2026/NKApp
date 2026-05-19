@@ -816,6 +816,47 @@ onValue(mitarbeiterRef, (snapshot) => {
 
   });
 
+  /* SPEZIELLE REIHENFOLGE */
+
+  const topMitarbeiter = [
+    "Nicole, Küttner",
+    "Marcel, Maczeyzik",
+    "Ronny, Winkler"
+  ];
+
+  mitarbeiterListe.sort((a, b) => {
+
+    const indexA =
+      topMitarbeiter.indexOf(a.name || "");
+
+    const indexB =
+      topMitarbeiter.indexOf(b.name || "");
+
+    /* WENN BEIDE OBEN STEHEN SOLLEN */
+    if(indexA !== -1 && indexB !== -1){
+      return indexA - indexB;
+    }
+
+    /* WENN NUR A OBEN STEHT */
+    if(indexA !== -1){
+      return -1;
+    }
+
+    /* WENN NUR B OBEN STEHT */
+    if(indexB !== -1){
+      return 1;
+    }
+
+    /* REST ALPHABETISCH */
+    return (a.name || "")
+      .localeCompare(
+        b.name || "",
+        "de",
+        { sensitivity:"base" }
+      );
+
+  });
+
   renderMitarbeiter();
 
 });
