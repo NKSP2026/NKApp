@@ -19,6 +19,8 @@ body{
     background:#0f172a;
     color:white;
     padding:15px;
+    overflow-x:hidden;
+    position:relative;
 }
 
 /* WASSERZEICHEN */
@@ -26,11 +28,17 @@ body::before{
     content:"";
     position:fixed;
     inset:0;
+
     background-image:url("icon-512.png");
     background-repeat:repeat;
-    background-size:260px;
+    background-size:220px;
+
     opacity:0.03;
-    filter:grayscale(100%) brightness(220%);
+
+    filter:
+      grayscale(100%)
+      brightness(200%);
+
     pointer-events:none;
     z-index:0;
 }
@@ -46,57 +54,41 @@ h1{
     padding:20px;
     border-radius:20px;
     margin-bottom:20px;
-    font-size:32px;
+    font-size:34px;
 }
 
-.login-box,
-.topbox,
-#jahresbilanz{
+.topbox{
     background:#1e293b;
     padding:20px;
     border-radius:20px;
     margin-bottom:20px;
 }
 
-.login-box input,
+.topbox label{
+    font-size:20px;
+    font-weight:bold;
+}
+
 .topbox input{
     margin-top:10px;
-    margin-bottom:15px;
+    max-width:220px;
 }
 
 .buttons{
     display:flex;
-    flex-wrap:wrap;
     gap:12px;
+    flex-wrap:wrap;
     margin-bottom:25px;
 }
 
 button{
     border:none;
-    border-radius:12px;
-    padding:14px 18px;
+    border-radius:14px;
+    padding:16px 20px;
     font-size:16px;
     font-weight:bold;
     cursor:pointer;
     color:white;
-}
-
-.login-btn{
-    background:#2563eb;
-    width:100%;
-    margin-top:10px;
-}
-
-.register-btn{
-    background:#22c55e;
-    width:100%;
-    margin-top:10px;
-}
-
-.logout-btn{
-    background:#ef4444;
-    width:100%;
-    margin-top:10px;
 }
 
 .save{
@@ -111,20 +103,22 @@ button{
     background:#2563eb;
 }
 
-.add-row{
-    background:#f59e0b;
-    width:100%;
-    margin-top:15px;
-}
-
 .month-button{
     width:100%;
     background:#1d4ed8;
-    margin-bottom:12px;
+    margin-bottom:14px;
     text-align:left;
-    font-size:20px;
-    border-radius:16px;
+    font-size:22px;
+    border-radius:18px;
     padding:18px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.month-button:hover{
+    background:#1e40af;
 }
 
 .monat{
@@ -141,7 +135,7 @@ button{
 
 table{
     width:100%;
-    min-width:1200px;
+    min-width:1100px;
     border-collapse:collapse;
     margin-top:15px;
 }
@@ -149,6 +143,7 @@ table{
 th{
     background:#111827;
     padding:12px;
+    font-size:16px;
 }
 
 td{
@@ -167,6 +162,17 @@ input{
     font-size:15px;
 }
 
+.add-row{
+    background:#f59e0b;
+    width:100%;
+    margin-top:15px;
+}
+
+.monat-save{
+    width:100%;
+    margin-top:12px;
+}
+
 .zusammenfassung{
     display:flex;
     flex-wrap:wrap;
@@ -176,7 +182,7 @@ input{
 
 .box{
     flex:1;
-    min-width:200px;
+    min-width:220px;
     background:#334155;
     border-radius:15px;
     padding:18px;
@@ -184,18 +190,43 @@ input{
     font-weight:bold;
 }
 
-.hidden{
-    display:none;
+#jahresbilanz{
+    background:#1e293b;
+    border-radius:20px;
+    padding:25px;
+    margin-top:30px;
+}
+
+#jahresbilanz h2{
+    margin-bottom:20px;
 }
 
 @media(max-width:768px){
+
+    body{
+        padding:10px;
+    }
+
+    h1{
+        font-size:25px;
+        padding:16px;
+    }
 
     button{
         width:100%;
     }
 
+    .month-button{
+        font-size:18px;
+        padding:15px;
+    }
+
     .box{
         min-width:100%;
+    }
+
+    table{
+        min-width:950px;
     }
 
 }
@@ -205,56 +236,11 @@ input{
 
 <body>
 
-<!-- LOGIN -->
-<div class="login-box" id="loginBox">
-
-    <h2>Login</h2><br>
-
-    <input
-        type="email"
-        id="email"
-        placeholder="E-Mail"
-    >
-
-    <input
-        type="password"
-        id="password"
-        placeholder="Passwort"
-    >
-
-    <button
-        class="login-btn"
-        onclick="login()"
-    >
-        Einloggen
-    </button>
-
-    <button
-        class="register-btn"
-        onclick="register()"
-    >
-        Registrieren
-    </button>
-
-</div>
-
-<!-- APP -->
-<div id="appBereich" class="hidden">
-
 <h1>NKSP Gehaltsrechner 2026</h1>
-
-<button
-    class="logout-btn"
-    onclick="logout()"
->
-    Logout
-</button>
-
-<br><br>
 
 <div class="topbox">
 
-    <label>Stundenlohn (€)</label><br><br>
+    <label>Stundenlohn (€)</label><br>
 
     <input
         type="number"
@@ -281,6 +267,13 @@ input{
         🗑 Neues Jahr starten
     </button>
 
+    <button
+        class="export"
+        onclick="pdfExport()"
+    >
+        📄 Als PDF speichern
+    </button>
+
 </div>
 
 <div id="app"></div>
@@ -292,17 +285,17 @@ input{
     <div class="zusammenfassung">
 
         <div class="box">
-            Dienste<br><br>
+            Gesamt Dienste:<br><br>
             <span id="jahrDienste">0</span>
         </div>
 
         <div class="box">
-            Stunden<br><br>
+            Gesamt Stunden:<br><br>
             <span id="jahrStunden">0.00</span>
         </div>
 
         <div class="box">
-            Verdienst<br><br>
+            Gesamt Verdienst:<br><br>
             <span id="jahrGeld">0.00 €</span>
         </div>
 
@@ -310,68 +303,27 @@ input{
 
 </div>
 
-</div>
+<!-- VORSCHLÄGE -->
+<datalist id="orteListe">
+    <option value="Neue Welt Zwickau">
+    <option value="Globus Zwickau">
+    <option value="Weihnachtsmarkt">
+    <option value="Stadtfest">
+    <option value="Leipzig">
+    <option value="Chemnitz">
+</datalist>
 
-<!-- FIREBASE -->
-<script type="module">
+<datalist id="veranstaltungenListe">
+    <option value="Konzert">
+    <option value="Festival">
+    <option value="Weihnachtsmarkt">
+    <option value="Fußballspiel">
+    <option value="Veranstaltung">
+</datalist>
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    onAuthStateChanged,
-    signOut
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-    getDatabase,
-    ref,
-    set,
-    get
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-/* FIREBASE CONFIG */
-/* HIER DEINE FIREBASE DATEN EINTRAGEN */
-
-const firebaseConfig = {
-
-    apiKey: "DEINE_APIKEY",
-
-    authDomain:
-    "DEINPROJEKT.firebaseapp.com",
-
-    databaseURL:
-    "https://DEINPROJEKT-default-rtdb.europe-west1.firebasedatabase.app",
-
-    projectId: "DEINPROJEKT",
-
-    storageBucket:
-    "DEINPROJEKT.appspot.com",
-
-    messagingSenderId:
-    "123456789",
-
-    appId:
-    "DEINE_APP_ID"
-
-};
-
-const appFirebase =
-initializeApp(firebaseConfig);
-
-const auth =
-getAuth(appFirebase);
-
-const database =
-getDatabase(appFirebase);
-
-/* GLOBAL */
-window.currentUser = null;
+<script>
 
 const monate = [
 "Januar",
@@ -391,258 +343,104 @@ const monate = [
 const app =
 document.getElementById("app");
 
-/* DATENLISTEN */
-const datalistContainer =
-document.createElement("div");
+/* MONATE ERSTELLEN */
+monate.forEach((monat,index)=>{
 
-datalistContainer.innerHTML = `
+    app.innerHTML += `
 
-<datalist id="orteListe">
-<option value="Neue Welt Zwickau">
-<option value="Globus Zwickau">
-<option value="Weihnachtsmarkt">
-<option value="Stadtfest">
-<option value="Festival">
-</datalist>
+    <button
+        class="month-button"
+        onclick="toggleMonat(${index})"
+    >
+        <span>📅 ${monat}</span>
+        <span>▼</span>
+    </button>
 
-<datalist id="veranstaltungenListe">
-<option value="Konzert">
-<option value="Festival">
-<option value="Fußball">
-<option value="Messe">
-<option value="Veranstaltung">
-</datalist>
+    <div
+        class="monat"
+        id="monat${index}"
+    >
 
-`;
+        <div class="table-wrapper">
 
-document.body.appendChild(
-datalistContainer
-);
+        <table>
 
-/* LOGIN */
-window.login = async function(){
+            <thead>
 
-    const email =
-    document.getElementById(
-        "email"
-    ).value;
+                <tr>
+                    <th>Dienst</th>
+                    <th>Veranstaltung</th>
+                    <th>Ort</th>
+                    <th>Datum</th>
+                    <th>Von</th>
+                    <th>Bis</th>
+                    <th>Stunden</th>
+                    <th>Verdienst</th>
+                </tr>
 
-    const password =
-    document.getElementById(
-        "password"
-    ).value;
+            </thead>
 
-    try{
+            <tbody id="tbody${index}">
+            </tbody>
 
-        await signInWithEmailAndPassword(
-            auth,
-            email,
-            password
-        );
+        </table>
 
-    }catch(error){
+        </div>
 
-        alert(error.message);
+        <button
+            class="add-row"
+            onclick="zeileHinzufuegen(${index})"
+        >
+            ➕ Weitere Zeile hinzufügen
+        </button>
 
-    }
+        <button
+            class="save monat-save"
+            onclick="manuellSpeichern()"
+        >
+            💾 ${monat} speichern
+        </button>
 
-}
+        <div class="zusammenfassung">
 
-/* REGISTER */
-window.register = async function(){
+            <div class="box">
+                Dienste:<br><br>
+                <span class="diensteGesamt">0</span>
+            </div>
 
-    const email =
-    document.getElementById(
-        "email"
-    ).value;
+            <div class="box">
+                Stunden:<br><br>
+                <span class="stundenGesamt">0.00</span>
+            </div>
 
-    const password =
-    document.getElementById(
-        "password"
-    ).value;
+            <div class="box">
+                Verdienst:<br><br>
+                <span class="geldGesamt">0.00 €</span>
+            </div>
 
-    try{
+        </div>
 
-        await createUserWithEmailAndPassword(
-            auth,
-            email,
-            password
-        );
+    </div>
 
-        alert(
-            "Registrierung erfolgreich"
-        );
-
-    }catch(error){
-
-        alert(error.message);
-
-    }
-
-}
-
-/* LOGOUT */
-window.logout = async function(){
-
-    await signOut(auth);
-
-}
-
-/* USER LOGIN STATUS */
-onAuthStateChanged(
-auth,
-async(user)=>{
-
-    if(user){
-
-        window.currentUser =
-        user;
-
-        document
-        .getElementById(
-            "loginBox"
-        )
-        .classList.add("hidden");
-
-        document
-        .getElementById(
-            "appBereich"
-        )
-        .classList.remove("hidden");
-
-        if(
-            app.innerHTML === ""
-        ){
-
-            monate.forEach(
-            (monat,index)=>{
-
-                app.innerHTML += `
-
-                <button
-                    class="month-button"
-                    onclick="toggleMonat(${index})"
-                >
-                    📅 ${monat}
-                </button>
-
-                <div
-                    class="monat"
-                    id="monat${index}"
-                >
-
-                    <div class="table-wrapper">
-
-                    <table>
-
-                        <thead>
-
-                            <tr>
-                                <th>Dienst</th>
-                                <th>Veranstaltung</th>
-                                <th>Ort</th>
-                                <th>Datum</th>
-                                <th>Von</th>
-                                <th>Bis</th>
-                                <th>Stunden</th>
-                                <th>Verdienst</th>
-                            </tr>
-
-                        </thead>
-
-                        <tbody
-                            id="tbody${index}"
-                        >
-                        </tbody>
-
-                    </table>
-
-                    </div>
-
-                    <button
-                        class="add-row"
-                        onclick="zeileHinzufuegen(${index})"
-                    >
-                        ➕ Zeile hinzufügen
-                    </button>
-
-                    <div class="zusammenfassung">
-
-                        <div class="box">
-                            Dienste<br><br>
-                            <span class="diensteGesamt">
-                            0
-                            </span>
-                        </div>
-
-                        <div class="box">
-                            Stunden<br><br>
-                            <span class="stundenGesamt">
-                            0.00
-                            </span>
-                        </div>
-
-                        <div class="box">
-                            Geld<br><br>
-                            <span class="geldGesamt">
-                            0.00 €
-                            </span>
-                        </div>
-
-                    </div>
-
-                </div>
-
-                `;
-
-            });
-
-        }
-
-        await laden();
-
-    }else{
-
-        window.currentUser =
-        null;
-
-        document
-        .getElementById(
-            "loginBox"
-        )
-        .classList.remove("hidden");
-
-        document
-        .getElementById(
-            "appBereich"
-        )
-        .classList.add("hidden");
-
-    }
+    `;
 
 });
 
-/* MONAT */
-window.toggleMonat =
-function(index){
+/* MONAT ÖFFNEN */
+function toggleMonat(index){
 
-    const box =
+    const monat =
     document.getElementById(
         "monat"+index
     );
 
-    if(
-        box.style.display ===
-        "block"
-    ){
+    if(monat.style.display==="block"){
 
-        box.style.display =
-        "none";
+        monat.style.display="none";
 
     }else{
 
-        box.style.display =
-        "block";
+        monat.style.display="block";
 
     }
 
@@ -658,40 +456,37 @@ function neueZeileHTML(nummer){
         <td>${nummer}</td>
 
         <td>
+
             <input
                 type="text"
                 class="veranstaltung"
                 list="veranstaltungenListe"
+                placeholder="Veranstaltung"
             >
+
         </td>
 
         <td>
+
             <input
                 type="text"
                 class="ort"
                 list="orteListe"
+                placeholder="Ort"
             >
+
         </td>
 
         <td>
-            <input
-                type="date"
-                class="datum"
-            >
+            <input type="date" class="datum">
         </td>
 
         <td>
-            <input
-                type="time"
-                class="von"
-            >
+            <input type="time" class="von">
         </td>
 
         <td>
-            <input
-                type="time"
-                class="bis"
-            >
+            <input type="time" class="bis">
         </td>
 
         <td class="stunden">
@@ -708,45 +503,35 @@ function neueZeileHTML(nummer){
 
 }
 
-/* ZEILE */
-window.zeileHinzufuegen =
-function(monatIndex){
+/* ZEILE HINZUFÜGEN */
+function zeileHinzufuegen(index){
 
     const tbody =
     document.getElementById(
-        "tbody"+monatIndex
+        "tbody"+index
     );
 
     const nummer =
     tbody.querySelectorAll("tr")
     .length + 1;
 
-    tbody.insertAdjacentHTML(
-        "beforeend",
-        neueZeileHTML(nummer)
-    );
+    tbody.innerHTML +=
+    neueZeileHTML(nummer);
 
     eventsNeu();
 
-    berechnen();
-
 }
 
-/* EVENTS */
-function eventsNeu(){
+window.zeileHinzufuegen =
+zeileHinzufuegen;
 
-    document
-    .querySelectorAll("input")
-    .forEach(input=>{
+/* WICHTIG:
+   JEDER MONAT BEKOMMT
+   EINE STARTZEILE
+*/
+for(let i=0;i<12;i++){
 
-        input.oninput =
-        ()=>{
-
-            berechnen();
-
-        };
-
-    });
+    zeileHinzufuegen(i);
 
 }
 
@@ -764,25 +549,21 @@ function berechnen(){
         ).value
     ) || 0;
 
-    document
-    .querySelectorAll(".monat")
-    .forEach(monat=>{
+    document.querySelectorAll(".monat")
+    .forEach(monat => {
 
-        let dienste = 0;
+        let dienstCount = 0;
         let stundenGesamt = 0;
         let geldGesamt = 0;
 
-        monat
-        .querySelectorAll("tbody tr")
-        .forEach(row=>{
+        monat.querySelectorAll("tbody tr")
+        .forEach(row => {
 
             const von =
-            row.querySelector(".von")
-            .value;
+            row.querySelector(".von").value;
 
             const bis =
-            row.querySelector(".bis")
-            .value;
+            row.querySelector(".bis").value;
 
             let stunden = 0;
 
@@ -806,7 +587,7 @@ function berechnen(){
                     stunden += 24;
                 }
 
-                dienste++;
+                dienstCount++;
 
             }
 
@@ -819,48 +600,33 @@ function berechnen(){
 
             row.querySelector(".verdienst")
             .innerText =
-            geld.toFixed(2)
-            +" €";
+            geld.toFixed(2)+" €";
 
-            stundenGesamt +=
-            stunden;
-
-            geldGesamt +=
-            geld;
+            stundenGesamt += stunden;
+            geldGesamt += geld;
 
         });
 
-        monat.querySelector(
-        ".diensteGesamt"
-        ).innerText =
-        dienste;
+        monat.querySelector(".diensteGesamt")
+        .innerText = dienstCount;
 
-        monat.querySelector(
-        ".stundenGesamt"
-        ).innerText =
+        monat.querySelector(".stundenGesamt")
+        .innerText =
         stundenGesamt.toFixed(2);
 
-        monat.querySelector(
-        ".geldGesamt"
-        ).innerText =
-        geldGesamt.toFixed(2)
-        +" €";
+        monat.querySelector(".geldGesamt")
+        .innerText =
+        geldGesamt.toFixed(2)+" €";
 
-        jahrDienste +=
-        dienste;
-
-        jahrStunden +=
-        stundenGesamt;
-
-        jahrGeld +=
-        geldGesamt;
+        jahrDienste += dienstCount;
+        jahrStunden += stundenGesamt;
+        jahrGeld += geldGesamt;
 
     });
 
     document.getElementById(
         "jahrDienste"
-    ).innerText =
-    jahrDienste;
+    ).innerText = jahrDienste;
 
     document.getElementById(
         "jahrStunden"
@@ -870,56 +636,41 @@ function berechnen(){
     document.getElementById(
         "jahrGeld"
     ).innerText =
-    jahrGeld.toFixed(2)
-    +" €";
+    jahrGeld.toFixed(2)+" €";
+
+    speichern();
 
 }
 
 /* SPEICHERN */
-window.manuellSpeichern =
-async function(){
-
-    if(!window.currentUser)
-    return;
+function speichern(){
 
     const daten = [];
 
-    document
-    .querySelectorAll(".monat")
-    .forEach(monat=>{
+    document.querySelectorAll(".monat")
+    .forEach(monat => {
 
         const monatDaten = [];
 
-        monat
-        .querySelectorAll("tbody tr")
-        .forEach(row=>{
+        monat.querySelectorAll("tbody tr")
+        .forEach(row => {
 
             monatDaten.push({
 
                 veranstaltung:
-                row.querySelector(
-                ".veranstaltung"
-                ).value,
+                row.querySelector(".veranstaltung").value,
 
                 ort:
-                row.querySelector(
-                ".ort"
-                ).value,
+                row.querySelector(".ort").value,
 
                 datum:
-                row.querySelector(
-                ".datum"
-                ).value,
+                row.querySelector(".datum").value,
 
                 von:
-                row.querySelector(
-                ".von"
-                ).value,
+                row.querySelector(".von").value,
 
                 bis:
-                row.querySelector(
-                ".bis"
-                ).value
+                row.querySelector(".bis").value
 
             });
 
@@ -929,174 +680,125 @@ async function(){
 
     });
 
-    await set(
+    localStorage.setItem(
+        "nksp_gehaltsrechner_2026",
+        JSON.stringify({
 
-        ref(
-            database,
-            "users/"
-            +window.currentUser.uid
-            +"/gehalt2026"
-        ),
-
-        {
+            daten,
 
             stundenlohn:
             document.getElementById(
                 "stundenlohn"
-            ).value,
+            ).value
 
-            daten
-
-        }
-
-    );
-
-    alert(
-        "Gespeichert!"
+        })
     );
 
 }
 
 /* LADEN */
-async function laden(){
-
-    const snapshot =
-    await get(
-
-        ref(
-            database,
-            "users/"
-            +window.currentUser.uid
-            +"/gehalt2026"
-        )
-
-    );
-
-    app.querySelectorAll(
-    "tbody"
-    ).forEach(t=>{
-
-        t.innerHTML = "";
-
-    });
-
-    if(!snapshot.exists()){
-
-        for(let i=0;i<12;i++){
-
-            zeileHinzufuegen(i);
-
-        }
-
-        return;
-
-    }
+function laden(){
 
     const datenGesamt =
-    snapshot.val();
+    JSON.parse(
+        localStorage.getItem(
+            "nksp_gehaltsrechner_2026"
+        )
+    );
+
+    if(!datenGesamt) return;
 
     document.getElementById(
         "stundenlohn"
     ).value =
-    datenGesamt.stundenlohn
-    || 15;
+    datenGesamt.stundenlohn || 15;
 
-    datenGesamt.daten
-    .forEach((monat,index)=>{
+    document.querySelectorAll(".monat")
+    .forEach((monat,monatIndex)=>{
 
         const tbody =
-        document.getElementById(
-            "tbody"+index
-        );
+        monat.querySelector("tbody");
 
-        monat.forEach(
-        (eintrag,rowIndex)=>{
+        tbody.innerHTML = "";
 
-            tbody.insertAdjacentHTML(
-                "beforeend",
+        const datenMonat =
+        datenGesamt.daten[monatIndex];
+
+        if(
+            datenMonat &&
+            datenMonat.length > 0
+        ){
+
+            datenMonat.forEach(
+            (eintrag,rowIndex)=>{
+
+                tbody.innerHTML +=
                 neueZeileHTML(
-                    rowIndex+1
-                )
-            );
+                    rowIndex + 1
+                );
 
-        });
+            });
+
+        }else{
+
+            tbody.innerHTML +=
+            neueZeileHTML(1);
+
+        }
 
     });
 
     eventsNeu();
 
-    document
-    .querySelectorAll(".monat")
+    document.querySelectorAll(".monat")
     .forEach((monat,monatIndex)=>{
 
-        monat
-        .querySelectorAll("tbody tr")
+        monat.querySelectorAll("tbody tr")
         .forEach((row,rowIndex)=>{
 
             const daten =
             datenGesamt
-            .daten[monatIndex]
-            [rowIndex];
+            .daten[monatIndex][rowIndex];
 
-            row.querySelector(
-            ".veranstaltung"
-            ).value =
-            daten.veranstaltung
-            || "";
+            if(!daten) return;
 
-            row.querySelector(
-            ".ort"
-            ).value =
-            daten.ort
-            || "";
+            row.querySelector(".veranstaltung")
+            .value =
+            daten.veranstaltung || "";
 
-            row.querySelector(
-            ".datum"
-            ).value =
-            daten.datum
-            || "";
+            row.querySelector(".ort")
+            .value =
+            daten.ort || "";
 
-            row.querySelector(
-            ".von"
-            ).value =
-            daten.von
-            || "";
+            row.querySelector(".datum")
+            .value =
+            daten.datum || "";
 
-            row.querySelector(
-            ".bis"
-            ).value =
-            daten.bis
-            || "";
+            row.querySelector(".von")
+            .value =
+            daten.von || "";
+
+            row.querySelector(".bis")
+            .value =
+            daten.bis || "";
 
         });
 
     });
 
-    berechnen();
-
 }
 
 /* ALLES LÖSCHEN */
-window.allesLoeschen =
-async function(){
+function allesLoeschen(){
 
     if(
         confirm(
-            "Wirklich löschen?"
+            "Wirklich neues Jahr starten?"
         )
     ){
 
-        await set(
-
-            ref(
-                database,
-                "users/"
-                +window.currentUser.uid
-                +"/gehalt2026"
-            ),
-
-            null
-
+        localStorage.removeItem(
+            "nksp_gehaltsrechner_2026"
         );
 
         location.reload();
@@ -1104,6 +806,153 @@ async function(){
     }
 
 }
+
+/* MANUELL */
+function manuellSpeichern(){
+
+    speichern();
+
+    alert(
+        "Daten gespeichert!"
+    );
+
+}
+
+/* PDF */
+async function pdfExport(){
+
+    const { jsPDF } =
+    window.jspdf;
+
+    const pdf =
+    new jsPDF();
+
+    let y = 20;
+
+    pdf.setFontSize(20);
+
+    pdf.text(
+        "NKSP Gehaltsrechner 2026",
+        20,
+        y
+    );
+
+    y += 20;
+
+    monate.forEach((monat,index)=>{
+
+        pdf.setFontSize(16);
+
+        pdf.text(
+            monat,
+            20,
+            y
+        );
+
+        y += 10;
+
+        const rows =
+        document.querySelectorAll(
+            "#tbody"+index+" tr"
+        );
+
+        rows.forEach(row => {
+
+            const veranstaltung =
+            row.querySelector(
+                ".veranstaltung"
+            ).value;
+
+            const ort =
+            row.querySelector(
+                ".ort"
+            ).value;
+
+            const datum =
+            row.querySelector(
+                ".datum"
+            ).value;
+
+            const stunden =
+            row.querySelector(
+                ".stunden"
+            ).innerText;
+
+            const geld =
+            row.querySelector(
+                ".verdienst"
+            ).innerText;
+
+            if(
+                veranstaltung ||
+                ort ||
+                datum
+            ){
+
+                pdf.setFontSize(10);
+
+                pdf.text(
+
+                    `${veranstaltung} | ${ort} | ${datum} | ${stunden}h | ${geld}`,
+
+                    20,
+                    y
+
+                );
+
+                y += 7;
+
+            }
+
+            if(y > 270){
+
+                pdf.addPage();
+
+                y = 20;
+
+            }
+
+        });
+
+        y += 10;
+
+    });
+
+    pdf.save(
+        "NKSP_Gehaltsrechner_2026.pdf"
+    );
+
+}
+
+/* EVENTS */
+function eventsNeu(){
+
+    document
+    .querySelectorAll("input")
+    .forEach(input => {
+
+        input.removeEventListener(
+            "input",
+            berechnen
+        );
+
+        input.addEventListener(
+            "input",
+            berechnen
+        );
+
+    });
+
+}
+
+window.toggleMonat =
+toggleMonat;
+
+laden();
+
+eventsNeu();
+
+berechnen();
 
 </script>
 
