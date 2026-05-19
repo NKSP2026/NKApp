@@ -135,7 +135,7 @@ table{
     width:100%;
     border-collapse:collapse;
     margin-top:20px;
-    min-width:1100px;
+    min-width:950px;
 }
 
 th{
@@ -231,6 +231,10 @@ button,
     background:#475569;
 }
 
+.add-row{
+    background:#0ea5e9;
+}
+
 .speicher-unten{
     margin-top:20px;
     width:100%;
@@ -253,7 +257,7 @@ button,
     }
 
     table{
-        min-width:950px;
+        min-width:900px;
     }
 
     .monat{
@@ -415,100 +419,7 @@ const monate = [
 const app =
   document.getElementById("app");
 
-/* MONATE ERSTELLEN */
-monate.forEach(monat => {
-
-    let html = `
-    <div class="monat">
-
-        <button
-            class="monat-toggle"
-            onclick="toggleMonat(this)"
-        >
-            <span>${monat}</span>
-            <span>▼</span>
-        </button>
-
-        <div class="monat-content">
-
-        <div class="table-wrapper">
-
-        <table>
-
-            <thead>
-
-                <tr>
-                    <th>Dienst</th>
-                    <th>Veranstaltung</th>
-                    <th>Ort</th>
-                    <th>Datum</th>
-                    <th>Von</th>
-                    <th>Bis</th>
-                    <th>Stunden</th>
-                    <th>Verdienst</th>
-                </tr>
-
-            </thead>
-
-            <tbody>
-    `;
-
-    for(let i=1;i<=6;i++){
-
-        html += zeilenHTML(i);
-
-    }
-
-    html += `
-            </tbody>
-
-        </table>
-
-        </div>
-
-        <button
-            class="export speicher-unten"
-            onclick="zeileHinzufuegen(this)"
-        >
-            ➕ Weitere Zeile hinzufügen
-        </button>
-
-        <button
-            class="save speicher-unten"
-            onclick="manuellSpeichern()"
-        >
-            💾 ${monat} speichern
-        </button>
-
-        <div class="zusammenfassung">
-
-            <div class="box">
-                Dienste:<br><br>
-                <span class="diensteGesamt">0</span>
-            </div>
-
-            <div class="box">
-                Stunden:<br><br>
-                <span class="stundenGesamt">0.00</span>
-            </div>
-
-            <div class="box">
-                Verdienst:<br><br>
-                <span class="geldGesamt">0.00 €</span>
-            </div>
-
-        </div>
-
-        </div>
-
-    </div>
-    `;
-
-    app.innerHTML += html;
-
-});
-
-/* ZEILEN HTML */
+/* ZEILE HTML */
 function zeilenHTML(nummer){
 
     return `
@@ -564,6 +475,93 @@ function zeilenHTML(nummer){
     </tr>
     `;
 }
+
+/* MONATE ERSTELLEN */
+monate.forEach(monat => {
+
+    let html = `
+    <div class="monat">
+
+        <button
+            class="monat-toggle"
+            onclick="toggleMonat(this)"
+        >
+            <span>${monat}</span>
+            <span>▼</span>
+        </button>
+
+        <div class="monat-content">
+
+        <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Dienst</th>
+                    <th>Veranstaltung</th>
+                    <th>Ort</th>
+                    <th>Datum</th>
+                    <th>Von</th>
+                    <th>Bis</th>
+                    <th>Stunden</th>
+                    <th>Verdienst</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                ${zeilenHTML(1)}
+
+            </tbody>
+
+        </table>
+
+        </div>
+
+        <button
+            class="add-row speicher-unten"
+            onclick="zeileHinzufuegen(this)"
+        >
+            ➕ Weitere Zeile hinzufügen
+        </button>
+
+        <button
+            class="save speicher-unten"
+            onclick="manuellSpeichern()"
+        >
+            💾 ${monat} speichern
+        </button>
+
+        <div class="zusammenfassung">
+
+            <div class="box">
+                Dienste:<br><br>
+                <span class="diensteGesamt">0</span>
+            </div>
+
+            <div class="box">
+                Stunden:<br><br>
+                <span class="stundenGesamt">0.00</span>
+            </div>
+
+            <div class="box">
+                Verdienst:<br><br>
+                <span class="geldGesamt">0.00 €</span>
+            </div>
+
+        </div>
+
+        </div>
+
+    </div>
+    `;
+
+    app.innerHTML += html;
+
+});
 
 /* MONAT ÖFFNEN */
 window.toggleMonat = function(button){
@@ -765,7 +763,7 @@ function datenSammeln(){
 
 }
 
-/* SPEICHERN */
+/* AUTO SPEICHERN */
 async function speichernAutomatisch(){
 
     if(!aktuelleUid) return;
@@ -853,9 +851,8 @@ async function laden(){
 
             if(monatDaten.length === 0){
 
-                for(let i=1;i<=6;i++){
-                    tbody.innerHTML += zeilenHTML(i);
-                }
+                tbody.innerHTML +=
+                  zeilenHTML(1);
 
             }else{
 
@@ -954,14 +951,11 @@ async function(){
 
     try{
 
-        document.querySelectorAll("input")
-        .forEach(input => {
+        document.querySelectorAll("tbody")
+        .forEach(tbody => {
 
-            if(
-              input.id !== "stundenlohn"
-            ){
-                input.value = "";
-            }
+            tbody.innerHTML =
+              zeilenHTML(1);
 
         });
 
@@ -1013,7 +1007,7 @@ function(){
 
 };
 
-/* AUTO */
+/* AUTO BERECHNUNG */
 document.addEventListener(
 
     "input",
