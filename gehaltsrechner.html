@@ -103,12 +103,6 @@ h1{
     display:flex;
     justify-content:space-between;
     align-items:center;
-
-    transition:0.2s;
-}
-
-.monat-toggle:hover{
-    background:#1d4ed8;
 }
 
 .monat-content{
@@ -118,10 +112,6 @@ h1{
 
 .monat.active .monat-content{
     display:block;
-}
-
-.monat.active .monat-toggle{
-    background:#1e40af;
 }
 
 .table-wrapper{
@@ -155,14 +145,6 @@ input{
     background:#e2e8f0;
     color:black;
     font-size:16px;
-}
-
-.veranstaltung{
-    min-width:260px;
-}
-
-.ort{
-    min-width:220px;
 }
 
 .zusammenfassung{
@@ -243,6 +225,32 @@ button,
     font-size:15px;
 }
 
+/* VORSCHLÄGE */
+.vorschlag-box{
+    position:absolute;
+    top:55px;
+    left:0;
+    right:0;
+    background:#1e293b;
+    border:1px solid #475569;
+    border-radius:12px;
+    overflow:hidden;
+    z-index:999;
+    box-shadow:0 10px 25px rgba(0,0,0,0.4);
+}
+
+.vorschlag-item{
+    padding:12px;
+    cursor:pointer;
+    text-align:left;
+    color:white;
+    border-bottom:1px solid #334155;
+}
+
+.vorschlag-item:hover{
+    background:#2563eb;
+}
+
 @media(max-width:900px){
 
     body{
@@ -281,12 +289,6 @@ button,
 </head>
 
 <body>
-
-<datalist id="veranstaltungenListe">
-</datalist>
-
-<datalist id="orteListe">
-</datalist>
 
 <h1>Dienst- & Gehaltsrechner 2026</h1>
 
@@ -338,13 +340,6 @@ button,
         📅 Neues Jahr starten
     </button>
 
-    <button
-        class="export"
-        onclick="pdfExportieren()"
-    >
-        📄 Als PDF speichern
-    </button>
-
 </div>
 
 <div id="app"></div>
@@ -373,10 +368,6 @@ button,
     </div>
 
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script type="module">
 
@@ -418,8 +409,7 @@ const db =
 
 let aktuelleUid = "";
 
-const veranstaltungenSet = new Set();
-const orteSet = new Set();
+let ortVorschlaege = [];
 
 const monate = [
 "Januar","Februar","März","April","Mai","Juni",
@@ -429,743 +419,702 @@ const monate = [
 const app =
   document.getElementById("app");
 
+/* ZEILE */
 function zeilenHTML(nummer){
 
-    return `
-    <tr>
+return `
+<tr>
 
-        <td>${nummer}</td>
+<td>${nummer}</td>
 
-        <td>
-            <input
-                type="text"
-                class="veranstaltung"
-                placeholder="Veranstaltung"
-                list="veranstaltungenListe"
-                autocomplete="off"
-            >
-        </td>
+<td>
+<input
+type="text"
+class="veranstaltung"
+placeholder="Veranstaltung"
+autocomplete="off"
+>
+</td>
 
-        <td>
-            <input
-                type="text"
-                class="ort"
-                placeholder="Ort"
-                list="orteListe"
-                autocomplete="off"
-            >
-        </td>
+<td style="position:relative;">
 
-        <td>
-            <input
-                type="date"
-                class="datum"
-            >
-        </td>
+<input
+type="text"
+class="ort"
+placeholder="Ort"
+autocomplete="off"
+oninput="zeigeVorschlaege(this)"
+onclick="zeigeVorschlaege(this)"
+>
 
-        <td>
-            <input
-                type="time"
-                class="von"
-            >
-        </td>
+</td>
 
-        <td>
-            <input
-                type="time"
-                class="bis"
-            >
-        </td>
+<td>
+<input type="date" class="datum">
+</td>
 
-        <td class="stunden">
-            0.00
-        </td>
+<td>
+<input type="time" class="von">
+</td>
 
-        <td class="verdienst">
-            0.00 €
-        </td>
+<td>
+<input type="time" class="bis">
+</td>
 
-    </tr>
-    `;
+<td class="stunden">
+0.00
+</td>
+
+<td class="verdienst">
+0.00 €
+</td>
+
+</tr>
+`;
+
 }
 
+/* MONATE */
 monate.forEach(monat => {
 
-    let html = `
-    <div class="monat">
+let html = `
+<div class="monat">
 
-        <button
-            class="monat-toggle"
-            onclick="toggleMonat(this)"
-        >
-            <span>📅 ${monat}</span>
-            <span>▼</span>
-        </button>
+<button
+class="monat-toggle"
+onclick="toggleMonat(this)"
+>
+<span>${monat}</span>
+<span>▼</span>
+</button>
 
-        <div class="monat-content">
+<div class="monat-content">
 
-        <div class="table-wrapper">
+<div class="table-wrapper">
 
-        <table>
+<table>
 
-            <thead>
+<thead>
 
-                <tr>
-                    <th>Dienst</th>
-                    <th>Veranstaltung</th>
-                    <th>Ort</th>
-                    <th>Datum</th>
-                    <th>Von</th>
-                    <th>Bis</th>
-                    <th>Stunden</th>
-                    <th>Verdienst</th>
-                </tr>
+<tr>
+<th>Dienst</th>
+<th>Veranstaltung</th>
+<th>Ort</th>
+<th>Datum</th>
+<th>Von</th>
+<th>Bis</th>
+<th>Stunden</th>
+<th>Verdienst</th>
+</tr>
 
-            </thead>
+</thead>
 
-            <tbody>
+<tbody>
 
-                ${zeilenHTML(1)}
+${zeilenHTML(1)}
 
-            </tbody>
+</tbody>
 
-        </table>
+</table>
 
-        </div>
+</div>
 
-        <button
-            class="add-row speicher-unten"
-            onclick="zeileHinzufuegen(this)"
-        >
-            ➕ Weitere Zeile hinzufügen
-        </button>
+<button
+class="add-row speicher-unten"
+onclick="zeileHinzufuegen(this)"
+>
+➕ Weitere Zeile hinzufügen
+</button>
 
-        <button
-            class="save speicher-unten"
-            onclick="manuellSpeichern()"
-        >
-            💾 ${monat} speichern
-        </button>
+<button
+class="save speicher-unten"
+onclick="manuellSpeichern()"
+>
+💾 ${monat} speichern
+</button>
 
-        <div class="zusammenfassung">
+<div class="zusammenfassung">
 
-            <div class="box">
-                Dienste:<br><br>
-                <span class="diensteGesamt">0</span>
-            </div>
+<div class="box">
+Dienste:<br><br>
+<span class="diensteGesamt">0</span>
+</div>
 
-            <div class="box">
-                Stunden:<br><br>
-                <span class="stundenGesamt">0.00</span>
-            </div>
+<div class="box">
+Stunden:<br><br>
+<span class="stundenGesamt">0.00</span>
+</div>
 
-            <div class="box">
-                Verdienst:<br><br>
-                <span class="geldGesamt">0.00 €</span>
-            </div>
+<div class="box">
+Verdienst:<br><br>
+<span class="geldGesamt">0.00 €</span>
+</div>
 
-        </div>
+</div>
 
-        </div>
+</div>
 
-    </div>
-    `;
+</div>
+`;
 
-    app.innerHTML += html;
+app.innerHTML += html;
 
 });
 
+/* MONAT ÖFFNEN */
 window.toggleMonat = function(button){
 
-    const monat =
-      button.closest(".monat");
+const monat =
+button.closest(".monat");
 
-    monat.classList.toggle("active");
+monat.classList.toggle("active");
 
 };
 
+/* ZEILE HINZUFÜGEN */
 window.zeileHinzufuegen = function(button){
 
-    const monat =
-      button.closest(".monat");
+const monat =
+button.closest(".monat");
 
-    const tbody =
-      monat.querySelector("tbody");
+const tbody =
+monat.querySelector("tbody");
 
-    const aktuelleZeilen =
-      tbody.querySelectorAll("tr").length;
+const neueNummer =
+tbody.querySelectorAll("tr").length + 1;
 
-    const neueNummer =
-      aktuelleZeilen + 1;
+tbody.insertAdjacentHTML(
+"beforeend",
+zeilenHTML(neueNummer)
+);
 
-    tbody.insertAdjacentHTML(
-      "beforeend",
-      zeilenHTML(neueNummer)
-    );
-
-    berechnen();
+berechnen();
 
 };
 
-function aktualisiereVorschlaege(){
+/* VORSCHLÄGE LADEN */
+async function ladeOrtVorschlaege(){
 
-    const veranstaltungenListe =
-    document.getElementById(
-      "veranstaltungenListe"
-    );
+try{
 
-    veranstaltungenListe.innerHTML = "";
+const snapshot =
+await get(
+ref(
+db,
+"gehaltsrechner/" + aktuelleUid
+)
+);
 
-    Array.from(veranstaltungenSet)
-    .sort()
-    .forEach(eintrag => {
+if(!snapshot.exists()) return;
 
-        veranstaltungenListe.innerHTML += `
-        <option value="${eintrag}">
-        `;
+const daten =
+snapshot.val().daten || [];
 
-    });
+ortVorschlaege = [];
 
-    const orteListe =
-    document.getElementById(
-      "orteListe"
-    );
+daten.forEach(monat => {
 
-    orteListe.innerHTML = "";
+monat.forEach(eintrag => {
 
-    Array.from(orteSet)
-    .sort()
-    .forEach(eintrag => {
+if(
+eintrag.ort &&
+eintrag.ort.trim() !== ""
+){
 
-        orteListe.innerHTML += `
-        <option value="${eintrag}">
-        `;
+if(
+!ortVorschlaege.includes(
+eintrag.ort
+)
+){
 
-    });
+ortVorschlaege.push(
+eintrag.ort
+);
 
 }
 
-onAuthStateChanged(auth, async (user) => {
-
-    if(!user){
-
-        window.location.href =
-          "index.html";
-
-        return;
-
-    }
-
-    aktuelleUid = user.uid;
-
-    await laden();
-
-    berechnen();
+}
 
 });
 
+});
+
+}catch(error){
+
+console.error(error);
+
+}
+
+}
+
+/* VORSCHLÄGE */
+window.zeigeVorschlaege = function(input){
+
+entferneAlleVorschlaege();
+
+const wert =
+input.value.toLowerCase().trim();
+
+if(wert.length < 1) return;
+
+const treffer =
+ortVorschlaege.filter(ort =>
+ort.toLowerCase().includes(wert)
+).slice(0,5);
+
+if(treffer.length === 0) return;
+
+const box =
+document.createElement("div");
+
+box.className =
+"vorschlag-box";
+
+treffer.forEach(v => {
+
+const item =
+document.createElement("div");
+
+item.className =
+"vorschlag-item";
+
+item.innerText = v;
+
+item.onclick = () => {
+
+input.value = v + " ";
+
+entferneAlleVorschlaege();
+
+input.focus();
+
+berechnen();
+
+};
+
+box.appendChild(item);
+
+});
+
+input.parentElement.appendChild(box);
+
+};
+
+function entferneAlleVorschlaege(){
+
+document
+.querySelectorAll(".vorschlag-box")
+.forEach(x => x.remove());
+
+}
+
+document.addEventListener(
+
+"click",
+
+(event) => {
+
+if(
+!event.target.classList.contains("ort")
+){
+
+entferneAlleVorschlaege();
+
+}
+
+}
+
+);
+
+/* LOGIN */
+onAuthStateChanged(auth, async (user) => {
+
+if(!user){
+
+window.location.href =
+"index.html";
+
+return;
+
+}
+
+aktuelleUid = user.uid;
+
+await laden();
+
+await ladeOrtVorschlaege();
+
+berechnen();
+
+});
+
+/* BERECHNEN */
 function berechnen(){
 
-    let jahrDienste = 0;
-    let jahrStunden = 0;
-    let jahrGeld = 0;
+let jahrDienste = 0;
+let jahrStunden = 0;
+let jahrGeld = 0;
 
-    const stundenlohn =
-      parseFloat(
-        document.getElementById("stundenlohn").value
-      ) || 0;
+const stundenlohn =
+parseFloat(
+document.getElementById("stundenlohn").value
+) || 0;
 
-    veranstaltungenSet.clear();
-    orteSet.clear();
+document.querySelectorAll(".monat")
+.forEach(monat => {
 
-    document.querySelectorAll(".monat")
-    .forEach(monat => {
+let dienstCount = 0;
+let stundenGesamt = 0;
+let geldGesamt = 0;
 
-        let dienstCount = 0;
-        let stundenGesamt = 0;
-        let geldGesamt = 0;
+monat.querySelectorAll("tbody tr")
+.forEach(row => {
 
-        monat.querySelectorAll("tbody tr")
-        .forEach(row => {
+const von =
+row.querySelector(".von").value;
 
-            const veranstaltung =
-              row.querySelector(".veranstaltung").value.trim();
+const bis =
+row.querySelector(".bis").value;
 
-            const ort =
-              row.querySelector(".ort").value.trim();
+let stunden = 0;
 
-            if(veranstaltung.length > 2){
-                veranstaltungenSet.add(veranstaltung);
-            }
+if(von && bis){
 
-            if(ort.length > 2){
-                orteSet.add(ort);
-            }
+let start =
+new Date("2026-01-01T" + von);
 
-            const von =
-              row.querySelector(".von").value;
+let ende =
+new Date("2026-01-01T" + bis);
 
-            const bis =
-              row.querySelector(".bis").value;
+stunden =
+(ende - start) /
+1000 / 60 / 60;
 
-            let stunden = 0;
+if(stunden < 0){
+stunden += 24;
+}
 
-            if(von && bis){
-
-                let start =
-                  new Date("2026-01-01T" + von);
-
-                let ende =
-                  new Date("2026-01-01T" + bis);
-
-                stunden =
-                  (ende - start) /
-                  1000 / 60 / 60;
-
-                if(stunden < 0){
-                    stunden += 24;
-                }
-
-                dienstCount++;
-
-            }
-
-            const geld =
-              stunden * stundenlohn;
-
-            row.querySelector(".stunden")
-            .innerText =
-              stunden.toFixed(2);
-
-            row.querySelector(".verdienst")
-            .innerText =
-              geld.toFixed(2) + " €";
-
-            stundenGesamt += stunden;
-            geldGesamt += geld;
-
-        });
-
-        monat.querySelector(".diensteGesamt")
-        .innerText =
-          dienstCount;
-
-        monat.querySelector(".stundenGesamt")
-        .innerText =
-          stundenGesamt.toFixed(2);
-
-        monat.querySelector(".geldGesamt")
-        .innerText =
-          geldGesamt.toFixed(2) + " €";
-
-        jahrDienste += dienstCount;
-        jahrStunden += stundenGesamt;
-        jahrGeld += geldGesamt;
-
-    });
-
-    aktualisiereVorschlaege();
-
-    document.getElementById("jahrDienste")
-    .innerText = jahrDienste;
-
-    document.getElementById("jahrStunden")
-    .innerText = jahrStunden.toFixed(2);
-
-    document.getElementById("jahrGeld")
-    .innerText = jahrGeld.toFixed(2) + " €";
-
-    speichernAutomatisch();
+dienstCount++;
 
 }
 
+const geld =
+stunden * stundenlohn;
+
+row.querySelector(".stunden")
+.innerText =
+stunden.toFixed(2);
+
+row.querySelector(".verdienst")
+.innerText =
+geld.toFixed(2) + " €";
+
+stundenGesamt += stunden;
+geldGesamt += geld;
+
+});
+
+monat.querySelector(".diensteGesamt")
+.innerText =
+dienstCount;
+
+monat.querySelector(".stundenGesamt")
+.innerText =
+stundenGesamt.toFixed(2);
+
+monat.querySelector(".geldGesamt")
+.innerText =
+geldGesamt.toFixed(2) + " €";
+
+jahrDienste += dienstCount;
+jahrStunden += stundenGesamt;
+jahrGeld += geldGesamt;
+
+});
+
+document.getElementById("jahrDienste")
+.innerText = jahrDienste;
+
+document.getElementById("jahrStunden")
+.innerText = jahrStunden.toFixed(2);
+
+document.getElementById("jahrGeld")
+.innerText = jahrGeld.toFixed(2) + " €";
+
+speichernAutomatisch();
+
+}
+
+/* DATEN */
 function datenSammeln(){
 
-    const daten = [];
+const daten = [];
 
-    document.querySelectorAll(".monat")
-    .forEach(monat => {
+document.querySelectorAll(".monat")
+.forEach(monat => {
 
-        const monatDaten = [];
+const monatDaten = [];
 
-        monat.querySelectorAll("tbody tr")
-        .forEach(row => {
+monat.querySelectorAll("tbody tr")
+.forEach(row => {
 
-            monatDaten.push({
+monatDaten.push({
 
-                veranstaltung:
-                  row.querySelector(".veranstaltung").value,
+veranstaltung:
+row.querySelector(".veranstaltung").value,
 
-                ort:
-                  row.querySelector(".ort").value,
+ort:
+row.querySelector(".ort").value,
 
-                datum:
-                  row.querySelector(".datum").value,
+datum:
+row.querySelector(".datum").value,
 
-                von:
-                  row.querySelector(".von").value,
+von:
+row.querySelector(".von").value,
 
-                bis:
-                  row.querySelector(".bis").value
+bis:
+row.querySelector(".bis").value
 
-            });
+});
 
-        });
+});
 
-        daten.push(monatDaten);
+daten.push(monatDaten);
 
-    });
+});
 
-    return {
+return {
 
-        daten,
+daten,
 
-        stundenlohn:
-          document.getElementById("stundenlohn").value
+stundenlohn:
+document.getElementById("stundenlohn").value
 
-    };
+};
 
 }
 
+/* SPEICHERN */
 async function speichernAutomatisch(){
 
-    if(!aktuelleUid) return;
+if(!aktuelleUid) return;
 
-    try{
+try{
 
-        await set(
+await set(
 
-            ref(
-              db,
-              "gehaltsrechner/" + aktuelleUid
-            ),
+ref(
+db,
+"gehaltsrechner/" + aktuelleUid
+),
 
-            datenSammeln()
+datenSammeln()
 
-        );
+);
 
-        document.getElementById("statusText")
-        .innerText =
-          "Automatisch gespeichert";
+document.getElementById("statusText")
+.innerText =
+"Automatisch gespeichert";
 
-    }catch(error){
+}catch(error){
 
-        console.error(error);
+console.error(error);
 
-    }
+}
 
 }
 
 window.manuellSpeichern =
 async function(){
 
-    await speichernAutomatisch();
+await speichernAutomatisch();
 
-    alert(
-      "Daten gespeichert"
-    );
+await ladeOrtVorschlaege();
+
+alert(
+"Daten gespeichert"
+);
 
 };
 
+/* LADEN */
 async function laden(){
 
-    try{
+try{
 
-        const snapshot =
-          await get(
-            ref(
-              db,
-              "gehaltsrechner/" + aktuelleUid
-            )
-          );
+const snapshot =
+await get(
+ref(
+db,
+"gehaltsrechner/" + aktuelleUid
+)
+);
 
-        if(!snapshot.exists()){
+if(!snapshot.exists()){
 
-            document.getElementById("statusText")
-            .innerText =
-              "Noch keine Daten gespeichert";
+document.getElementById("statusText")
+.innerText =
+"Noch keine Daten gespeichert";
 
-            return;
-
-        }
-
-        const datenGesamt =
-          snapshot.val();
-
-        document.getElementById("stundenlohn")
-        .value =
-          datenGesamt.stundenlohn || 15;
-
-        const daten =
-          datenGesamt.daten || [];
-
-        document.querySelectorAll(".monat")
-        .forEach((monat, monatIndex) => {
-
-            const tbody =
-              monat.querySelector("tbody");
-
-            tbody.innerHTML = "";
-
-            const monatDaten =
-              daten[monatIndex] || [];
-
-            if(monatDaten.length === 0){
-
-                tbody.innerHTML +=
-                  zeilenHTML(1);
-
-            }else{
-
-                monatDaten.forEach(
-                  (datenRow, rowIndex) => {
-
-                    tbody.innerHTML +=
-                      zeilenHTML(rowIndex + 1);
-
-                  }
-                );
-
-            }
-
-            tbody.querySelectorAll("tr")
-            .forEach((row, rowIndex) => {
-
-                const datenRow =
-                  monatDaten[rowIndex];
-
-                if(datenRow){
-
-                    row.querySelector(".veranstaltung").value =
-                      datenRow.veranstaltung || "";
-
-                    row.querySelector(".ort").value =
-                      datenRow.ort || "";
-
-                    row.querySelector(".datum").value =
-                      datenRow.datum || "";
-
-                    row.querySelector(".von").value =
-                      datenRow.von || "";
-
-                    row.querySelector(".bis").value =
-                      datenRow.bis || "";
-
-                }
-
-            });
-
-        });
-
-        document.getElementById("statusText")
-        .innerText =
-          "Daten geladen";
-
-    }catch(error){
-
-        console.error(error);
-
-    }
+return;
 
 }
 
+const datenGesamt =
+snapshot.val();
+
+document.getElementById("stundenlohn")
+.value =
+datenGesamt.stundenlohn || 15;
+
+const daten =
+datenGesamt.daten || [];
+
+document.querySelectorAll(".monat")
+.forEach((monat, monatIndex) => {
+
+const tbody =
+monat.querySelector("tbody");
+
+tbody.innerHTML = "";
+
+const monatDaten =
+daten[monatIndex] || [];
+
+if(monatDaten.length === 0){
+
+tbody.innerHTML +=
+zeilenHTML(1);
+
+}else{
+
+monatDaten.forEach(
+(datenRow, rowIndex) => {
+
+tbody.innerHTML +=
+zeilenHTML(rowIndex + 1);
+
+}
+);
+
+}
+
+tbody.querySelectorAll("tr")
+.forEach((row, rowIndex) => {
+
+const datenRow =
+monatDaten[rowIndex];
+
+if(datenRow){
+
+row.querySelector(".veranstaltung").value =
+datenRow.veranstaltung || "";
+
+row.querySelector(".ort").value =
+datenRow.ort || "";
+
+row.querySelector(".datum").value =
+datenRow.datum || "";
+
+row.querySelector(".von").value =
+datenRow.von || "";
+
+row.querySelector(".bis").value =
+datenRow.bis || "";
+
+}
+
+});
+
+});
+
+document.getElementById("statusText")
+.innerText =
+"Daten geladen";
+
+}catch(error){
+
+console.error(error);
+
+}
+
+}
+
+/* LÖSCHEN */
 window.allesLoeschen =
 async function(){
 
-    const ok =
-      confirm(
-        "Wirklich alles löschen?"
-      );
+const ok =
+confirm(
+"Wirklich alles löschen?"
+);
 
-    if(!ok) return;
+if(!ok) return;
 
-    try{
+try{
 
-        await remove(
-          ref(
-            db,
-            "gehaltsrechner/" + aktuelleUid
-          )
-        );
+await remove(
+ref(
+db,
+"gehaltsrechner/" + aktuelleUid
+)
+);
 
-        location.reload();
+location.reload();
 
-    }catch(error){
+}catch(error){
 
-        console.error(error);
+console.error(error);
 
-    }
+}
 
 };
 
+/* NEUES JAHR */
 window.neuesJahrStarten =
 async function(){
 
-    const ok =
-      confirm(
-        "Alle Einträge für das neue Jahr löschen?"
-      );
+const ok =
+confirm(
+"Alle Einträge für das neue Jahr löschen?"
+);
 
-    if(!ok) return;
+if(!ok) return;
 
-    try{
+document.querySelectorAll("tbody")
+.forEach(tbody => {
 
-        document.querySelectorAll("tbody")
-        .forEach(tbody => {
+tbody.innerHTML =
+zeilenHTML(1);
 
-            tbody.innerHTML =
-              zeilenHTML(1);
+});
 
-        });
+berechnen();
 
-        berechnen();
+await speichernAutomatisch();
 
-        await speichernAutomatisch();
-
-        alert(
-          "Neues Jahr wurde gestartet"
-        );
-
-    }catch(error){
-
-        console.error(error);
-
-    }
+alert(
+"Neues Jahr gestartet"
+);
 
 };
 
-window.pdfExportieren =
-async function(){
-
-    try{
-
-        const status =
-          document.getElementById("statusText");
-
-        status.innerText =
-          "PDF wird erstellt...";
-
-        document.querySelectorAll(".monat")
-        .forEach(monat => {
-
-            monat.classList.add("active");
-
-        });
-
-        const element =
-          document.body;
-
-        const canvas =
-          await html2canvas(
-            element,
-            {
-              scale:2,
-              useCORS:true,
-              backgroundColor:"#0f172a"
-            }
-          );
-
-        const imgData =
-          canvas.toDataURL(
-            "image/jpeg",
-            1.0
-          );
-
-        const {
-          jsPDF
-        } = window.jspdf;
-
-        const pdf =
-          new jsPDF(
-            "p",
-            "mm",
-            "a4"
-          );
-
-        const pdfWidth =
-          pdf.internal.pageSize.getWidth();
-
-        const pdfHeight =
-          pdf.internal.pageSize.getHeight();
-
-        const imgWidth =
-          pdfWidth;
-
-        const imgHeight =
-          canvas.height *
-          imgWidth /
-          canvas.width;
-
-        let heightLeft =
-          imgHeight;
-
-        let position = 0;
-
-        pdf.addImage(
-          imgData,
-          "JPEG",
-          0,
-          position,
-          imgWidth,
-          imgHeight
-        );
-
-        heightLeft -= pdfHeight;
-
-        while(heightLeft > 0){
-
-            position =
-              heightLeft - imgHeight;
-
-            pdf.addPage();
-
-            pdf.addImage(
-              imgData,
-              "JPEG",
-              0,
-              position,
-              imgWidth,
-              imgHeight
-            );
-
-            heightLeft -= pdfHeight;
-
-        }
-
-        pdf.save(
-          "NKSP_Gehaltsrechner_2026.pdf"
-        );
-
-        status.innerText =
-          "PDF erfolgreich erstellt";
-
-    }catch(error){
-
-        console.error(error);
-
-        alert(
-          "Fehler beim PDF Export"
-        );
-
-    }
-
-};
-
+/* INPUT */
 document.addEventListener(
 
-    "input",
+"input",
 
-    (event) => {
+(event) => {
 
-        if(
-          event.target.matches("input")
-        ){
+if(
+event.target.matches("input")
+){
 
-            berechnen();
+berechnen();
 
-        }
+}
 
-    }
+}
 
 );
 
