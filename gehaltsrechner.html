@@ -4,197 +4,237 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Gehaltsrechner - NKSP Sicherheitsdienst</title>
+<title>Gehaltsrechner - NKSP</title>
 
 <style>
 
 *{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Arial,sans-serif;
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
 }
 
 body{
-  background:#111;
-  color:white;
-  min-height:100vh;
-  padding:20px;
+    background:#0f172a;
+    color:white;
+    padding:15px;
+    position:relative;
+    overflow-x:hidden;
 }
 
 /* WASSERZEICHEN */
 body::before{
-  content:"";
-  position:fixed;
-  inset:0;
+    content:"";
+    position:fixed;
+    inset:0;
 
-  background-image:url("icon-512.png");
-  background-repeat:no-repeat;
-  background-position:center;
-  background-size:min(65vw,700px);
+    background-image:url("icon-512.png");
+    background-repeat:repeat;
+    background-size:240px;
 
-  opacity:0.045;
+    opacity:0.035;
 
-  filter:
-    grayscale(1)
-    brightness(1.7);
+    filter:
+      grayscale(100%)
+      brightness(180%);
 
-  pointer-events:none;
-  z-index:0;
+    pointer-events:none;
+    z-index:0;
 }
 
-.wrapper{
-  position:relative;
-  z-index:1;
-
-  width:100%;
-  max-width:1000px;
-  margin:auto;
+body > *{
+    position:relative;
+    z-index:1;
 }
 
 h1{
-  text-align:center;
-  font-size:48px;
-  margin-bottom:30px;
+    text-align:center;
+    background:#1e293b;
+    padding:20px;
+    border-radius:18px;
+    margin-bottom:20px;
+    font-size:34px;
 }
 
-.top-bar{
-  display:flex;
-  justify-content:center;
-  gap:15px;
-  margin-bottom:30px;
-  flex-wrap:wrap;
+.topbar{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
 }
 
-/* BUTTON */
-.admin-btn{
-  position:relative;
-  overflow:hidden;
-
-  background:linear-gradient(
-    180deg,
-    #3b82f6 0%,
-    #2563eb 45%,
-    #1d4ed8 100%
-  );
-
-  color:white;
-  border:none;
-  border-radius:18px;
-  padding:16px 24px;
-  text-decoration:none;
-  cursor:pointer;
-  font-size:17px;
-  font-weight:700;
-
-  box-shadow:
-    0 8px 0 #1e40af,
-    0 14px 24px rgba(0,0,0,0.4);
-
-  transition:0.15s;
+.topbox{
+    background:#1e293b;
+    padding:20px;
+    border-radius:18px;
+    margin-bottom:20px;
 }
 
-.admin-btn:hover{
-  transform:translateY(-3px);
+.topbox label{
+    font-size:20px;
+    font-weight:bold;
 }
 
-.admin-btn:active{
-  transform:translateY(4px);
+.topbox input{
+    margin-top:12px;
+    max-width:250px;
 }
 
-/* CARD */
-.card{
-  background:#1c1c1f;
-  border-radius:28px;
-  padding:30px;
-
-  box-shadow:
-    0 18px 40px rgba(0,0,0,0.45);
-
-  margin-bottom:30px;
+.monat{
+    background:#1e293b;
+    margin-top:25px;
+    padding:20px;
+    border-radius:18px;
 }
 
-/* GRID */
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px;
+.monat h2{
+    background:#2563eb;
+    padding:14px;
+    border-radius:14px;
+    font-size:24px;
 }
 
-label{
-  display:block;
-  margin-bottom:8px;
-  font-size:15px;
-  color:#bbb;
+.table-wrapper{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+    min-width:1200px;
+}
+
+th{
+    background:#111827;
+    padding:12px;
+    font-size:18px;
+}
+
+td{
+    border:1px solid #334155;
+    padding:10px;
+    text-align:center;
 }
 
 input{
-  width:100%;
-  padding:14px;
-  border-radius:14px;
-  border:1px solid #444;
-  background:#111;
-  color:white;
-  font-size:16px;
-}
-
-/* ERGEBNIS */
-.ergebnis{
-  margin-top:30px;
-
-  background:#151518;
-  border-radius:20px;
-  padding:25px;
-
-  font-size:18px;
-  line-height:2;
-}
-
-.ergebnis strong{
-  color:#60a5fa;
-}
-
-.info{
-  margin-top:15px;
-  color:#999;
-  line-height:1.8;
-  font-size:14px;
-}
-
-/* MOBILE */
-@media(max-width:800px){
-
-  body{
-    padding:14px;
-  }
-
-  h1{
-    font-size:34px;
-    margin-bottom:22px;
-  }
-
-  .grid{
-    grid-template-columns:1fr;
-  }
-
-  .card{
-    padding:22px;
-    border-radius:22px;
-  }
-
-  input{
-    font-size:16px;
-    padding:13px;
-  }
-
-  .admin-btn{
     width:100%;
-    text-align:center;
-    justify-content:center;
-    display:flex;
-    padding:14px;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#e2e8f0;
+    color:black;
     font-size:16px;
-  }
+}
+
+.veranstaltung{
+    min-width:260px;
+}
+
+.ort{
+    min-width:220px;
+}
+
+.zusammenfassung{
+    display:flex;
+    flex-wrap:wrap;
+    gap:15px;
+    margin-top:20px;
+}
+
+.box{
+    flex:1;
+    min-width:220px;
+    background:#334155;
+    padding:18px;
+    border-radius:14px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+#jahresbilanz{
+    margin-top:40px;
+    background:#1e293b;
+    padding:25px;
+    border-radius:18px;
+}
+
+.buttons{
+    margin-top:20px;
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+button,
+.back-btn{
+    padding:14px 20px;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    text-decoration:none;
+    color:white;
+}
+
+.save{
+    background:#22c55e;
+}
+
+.delete{
+    background:#ef4444;
+}
+
+.export{
+    background:#3b82f6;
+}
+
+.resetyear{
+    background:#f59e0b;
+}
+
+.back-btn{
+    background:#475569;
+}
+
+.status{
+    margin-top:15px;
+    color:#94a3b8;
+    font-size:15px;
+}
+
+@media(max-width:900px){
+
+    body{
+        padding:10px;
+    }
+
+    h1{
+        font-size:26px;
+    }
+
+    table{
+        min-width:1050px;
+    }
+
+    .monat{
+        padding:15px;
+    }
+
+    .monat h2{
+        font-size:20px;
+    }
+
+    .box{
+        min-width:100%;
+    }
+
+    button,
+    .back-btn{
+        width:100%;
+    }
 
 }
 
@@ -203,145 +243,110 @@ input{
 
 <body>
 
-<div class="wrapper">
+<h1>Dienst- & Gehaltsrechner 2026</h1>
 
-<h1>Gehaltsrechner</h1>
+<div class="topbar">
 
-<div class="top-bar">
-
-  <a
-    href="startseite.html"
-    class="admin-btn"
-  >
-    Zurück
-  </a>
-
-  <button
-    class="admin-btn"
-    onclick="speichern()"
-  >
-    Speichern
-  </button>
+    <a href="startseite.html" class="back-btn">
+        ← Zurück
+    </a>
 
 </div>
 
-<div class="card">
+<div class="topbox">
 
-  <div class="grid">
+    <label>Stundenlohn (€)</label><br>
 
-    <div>
-      <label>Stundenlohn (€)</label>
-
-      <input
+    <input
         type="number"
         id="stundenlohn"
-        placeholder="z.B. 15"
-      >
+        value="15"
+        step="0.01"
+    >
+
+    <div class="status" id="statusText">
+        Daten werden geladen...
     </div>
-
-    <div>
-      <label>Arbeitsstunden</label>
-
-      <input
-        type="number"
-        id="stunden"
-        placeholder="z.B. 120"
-      >
-    </div>
-
-    <div>
-      <label>Nachtzuschlag (€)</label>
-
-      <input
-        type="number"
-        id="nacht"
-        placeholder="0"
-      >
-    </div>
-
-    <div>
-      <label>Sonntagszuschlag (€)</label>
-
-      <input
-        type="number"
-        id="sonntag"
-        placeholder="0"
-      >
-    </div>
-
-    <div>
-      <label>Feiertagszuschlag (€)</label>
-
-      <input
-        type="number"
-        id="feiertag"
-        placeholder="0"
-      >
-    </div>
-
-    <div>
-      <label>Sonstige Zuschläge (€)</label>
-
-      <input
-        type="number"
-        id="sonstige"
-        placeholder="0"
-      >
-    </div>
-
-  </div>
-
-  <div class="ergebnis">
-
-    <div>
-      Grundlohn:
-      <strong id="grundlohn">
-        0.00 €
-      </strong>
-    </div>
-
-    <div>
-      Zuschläge:
-      <strong id="zuschlaege">
-        0.00 €
-      </strong>
-    </div>
-
-    <div>
-      Gesamt:
-      <strong id="gesamt">
-        0.00 €
-      </strong>
-    </div>
-
-  </div>
-
-  <div class="info">
-    Jeder Benutzer sieht nur seine eigenen gespeicherten Daten.
-  </div>
 
 </div>
+
+<div class="buttons">
+
+    <button
+        class="save"
+        onclick="manuellSpeichern()"
+    >
+        💾 Jetzt speichern
+    </button>
+
+    <button
+        class="delete"
+        onclick="allesLoeschen()"
+    >
+        🗑 Alles löschen
+    </button>
+
+    <button
+        class="resetyear"
+        onclick="neuesJahrStarten()"
+    >
+        📅 Neues Jahr starten
+    </button>
+
+    <button
+        class="export"
+        onclick="datenExportieren()"
+    >
+        📁 Daten exportieren
+    </button>
+
+</div>
+
+<div id="app"></div>
+
+<div id="jahresbilanz">
+
+    <h2>Jahreszusammenfassung</h2>
+
+    <div class="zusammenfassung">
+
+        <div class="box">
+            Gesamt Dienste:<br><br>
+            <span id="jahrDienste">0</span>
+        </div>
+
+        <div class="box">
+            Gesamt Stunden:<br><br>
+            <span id="jahrStunden">0.00</span>
+        </div>
+
+        <div class="box">
+            Gesamt Verdienst:<br><br>
+            <span id="jahrGeld">0.00 €</span>
+        </div>
+
+    </div>
 
 </div>
 
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 
 import {
   getAuth,
   onAuthStateChanged
-}
-from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 import {
   getDatabase,
   ref,
   set,
-  onValue
-}
-from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+  get,
+  remove
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -353,235 +358,549 @@ const firebaseConfig = {
   appId: "1:328702502215:web:080148f3e768bfafc29862"
 };
 
-const app = initializeApp(firebaseConfig);
+const appFirebase =
+  initializeApp(firebaseConfig);
 
-const auth = getAuth(app);
-const db = getDatabase(app);
+const auth =
+  getAuth(appFirebase);
+
+const db =
+  getDatabase(appFirebase);
 
 let aktuelleUid = "";
 
-/* LIVE RECHNEN */
-document.querySelectorAll("input")
-.forEach((input) => {
+const monate = [
+"Januar","Februar","März","April","Mai","Juni",
+"Juli","August","September","Oktober","November","Dezember"
+];
 
-  input.addEventListener(
-    "input",
-    berechnen
-  );
+const app =
+  document.getElementById("app");
+
+/* MONATE */
+monate.forEach(monat => {
+
+    let html = `
+    <div class="monat">
+
+        <h2>${monat}</h2>
+
+        <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Dienst</th>
+                    <th>Veranstaltung</th>
+                    <th>Ort</th>
+                    <th>Datum</th>
+                    <th>Von</th>
+                    <th>Bis</th>
+                    <th>Stunden</th>
+                    <th>Verdienst</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+    `;
+
+    for(let i=1;i<=6;i++){
+
+        html += `
+        <tr>
+
+            <td>${i}</td>
+
+            <td>
+                <input
+                    type="text"
+                    class="veranstaltung"
+                    placeholder="z.B. Konzert"
+                >
+            </td>
+
+            <td>
+                <input
+                    type="text"
+                    class="ort"
+                    placeholder="z.B. Leipzig"
+                >
+            </td>
+
+            <td>
+                <input
+                    type="date"
+                    class="datum"
+                >
+            </td>
+
+            <td>
+                <input
+                    type="time"
+                    class="von"
+                >
+            </td>
+
+            <td>
+                <input
+                    type="time"
+                    class="bis"
+                >
+            </td>
+
+            <td class="stunden">
+                0.00
+            </td>
+
+            <td class="verdienst">
+                0.00 €
+            </td>
+
+        </tr>
+        `;
+    }
+
+    html += `
+            </tbody>
+
+        </table>
+
+        </div>
+
+        <div class="zusammenfassung">
+
+            <div class="box">
+                Dienste:<br><br>
+                <span class="diensteGesamt">0</span>
+            </div>
+
+            <div class="box">
+                Stunden:<br><br>
+                <span class="stundenGesamt">0.00</span>
+            </div>
+
+            <div class="box">
+                Verdienst:<br><br>
+                <span class="geldGesamt">0.00 €</span>
+            </div>
+
+        </div>
+
+    </div>
+    `;
+
+    app.innerHTML += html;
 
 });
 
 /* LOGIN */
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
 
-  if(!user){
+    if(!user){
 
-    window.location.href =
-      "index.html";
+        window.location.href =
+          "index.html";
 
-    return;
+        return;
 
-  }
+    }
 
-  aktuelleUid = user.uid;
+    aktuelleUid = user.uid;
 
-  const userRef =
-    ref(
-      db,
-      "gehaltsrechner/" +
-      aktuelleUid
-    );
-
-  onValue(userRef, (snapshot) => {
-
-    const daten = snapshot.val();
-
-    if(!daten) return;
-
-    document.getElementById(
-      "stundenlohn"
-    ).value =
-      daten.stundenlohn || "";
-
-    document.getElementById(
-      "stunden"
-    ).value =
-      daten.stunden || "";
-
-    document.getElementById(
-      "nacht"
-    ).value =
-      daten.nacht || "";
-
-    document.getElementById(
-      "sonntag"
-    ).value =
-      daten.sonntag || "";
-
-    document.getElementById(
-      "feiertag"
-    ).value =
-      daten.feiertag || "";
-
-    document.getElementById(
-      "sonstige"
-    ).value =
-      daten.sonstige || "";
+    await laden();
 
     berechnen();
 
-  });
-
 });
 
-/* RECHNEN */
+/* BERECHNEN */
 function berechnen(){
 
-  const stundenlohn =
-    parseFloat(
-      document.getElementById(
-        "stundenlohn"
-      ).value
-    ) || 0;
+    let jahrDienste = 0;
+    let jahrStunden = 0;
+    let jahrGeld = 0;
 
-  const stunden =
-    parseFloat(
-      document.getElementById(
-        "stunden"
-      ).value
-    ) || 0;
+    const stundenlohn =
+      parseFloat(
+        document.getElementById("stundenlohn").value
+      ) || 0;
 
-  const nacht =
-    parseFloat(
-      document.getElementById(
-        "nacht"
-      ).value
-    ) || 0;
+    document.querySelectorAll(".monat")
+    .forEach(monat => {
 
-  const sonntag =
-    parseFloat(
-      document.getElementById(
-        "sonntag"
-      ).value
-    ) || 0;
+        let dienstCount = 0;
+        let stundenGesamt = 0;
+        let geldGesamt = 0;
 
-  const feiertag =
-    parseFloat(
-      document.getElementById(
-        "feiertag"
-      ).value
-    ) || 0;
+        monat.querySelectorAll("tbody tr")
+        .forEach(row => {
 
-  const sonstige =
-    parseFloat(
-      document.getElementById(
-        "sonstige"
-      ).value
-    ) || 0;
+            const von =
+              row.querySelector(".von").value;
 
-  const grundlohn =
-    stundenlohn * stunden;
+            const bis =
+              row.querySelector(".bis").value;
 
-  const zuschlaege =
-    nacht +
-    sonntag +
-    feiertag +
-    sonstige;
+            let stunden = 0;
 
-  const gesamt =
-    grundlohn + zuschlaege;
+            if(von && bis){
 
-  document.getElementById(
-    "grundlohn"
-  ).innerText =
-    grundlohn.toFixed(2) + " €";
+                let start =
+                  new Date("2026-01-01T" + von);
 
-  document.getElementById(
-    "zuschlaege"
-  ).innerText =
-    zuschlaege.toFixed(2) + " €";
+                let ende =
+                  new Date("2026-01-01T" + bis);
 
-  document.getElementById(
-    "gesamt"
-  ).innerText =
-    gesamt.toFixed(2) + " €";
+                stunden =
+                  (ende - start) /
+                  1000 / 60 / 60;
+
+                if(stunden < 0){
+                    stunden += 24;
+                }
+
+                dienstCount++;
+
+            }
+
+            const geld =
+              stunden * stundenlohn;
+
+            row.querySelector(".stunden")
+            .innerText =
+              stunden.toFixed(2);
+
+            row.querySelector(".verdienst")
+            .innerText =
+              geld.toFixed(2) + " €";
+
+            stundenGesamt += stunden;
+            geldGesamt += geld;
+
+        });
+
+        monat.querySelector(".diensteGesamt")
+        .innerText =
+          dienstCount;
+
+        monat.querySelector(".stundenGesamt")
+        .innerText =
+          stundenGesamt.toFixed(2);
+
+        monat.querySelector(".geldGesamt")
+        .innerText =
+          geldGesamt.toFixed(2) + " €";
+
+        jahrDienste += dienstCount;
+        jahrStunden += stundenGesamt;
+        jahrGeld += geldGesamt;
+
+    });
+
+    document.getElementById("jahrDienste")
+    .innerText = jahrDienste;
+
+    document.getElementById("jahrStunden")
+    .innerText = jahrStunden.toFixed(2);
+
+    document.getElementById("jahrGeld")
+    .innerText = jahrGeld.toFixed(2) + " €";
+
+    speichernAutomatisch();
+
+}
+
+/* DATEN */
+function datenSammeln(){
+
+    const daten = [];
+
+    document.querySelectorAll(".monat")
+    .forEach(monat => {
+
+        const monatDaten = [];
+
+        monat.querySelectorAll("tbody tr")
+        .forEach(row => {
+
+            monatDaten.push({
+
+                veranstaltung:
+                  row.querySelector(".veranstaltung").value,
+
+                ort:
+                  row.querySelector(".ort").value,
+
+                datum:
+                  row.querySelector(".datum").value,
+
+                von:
+                  row.querySelector(".von").value,
+
+                bis:
+                  row.querySelector(".bis").value
+
+            });
+
+        });
+
+        daten.push(monatDaten);
+
+    });
+
+    return {
+
+        daten,
+
+        stundenlohn:
+          document.getElementById("stundenlohn").value
+
+    };
 
 }
 
 /* SPEICHERN */
-window.speichern =
+async function speichernAutomatisch(){
+
+    if(!aktuelleUid) return;
+
+    try{
+
+        await set(
+
+            ref(
+              db,
+              "gehaltsrechner/" + aktuelleUid
+            ),
+
+            datenSammeln()
+
+        );
+
+        document.getElementById("statusText")
+        .innerText =
+          "Automatisch gespeichert";
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+}
+
+/* MANUELL */
+window.manuellSpeichern =
 async function(){
 
-  if(!aktuelleUid){
+    await speichernAutomatisch();
 
     alert(
-      "Nicht angemeldet"
+      "Daten gespeichert"
     );
-
-    return;
-
-  }
-
-  try{
-
-    await set(
-
-      ref(
-        db,
-        "gehaltsrechner/" +
-        aktuelleUid
-      ),
-
-      {
-        stundenlohn:
-          document.getElementById(
-            "stundenlohn"
-          ).value || 0,
-
-        stunden:
-          document.getElementById(
-            "stunden"
-          ).value || 0,
-
-        nacht:
-          document.getElementById(
-            "nacht"
-          ).value || 0,
-
-        sonntag:
-          document.getElementById(
-            "sonntag"
-          ).value || 0,
-
-        feiertag:
-          document.getElementById(
-            "feiertag"
-          ).value || 0,
-
-        sonstige:
-          document.getElementById(
-            "sonstige"
-          ).value || 0
-
-      }
-
-    );
-
-    alert(
-      "Gespeichert"
-    );
-
-  }catch(error){
-
-    console.error(error);
-
-    alert(
-      "Fehler beim Speichern"
-    );
-
-  }
 
 };
+
+/* LADEN */
+async function laden(){
+
+    try{
+
+        const snapshot =
+          await get(
+            ref(
+              db,
+              "gehaltsrechner/" + aktuelleUid
+            )
+          );
+
+        if(!snapshot.exists()){
+
+            document.getElementById("statusText")
+            .innerText =
+              "Noch keine Daten gespeichert";
+
+            return;
+
+        }
+
+        const datenGesamt =
+          snapshot.val();
+
+        document.getElementById("stundenlohn")
+        .value =
+          datenGesamt.stundenlohn || 15;
+
+        const daten =
+          datenGesamt.daten || [];
+
+        document.querySelectorAll(".monat")
+        .forEach((monat, monatIndex) => {
+
+            monat.querySelectorAll("tbody tr")
+            .forEach((row, rowIndex) => {
+
+                const datenRow =
+                  daten?.[monatIndex]?.[rowIndex];
+
+                if(datenRow){
+
+                    row.querySelector(".veranstaltung").value =
+                      datenRow.veranstaltung || "";
+
+                    row.querySelector(".ort").value =
+                      datenRow.ort || "";
+
+                    row.querySelector(".datum").value =
+                      datenRow.datum || "";
+
+                    row.querySelector(".von").value =
+                      datenRow.von || "";
+
+                    row.querySelector(".bis").value =
+                      datenRow.bis || "";
+
+                }
+
+            });
+
+        });
+
+        document.getElementById("statusText")
+        .innerText =
+          "Daten geladen";
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+}
+
+/* ALLES LÖSCHEN */
+window.allesLoeschen =
+async function(){
+
+    const ok =
+      confirm(
+        "Wirklich alles löschen?"
+      );
+
+    if(!ok) return;
+
+    try{
+
+        await remove(
+          ref(
+            db,
+            "gehaltsrechner/" + aktuelleUid
+          )
+        );
+
+        location.reload();
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+};
+
+/* NEUES JAHR */
+window.neuesJahrStarten =
+async function(){
+
+    const ok =
+      confirm(
+        "Alle Einträge für das neue Jahr löschen?"
+      );
+
+    if(!ok) return;
+
+    try{
+
+        document.querySelectorAll("input")
+        .forEach(input => {
+
+            if(
+              input.id !== "stundenlohn"
+            ){
+                input.value = "";
+            }
+
+        });
+
+        berechnen();
+
+        await speichernAutomatisch();
+
+        alert(
+          "Neues Jahr wurde gestartet"
+        );
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+};
+
+/* EXPORT */
+window.datenExportieren =
+function(){
+
+    const daten =
+      JSON.stringify(
+        datenSammeln(),
+        null,
+        2
+      );
+
+    const blob =
+      new Blob(
+        [daten],
+        {
+          type:"application/json"
+        }
+      );
+
+    const a =
+      document.createElement("a");
+
+    a.href =
+      URL.createObjectURL(blob);
+
+    a.download =
+      "gehaltsrechner_backup.json";
+
+    a.click();
+
+};
+
+/* AUTO */
+document.addEventListener(
+
+    "input",
+
+    (event) => {
+
+        if(
+          event.target.matches("input")
+        ){
+
+            berechnen();
+
+        }
+
+    }
+
+);
 
 </script>
 
