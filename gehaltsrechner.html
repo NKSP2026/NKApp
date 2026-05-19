@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Gehaltsrechner - NKSP Sicherheitsdienst</title>
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#111;
+  color:white;
+  min-height:100vh;
+  padding:20px;
+}
+
+/* WASSERZEICHEN */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+
+  background-image:url("icon-512.png");
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:min(65vw,700px);
+
+  opacity:0.045;
+
+  filter:
+    grayscale(1)
+    brightness(1.7);
+
+  pointer-events:none;
+  z-index:0;
+}
+
+.wrapper{
+  position:relative;
+  z-index:1;
+
+  width:100%;
+  max-width:1000px;
+  margin:auto;
+}
+
+h1{
+  text-align:center;
+  font-size:48px;
+  margin-bottom:30px;
+}
+
+.top-bar{
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  margin-bottom:30px;
+  flex-wrap:wrap;
+}
+
+/* BUTTON */
+.admin-btn{
+  position:relative;
+  overflow:hidden;
+
+  background:linear-gradient(
+    180deg,
+    #3b82f6 0%,
+    #2563eb 45%,
+    #1d4ed8 100%
+  );
+
+  color:white;
+  border:none;
+  border-radius:18px;
+  padding:16px 24px;
+  text-decoration:none;
+  cursor:pointer;
+  font-size:17px;
+  font-weight:700;
+
+  box-shadow:
+    0 8px 0 #1e40af,
+    0 14px 24px rgba(0,0,0,0.4);
+
+  transition:0.15s;
+}
+
+.admin-btn:hover{
+  transform:translateY(-3px);
+}
+
+.admin-btn:active{
+  transform:translateY(4px);
+}
+
+/* CARD */
+.card{
+  background:#1c1c1f;
+  border-radius:28px;
+  padding:30px;
+
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.45);
+
+  margin-bottom:30px;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+
+label{
+  display:block;
+  margin-bottom:8px;
+  font-size:15px;
+  color:#bbb;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid #444;
+  background:#111;
+  color:white;
+  font-size:16px;
+}
+
+/* ERGEBNIS */
+.ergebnis{
+  margin-top:30px;
+
+  background:#151518;
+  border-radius:20px;
+  padding:25px;
+
+  font-size:18px;
+  line-height:2;
+}
+
+.ergebnis strong{
+  color:#60a5fa;
+}
+
+.info{
+  margin-top:15px;
+  color:#999;
+  line-height:1.8;
+  font-size:14px;
+}
+
+/* MOBILE */
+@media(max-width:800px){
+
+  body{
+    padding:14px;
+  }
+
+  h1{
+    font-size:34px;
+    margin-bottom:22px;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .card{
+    padding:22px;
+    border-radius:22px;
+  }
+
+  input{
+    font-size:16px;
+    padding:13px;
+  }
+
+  .admin-btn{
+    width:100%;
+    text-align:center;
+    justify-content:center;
+    display:flex;
+    padding:14px;
+    font-size:16px;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<h1>Gehaltsrechner</h1>
+
+<div class="top-bar">
+
+  <a
+    href="startseite.html"
+    class="admin-btn"
+  >
+    Zurück
+  </a>
+
+  <button
+    class="admin-btn"
+    onclick="speichern()"
+  >
+    Speichern
+  </button>
+
+</div>
+
+<div class="card">
+
+  <div class="grid">
+
+    <div>
+      <label>Stundenlohn (€)</label>
+
+      <input
+        type="number"
+        id="stundenlohn"
+        placeholder="z.B. 15"
+      >
+    </div>
+
+    <div>
+      <label>Arbeitsstunden</label>
+
+      <input
+        type="number"
+        id="stunden"
+        placeholder="z.B. 120"
+      >
+    </div>
+
+    <div>
+      <label>Nachtzuschlag (€)</label>
+
+      <input
+        type="number"
+        id="nacht"
+        placeholder="0"
+      >
+    </div>
+
+    <div>
+      <label>Sonntagszuschlag (€)</label>
+
+      <input
+        type="number"
+        id="sonntag"
+        placeholder="0"
+      >
+    </div>
+
+    <div>
+      <label>Feiertagszuschlag (€)</label>
+
+      <input
+        type="number"
+        id="feiertag"
+        placeholder="0"
+      >
+    </div>
+
+    <div>
+      <label>Sonstige Zuschläge (€)</label>
+
+      <input
+        type="number"
+        id="sonstige"
+        placeholder="0"
+      >
+    </div>
+
+  </div>
+
+  <div class="ergebnis">
+
+    <div>
+      Grundlohn:
+      <strong id="grundlohn">
+        0.00 €
+      </strong>
+    </div>
+
+    <div>
+      Zuschläge:
+      <strong id="zuschlaege">
+        0.00 €
+      </strong>
+    </div>
+
+    <div>
+      Gesamt:
+      <strong id="gesamt">
+        0.00 €
+      </strong>
+    </div>
+
+  </div>
+
+  <div class="info">
+    Jeder Benutzer sieht nur seine eigenen gespeicherten Daten.
+  </div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  onValue
+}
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+let aktuelleUid = "";
+
+/* LIVE RECHNEN */
+document.querySelectorAll("input")
+.forEach((input) => {
+
+  input.addEventListener(
+    "input",
+    berechnen
+  );
+
+});
+
+/* LOGIN */
+onAuthStateChanged(auth, (user) => {
+
+  if(!user){
+
+    window.location.href =
+      "index.html";
+
+    return;
+
+  }
+
+  aktuelleUid = user.uid;
+
+  const userRef =
+    ref(
+      db,
+      "gehaltsrechner/" +
+      aktuelleUid
+    );
+
+  onValue(userRef, (snapshot) => {
+
+    const daten = snapshot.val();
+
+    if(!daten) return;
+
+    document.getElementById(
+      "stundenlohn"
+    ).value =
+      daten.stundenlohn || "";
+
+    document.getElementById(
+      "stunden"
+    ).value =
+      daten.stunden || "";
+
+    document.getElementById(
+      "nacht"
+    ).value =
+      daten.nacht || "";
+
+    document.getElementById(
+      "sonntag"
+    ).value =
+      daten.sonntag || "";
+
+    document.getElementById(
+      "feiertag"
+    ).value =
+      daten.feiertag || "";
+
+    document.getElementById(
+      "sonstige"
+    ).value =
+      daten.sonstige || "";
+
+    berechnen();
+
+  });
+
+});
+
+/* RECHNEN */
+function berechnen(){
+
+  const stundenlohn =
+    parseFloat(
+      document.getElementById(
+        "stundenlohn"
+      ).value
+    ) || 0;
+
+  const stunden =
+    parseFloat(
+      document.getElementById(
+        "stunden"
+      ).value
+    ) || 0;
+
+  const nacht =
+    parseFloat(
+      document.getElementById(
+        "nacht"
+      ).value
+    ) || 0;
+
+  const sonntag =
+    parseFloat(
+      document.getElementById(
+        "sonntag"
+      ).value
+    ) || 0;
+
+  const feiertag =
+    parseFloat(
+      document.getElementById(
+        "feiertag"
+      ).value
+    ) || 0;
+
+  const sonstige =
+    parseFloat(
+      document.getElementById(
+        "sonstige"
+      ).value
+    ) || 0;
+
+  const grundlohn =
+    stundenlohn * stunden;
+
+  const zuschlaege =
+    nacht +
+    sonntag +
+    feiertag +
+    sonstige;
+
+  const gesamt =
+    grundlohn + zuschlaege;
+
+  document.getElementById(
+    "grundlohn"
+  ).innerText =
+    grundlohn.toFixed(2) + " €";
+
+  document.getElementById(
+    "zuschlaege"
+  ).innerText =
+    zuschlaege.toFixed(2) + " €";
+
+  document.getElementById(
+    "gesamt"
+  ).innerText =
+    gesamt.toFixed(2) + " €";
+
+}
+
+/* SPEICHERN */
+window.speichern =
+async function(){
+
+  if(!aktuelleUid){
+
+    alert(
+      "Nicht angemeldet"
+    );
+
+    return;
+
+  }
+
+  try{
+
+    await set(
+
+      ref(
+        db,
+        "gehaltsrechner/" +
+        aktuelleUid
+      ),
+
+      {
+        stundenlohn:
+          document.getElementById(
+            "stundenlohn"
+          ).value || 0,
+
+        stunden:
+          document.getElementById(
+            "stunden"
+          ).value || 0,
+
+        nacht:
+          document.getElementById(
+            "nacht"
+          ).value || 0,
+
+        sonntag:
+          document.getElementById(
+            "sonntag"
+          ).value || 0,
+
+        feiertag:
+          document.getElementById(
+            "feiertag"
+          ).value || 0,
+
+        sonstige:
+          document.getElementById(
+            "sonstige"
+          ).value || 0
+
+      }
+
+    );
+
+    alert(
+      "Gespeichert"
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "Fehler beim Speichern"
+    );
+
+  }
+
+};
+
+</script>
+
+</body>
+</html>
