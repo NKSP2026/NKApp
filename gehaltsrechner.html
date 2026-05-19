@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Gehaltsrechner - NKSP</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#0f172a;
+    color:white;
+    padding:15px;
+    position:relative;
+    overflow-x:hidden;
+}
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:url("icon-512.png");
+    background-repeat:repeat;
+    background-size:240px;
+    opacity:0.035;
+    filter:
+      grayscale(100%)
+      brightness(180%);
+    pointer-events:none;
+    z-index:0;
+}
+
+body > *{
+    position:relative;
+    z-index:1;
+}
+
+h1{
+    text-align:center;
+    background:#1e293b;
+    padding:20px;
+    border-radius:18px;
+    margin-bottom:20px;
+    font-size:34px;
+}
+
+.topbar{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+
+.topbox{
+    background:#1e293b;
+    padding:20px;
+    border-radius:18px;
+    margin-bottom:20px;
+}
+
+.topbox label{
+    font-size:20px;
+    font-weight:bold;
+}
+
+.topbox input{
+    margin-top:12px;
+    max-width:250px;
+}
+
+.monat{
+    background:#1e293b;
+    margin-top:25px;
+    padding:20px;
+    border-radius:18px;
+}
+
+.monat-toggle{
+    width:100%;
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:16px;
+    border-radius:14px;
+    font-size:24px;
+    font-weight:bold;
+    cursor:pointer;
+    text-align:left;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.monat-content{
+    display:none;
+    margin-top:20px;
+}
+
+.monat.active .monat-content{
+    display:block;
+}
+
+.table-wrapper{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+    min-width:950px;
+}
+
+th{
+    background:#111827;
+    padding:12px;
+    font-size:18px;
+}
+
+td{
+    border:1px solid #334155;
+    padding:10px;
+    text-align:center;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#e2e8f0;
+    color:black;
+    font-size:16px;
+}
+
+.zusammenfassung{
+    display:flex;
+    flex-wrap:wrap;
+    gap:15px;
+    margin-top:20px;
+}
+
+.box{
+    flex:1;
+    min-width:220px;
+    background:#334155;
+    padding:18px;
+    border-radius:14px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+#jahresbilanz{
+    margin-top:40px;
+    background:#1e293b;
+    padding:25px;
+    border-radius:18px;
+}
+
+.buttons{
+    margin-top:20px;
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+button,
+.back-btn{
+    padding:14px 20px;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    text-decoration:none;
+    color:white;
+}
+
+.save{
+    background:#22c55e;
+}
+
+.delete{
+    background:#ef4444;
+}
+
+.export{
+    background:#3b82f6;
+}
+
+.resetyear{
+    background:#f59e0b;
+}
+
+.back-btn{
+    background:#475569;
+}
+
+.add-row{
+    background:#0ea5e9;
+}
+
+.speicher-unten{
+    margin-top:20px;
+    width:100%;
+}
+
+.status{
+    margin-top:15px;
+    color:#94a3b8;
+    font-size:15px;
+}
+
+.vorschlag-box{
+    position:absolute;
+    top:55px;
+    left:0;
+    right:0;
+    background:#1e293b;
+    border:1px solid #475569;
+    border-radius:12px;
+    overflow:hidden;
+    z-index:999;
+    box-shadow:0 10px 25px rgba(0,0,0,0.4);
+}
+
+.vorschlag-item{
+    padding:12px;
+    cursor:pointer;
+    text-align:left;
+    color:white;
+    border-bottom:1px solid #334155;
+}
+
+.vorschlag-item:hover{
+    background:#2563eb;
+}
+
+@media(max-width:900px){
+
+    body{
+        padding:10px;
+    }
+
+    h1{
+        font-size:26px;
+    }
+
+    table{
+        min-width:900px;
+    }
+
+    .monat{
+        padding:15px;
+    }
+
+    .monat-toggle{
+        font-size:20px;
+        padding:14px;
+    }
+
+    .box{
+        min-width:100%;
+    }
+
+    button,
+    .back-btn{
+        width:100%;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Dienst- & Gehaltsrechner 2026</h1>
+
+<div class="topbar">
+
+    <a href="startseite.html" class="back-btn">
+        ← Zurück
+    </a>
+
+</div>
+
+<div class="topbox">
+
+    <label>Stundenlohn (€)</label><br>
+
+    <input
+        type="number"
+        id="stundenlohn"
+        value="0.00"
+        step="0.01"
+    >
+
+    <div class="status" id="statusText">
+        Daten werden geladen...
+    </div>
+
+</div>
+
+<div class="buttons">
+
+    <button
+        class="save"
+        onclick="manuellSpeichern()"
+    >
+        💾 Alles speichern
+    </button>
+
+    <button
+        class="delete"
+        onclick="allesLoeschen()"
+    >
+        🗑 Alles löschen
+    </button>
+
+    <button
+        class="resetyear"
+        onclick="neuesJahrStarten()"
+    >
+        📅 Neues Jahr starten
+    </button>
+
+    <button
+        class="export"
+        onclick="pdfSpeichern()"
+    >
+        📄 Alles als PDF speichern
+    </button>
+
+</div>
+
+<div id="app"></div>
+
+<div id="jahresbilanz">
+
+    <h2>Jahreszusammenfassung</h2>
+
+    <div class="zusammenfassung">
+
+        <div class="box">
+            Gesamt Dienste:<br><br>
+            <span id="jahrDienste">0</span>
+        </div>
+
+        <div class="box">
+            Gesamt Stunden:<br><br>
+            <span id="jahrStunden">0.00</span>
+        </div>
+
+        <div class="box">
+            Gesamt Verdienst:<br><br>
+            <span id="jahrGeld">0.00 €</span>
+        </div>
+
+    </div>
+
+</div>
+
+<script type="module">
+
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  remove
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+  authDomain: "nksp-app.firebaseapp.com",
+  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nksp-app",
+  storageBucket: "nksp-app.firebasestorage.app",
+  messagingSenderId: "328702502215",
+  appId: "1:328702502215:web:080148f3e768bfafc29862"
+};
+
+const appFirebase =
+  initializeApp(firebaseConfig);
+
+const auth =
+  getAuth(appFirebase);
+
+const db =
+  getDatabase(appFirebase);
+
+let aktuelleUid = "";
+
+let ortVorschlaege = [];
+
+const monate = [
+"Januar","Februar","März","April","Mai","Juni",
+"Juli","August","September","Oktober","November","Dezember"
+];
+
+const app =
+  document.getElementById("app");
+
+function zeilenHTML(nummer){
+
+return `
+<tr>
+
+<td>${nummer}</td>
+
+<td>
+<input
+type="text"
+class="veranstaltung"
+placeholder="Veranstaltung"
+autocomplete="off"
+>
+</td>
+
+<td style="position:relative;">
+
+<input
+type="text"
+class="ort"
+placeholder="Ort"
+autocomplete="off"
+oninput="zeigeVorschlaege(this)"
+onclick="zeigeVorschlaege(this)"
+>
+
+</td>
+
+<td>
+<input type="date" class="datum">
+</td>
+
+<td>
+<input type="time" class="von">
+</td>
+
+<td>
+<input type="time" class="bis">
+</td>
+
+<td class="stunden">
+0.00
+</td>
+
+<td class="verdienst">
+0.00 €
+</td>
+
+</tr>
+`;
+
+}
+
+monate.forEach(monat => {
+
+let html = `
+<div class="monat">
+
+<button
+class="monat-toggle"
+onclick="toggleMonat(this)"
+>
+<span>${monat}</span>
+<span>▼</span>
+</button>
+
+<div class="monat-content">
+
+<div class="table-wrapper">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Dienst</th>
+<th>Veranstaltung</th>
+<th>Ort</th>
+<th>Datum</th>
+<th>Von</th>
+<th>Bis</th>
+<th>Stunden</th>
+<th>Verdienst</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+${zeilenHTML(1)}
+
+</tbody>
+
+</table>
+
+</div>
+
+<button
+class="add-row speicher-unten"
+onclick="zeileHinzufuegen(this)"
+>
+➕ Weitere Zeile hinzufügen
+</button>
+
+<button
+class="save speicher-unten"
+onclick="manuellSpeichern()"
+>
+💾 ${monat} speichern
+</button>
+
+<div class="zusammenfassung">
+
+<div class="box">
+Dienste:<br><br>
+<span class="diensteGesamt">0</span>
+</div>
+
+<div class="box">
+Stunden:<br><br>
+<span class="stundenGesamt">0.00</span>
+</div>
+
+<div class="box">
+Verdienst:<br><br>
+<span class="geldGesamt">0.00 €</span>
+</div>
+
+</div>
+
+</div>
+
+</div>
+`;
+
+app.innerHTML += html;
+
+});
+
+window.toggleMonat = function(button){
+
+const monat =
+button.closest(".monat");
+
+monat.classList.toggle("active");
+
+};
+
+window.zeileHinzufuegen = function(button){
+
+const monat =
+button.closest(".monat");
+
+const tbody =
+monat.querySelector("tbody");
+
+const neueNummer =
+tbody.querySelectorAll("tr").length + 1;
+
+tbody.insertAdjacentHTML(
+"beforeend",
+zeilenHTML(neueNummer)
+);
+
+berechnen();
+
+};
+
+async function ladeOrtVorschlaege(){
+
+try{
+
+const snapshot =
+await get(
+ref(
+db,
+"gehaltsrechner/" + aktuelleUid
+)
+);
+
+if(!snapshot.exists()) return;
+
+const daten =
+snapshot.val().daten || [];
+
+ortVorschlaege = [];
+
+daten.forEach(monat => {
+
+monat.forEach(eintrag => {
+
+if(
+eintrag.ort &&
+eintrag.ort.trim() !== ""
+){
+
+if(
+!ortVorschlaege.includes(
+eintrag.ort
+)
+){
+
+ortVorschlaege.push(
+eintrag.ort
+);
+
+}
+
+}
+
+});
+
+});
+
+}catch(error){
+
+console.error(error);
+
+}
+
+}
+
+window.zeigeVorschlaege = function(input){
+
+entferneAlleVorschlaege();
+
+const wert =
+input.value.toLowerCase().trim();
+
+if(wert.length < 1) return;
+
+const treffer =
+ortVorschlaege.filter(ort =>
+ort.toLowerCase().includes(wert)
+).slice(0,5);
+
+if(treffer.length === 0) return;
+
+const box =
+document.createElement("div");
+
+box.className =
+"vorschlag-box";
+
+treffer.forEach(v => {
+
+const item =
+document.createElement("div");
+
+item.className =
+"vorschlag-item";
+
+item.innerText = v;
+
+item.onclick = () => {
+
+input.value = v + " ";
+
+entferneAlleVorschlaege();
+
+input.focus();
+
+berechnen();
+
+};
+
+box.appendChild(item);
+
+});
+
+input.parentElement.appendChild(box);
+
+};
+
+function entferneAlleVorschlaege(){
+
+document
+.querySelectorAll(".vorschlag-box")
+.forEach(x => x.remove());
+
+}
+
+document.addEventListener(
+
+"click",
+
+(event) => {
+
+if(
+!event.target.classList.contains("ort")
+){
+
+entferneAlleVorschlaege();
+
+}
+
+}
+
+);
+
+onAuthStateChanged(auth, async (user) => {
+
+if(!user){
+
+window.location.href =
+"index.html";
+
+return;
+
+}
+
+aktuelleUid = user.uid;
+
+await laden();
+
+await ladeOrtVorschlaege();
+
+berechnen();
+
+});
+
+function berechnen(){
+
+let jahrDienste = 0;
+let jahrStunden = 0;
+let jahrGeld = 0;
+
+const stundenlohn =
+parseFloat(
+document.getElementById("stundenlohn").value
+) || 0;
+
+document.querySelectorAll(".monat")
+.forEach(monat => {
+
+let dienstCount = 0;
+let stundenGesamt = 0;
+let geldGesamt = 0;
+
+monat.querySelectorAll("tbody tr")
+.forEach(row => {
+
+const von =
+row.querySelector(".von").value;
+
+const bis =
+row.querySelector(".bis").value;
+
+let stunden = 0;
+
+if(von && bis){
+
+let start =
+new Date("2026-01-01T" + von);
+
+let ende =
+new Date("2026-01-01T" + bis);
+
+stunden =
+(ende - start) /
+1000 / 60 / 60;
+
+if(stunden < 0){
+stunden += 24;
+}
+
+dienstCount++;
+
+}
+
+const geld =
+stunden * stundenlohn;
+
+row.querySelector(".stunden")
+.innerText =
+stunden.toFixed(2);
+
+row.querySelector(".verdienst")
+.innerText =
+geld.toFixed(2) + " €";
+
+stundenGesamt += stunden;
+geldGesamt += geld;
+
+});
+
+monat.querySelector(".diensteGesamt")
+.innerText =
+dienstCount;
+
+monat.querySelector(".stundenGesamt")
+.innerText =
+stundenGesamt.toFixed(2);
+
+monat.querySelector(".geldGesamt")
+.innerText =
+geldGesamt.toFixed(2) + " €";
+
+jahrDienste += dienstCount;
+jahrStunden += stundenGesamt;
+jahrGeld += geldGesamt;
+
+});
+
+document.getElementById("jahrDienste")
+.innerText = jahrDienste;
+
+document.getElementById("jahrStunden")
+.innerText = jahrStunden.toFixed(2);
+
+document.getElementById("jahrGeld")
+.innerText = jahrGeld.toFixed(2) + " €";
+
+speichernAutomatisch();
+
+}
+
+function datenSammeln(){
+
+const daten = [];
+
+document.querySelectorAll(".monat")
+.forEach(monat => {
+
+const monatDaten = [];
+
+monat.querySelectorAll("tbody tr")
+.forEach(row => {
+
+monatDaten.push({
+
+veranstaltung:
+row.querySelector(".veranstaltung").value,
+
+ort:
+row.querySelector(".ort").value,
+
+datum:
+row.querySelector(".datum").value,
+
+von:
+row.querySelector(".von").value,
+
+bis:
+row.querySelector(".bis").value
+
+});
+
+});
+
+daten.push(monatDaten);
+
+});
+
+return {
+
+daten,
+
+stundenlohn:
+document.getElementById("stundenlohn").value
+
+};
+
+}
+
+async function speichernAutomatisch(){
+
+if(!aktuelleUid) return;
+
+try{
+
+await set(
+
+ref(
+db,
+"gehaltsrechner/" + aktuelleUid
+),
+
+datenSammeln()
+
+);
+
+document.getElementById("statusText")
+.innerText =
+"Automatisch gespeichert";
+
+}catch(error){
+
+console.error(error);
+
+}
+
+}
+
+window.manuellSpeichern =
+async function(){
+
+await speichernAutomatisch();
+
+await ladeOrtVorschlaege();
+
+alert(
+"Daten gespeichert"
+);
+
+};
+
+async function laden(){
+
+try{
+
+const snapshot =
+await get(
+ref(
+db,
+"gehaltsrechner/" + aktuelleUid
+)
+);
+
+if(!snapshot.exists()){
+
+document.getElementById("statusText")
+.innerText =
+"Noch keine Daten gespeichert";
+
+return;
+
+}
+
+const datenGesamt =
+snapshot.val();
+
+document.getElementById("stundenlohn")
+.value =
+datenGesamt.stundenlohn || 15;
+
+const daten =
+datenGesamt.daten || [];
+
+document.querySelectorAll(".monat")
+.forEach((monat, monatIndex) => {
+
+const tbody =
+monat.querySelector("tbody");
+
+tbody.innerHTML = "";
+
+const monatDaten =
+daten[monatIndex] || [];
+
+if(monatDaten.length === 0){
+
+tbody.innerHTML +=
+zeilenHTML(1);
+
+}else{
+
+monatDaten.forEach(
+(datenRow, rowIndex) => {
+
+tbody.innerHTML +=
+zeilenHTML(rowIndex + 1);
+
+}
+);
+
+}
+
+tbody.querySelectorAll("tr")
+.forEach((row, rowIndex) => {
+
+const datenRow =
+monatDaten[rowIndex];
+
+if(datenRow){
+
+row.querySelector(".veranstaltung").value =
+datenRow.veranstaltung || "";
+
+row.querySelector(".ort").value =
+datenRow.ort || "";
+
+row.querySelector(".datum").value =
+datenRow.datum || "";
+
+row.querySelector(".von").value =
+datenRow.von || "";
+
+row.querySelector(".bis").value =
+datenRow.bis || "";
+
+}
+
+});
+
+});
+
+document.getElementById("statusText")
+.innerText =
+"Daten geladen";
+
+}catch(error){
+
+console.error(error);
+
+}
+
+}
+
+window.allesLoeschen =
+async function(){
+
+const ok =
+confirm(
+"Wirklich alles löschen?"
+);
+
+if(!ok) return;
+
+try{
+
+await remove(
+ref(
+db,
+"gehaltsrechner/" + aktuelleUid
+)
+);
+
+location.reload();
+
+}catch(error){
+
+console.error(error);
+
+}
+
+};
+
+window.neuesJahrStarten =
+async function(){
+
+const ok =
+confirm(
+"Alle Einträge für das neue Jahr löschen?"
+);
+
+if(!ok) return;
+
+document.querySelectorAll("tbody")
+.forEach(tbody => {
+
+tbody.innerHTML =
+zeilenHTML(1);
+
+});
+
+berechnen();
+
+await speichernAutomatisch();
+
+alert(
+"Neues Jahr gestartet"
+);
+
+};
+
+window.pdfSpeichern = async function(){
+
+const { jsPDF } = window.jspdf;
+
+const doc = new jsPDF("p","mm","a4");
+
+let y = 15;
+
+doc.setFont("helvetica","bold");
+doc.setFontSize(22);
+
+doc.text("Dienst- & Gehaltsrechner 2026", 15, y);
+
+y += 12;
+
+doc.setFontSize(12);
+
+const stundenlohn =
+parseFloat(
+document.getElementById("stundenlohn").value
+) || 0;
+
+doc.text(
+"Stundenlohn: " +
+stundenlohn.toFixed(2) +
+" €",
+15,
+y
+);
+
+y += 12;
+
+let jahrDienste = 0;
+let jahrStunden = 0;
+let jahrGeld = 0;
+
+document.querySelectorAll(".monat")
+.forEach((monat,index) => {
+
+const monatName =
+monate[index];
+
+let dienstCount = 0;
+let stundenGesamt = 0;
+let geldGesamt = 0;
+
+if(y > 250){
+
+doc.addPage();
+y = 15;
+
+}
+
+doc.setFontSize(18);
+doc.setFont("helvetica","bold");
+
+doc.text(monatName, 15, y);
+
+y += 8;
+
+doc.setFontSize(10);
+doc.setFont("helvetica","normal");
+
+monat.querySelectorAll("tbody tr")
+.forEach((row,rowIndex) => {
+
+const veranstaltung =
+row.querySelector(".veranstaltung").value || "-";
+
+const ort =
+row.querySelector(".ort").value || "-";
+
+const datum =
+row.querySelector(".datum").value || "-";
+
+const von =
+row.querySelector(".von").value || "-";
+
+const bis =
+row.querySelector(".bis").value || "-";
+
+const stunden =
+row.querySelector(".stunden").innerText || "0";
+
+const verdienst =
+row.querySelector(".verdienst").innerText || "0 €";
+
+if(von !== "-" && bis !== "-"){
+
+dienstCount++;
+
+}
+
+stundenGesamt +=
+parseFloat(stunden) || 0;
+
+geldGesamt +=
+parseFloat(
+verdienst.replace("€","")
+) || 0;
+
+if(y > 270){
+
+doc.addPage();
+y = 15;
+
+}
+
+doc.text(
+(rowIndex + 1) +
+". " +
+veranstaltung,
+15,
+y
+);
+
+y += 5;
+
+doc.text(
+"Ort: " + ort,
+20,
+y
+);
+
+y += 5;
+
+doc.text(
+"Datum: " + datum,
+20,
+y
+);
+
+y += 5;
+
+doc.text(
+"Zeit: " +
+von +
+" - " +
+bis,
+20,
+y
+);
+
+y += 5;
+
+doc.text(
+"Stunden: " +
+stunden,
+20,
+y
+);
+
+y += 5;
+
+doc.text(
+"Verdienst: " +
+verdienst,
+20,
+y
+);
+
+y += 8;
+
+});
+
+doc.setFont("helvetica","bold");
+
+doc.text(
+"Monatszusammenfassung:",
+15,
+y
+);
+
+y += 6;
+
+doc.text(
+"Dienste: " +
+dienstCount,
+20,
+y
+);
+
+y += 5;
+
+doc.text(
+"Stunden: " +
+stundenGesamt.toFixed(2),
+20,
+y
+);
+
+y += 5;
+
+doc.text(
+"Verdienst: " +
+geldGesamt.toFixed(2) +
+" €",
+20,
+y
+);
+
+y += 12;
+
+jahrDienste += dienstCount;
+jahrStunden += stundenGesamt;
+jahrGeld += geldGesamt;
+
+});
+
+if(y > 240){
+
+doc.addPage();
+y = 15;
+
+}
+
+doc.setFontSize(20);
+doc.setFont("helvetica","bold");
+
+doc.text(
+"Jahreszusammenfassung",
+15,
+y
+);
+
+y += 10;
+
+doc.setFontSize(12);
+
+doc.text(
+"Gesamt Dienste: " +
+jahrDienste,
+15,
+y
+);
+
+y += 7;
+
+doc.text(
+"Gesamt Stunden: " +
+jahrStunden.toFixed(2),
+15,
+y
+);
+
+y += 7;
+
+doc.text(
+"Gesamt Verdienst: " +
+jahrGeld.toFixed(2) +
+" €",
+15,
+y
+);
+
+doc.save(
+"Gehaltsabrechnung_2026.pdf"
+);
+
+};
+
+document.addEventListener(
+
+"input",
+
+(event) => {
+
+if(
+event.target.matches("input")
+){
+
+berechnen();
+
+}
+
+}
+
+);
+
+</script>
+
+</body>
+</html>
