@@ -235,6 +235,10 @@ input{
     + Dienstbericht hochladen
   </button>
 
+  <button class="admin-btn" onclick="formularOeffnen()">
+  Dienstbericht-Formular öffnen
+  </button>
+
 </div>
 
 <div class="grid" id="container"></div>
@@ -280,30 +284,10 @@ input{
 
 <script type="module">
 
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-
-import {
-  getAuth,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-
-import {
-  getDatabase,
-  ref,
-  push,
-  onValue,
-  remove
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-
-import {
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
@@ -316,232 +300,193 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
 const db = getDatabase(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-const dienstberichteRef =
-  ref(db, "dienstberichte");
-
-const papierkorbRef =
-  ref(db, "papierkorb");
-
-const benutzerRef =
-  ref(db, "benutzer");
+const dienstberichteRef = ref(db, "dienstberichte");
+const papierkorbRef = ref(db, "papierkorb");
+const benutzerRef = ref(db, "benutzer");
 
 let liste = [];
 let userRolle = "";
 let aktuellerName = "";
 
-/* LOGIN */
+/* ===========================
+   LOGIN
+=========================== */
+
 onAuthStateChanged(auth, (user) => {
 
-  if(!user){
-
-    window.location.href =
-      "index.html";
-
+  if (!user) {
+    window.location.href = "index.html";
     return;
-
   }
 
-  onValue(
+  onValue(benutzerRef, (snapshot) => {
 
-    benutzerRef,
+    snapshot.forEach((child) => {
 
-    (snapshot) => {
+      const daten = child.val();
 
-      snapshot.forEach((child) => {
+      if (daten.uid === user.uid) {
 
-        const daten = child.val();
+        userRolle = String(daten.rolle || "")
+          .toLowerCase()
+          .trim();
 
-        if(daten.uid === user.uid){
+        aktuellerName =
+          (daten.vorname || "") +
+          " " +
+          (daten.nachname || "");
 
-          userRolle =
-            String(
-              daten.rolle || ""
-            )
-            .toLowerCase()
-            .trim();
+        render();
+      }
 
-          aktuellerName =
-            (daten.vorname || "") +
-            " " +
-            (daten.nachname || "");
+    });
 
-          render();
-
-        }
-
-      });
-
-    },
-
-    {
-      onlyOnce:true
-    }
-
-  );
+  }, { onlyOnce: true });
 
 });
 
-/* MODAL */
-window.schliessen = function(){
+/* ===========================
+   PDF FORMULAR ÖFFNEN
+=========================== */
 
-  document.getElementById(
-    "modal"
-  ).style.display = "none";
+window.formularOeffnen = function () {
+
+  window.open(
+    "dienstbericht_vorlage.pdf",
+    "_blank"
+  );
 
 };
 
-/* SPEICHERN */
-window.speichern = async function(){
+/* ===========================
+   MODAL
+=========================== */
+
+window.schliessen = function () {
+
+  document.getElementById("modal").style.display = "none";
+
+};
+
+/* ===========================
+   SPEICHERN
+=========================== */
+
+window.speichern = async function () {
 
   const titel =
-    document.getElementById(
-      "titel"
-    ).value;
+    document.getElementById("titel").value;
 
   const dienst =
-    document.getElementById(
-      "dienst"
-    ).value;
+    document.getElementById("dienst").value;
 
   const mitarbeiter =
-    document.getElementById(
-      "mitarbeiter"
-    ).value;
+    document.getElementById("mitarbeiter").value;
 
   const datei =
-    document.getElementById(
-      "datei"
-    ).files[0];
+    document.getElementById("datei").files[0];
 
-  if(
-    !titel ||
-    !dienst ||
-    !mitarbeiter ||
-    !datei
-  ){
+  if (!titel || !dienst || !mitarbeiter || !datei) {
 
-    alert(
-      "Bitte alles ausfüllen"
-    );
+    alert("Bitte alles ausfüllen");
 
     return;
 
   }
 
-  try{
+  try {
 
-    const jetzt =
-      Date.now();
+    const jetzt = Date.now();
 
     const dateiname =
       jetzt + "_" + datei.name;
 
-    const fileRef =
-      storageRef(
-        storage,
-        "dienstberichte/" +
-        dateiname
-      );
-
-    await uploadBytes(
-      fileRef,
-      datei
+    const fileRef = storageRef(
+      storage,
+      "dienstberichte/" + dateiname
     );
+
+    await uploadBytes(fileRef, datei);
 
     const downloadURL =
       await getDownloadURL(fileRef);
 
-    await push(
-      dienstberichteRef,
-      {
-        titel,
-        dienst,
-        mitarbeiter,
+    await push(dienstberichteRef, {
 
-        datei: downloadURL,
+      titel,
+      dienst,
+      mitarbeiter,
 
-        storagePath:
-          "dienstberichte/" +
-          dateiname,
+      datei: downloadURL,
 
-        hochgeladenAm:
-          jetzt,
+      storagePath:
+        "dienstberichte/" + dateiname,
 
-        hochgeladenDatum:
-          new Date(jetzt)
+      hochgeladenAm: jetzt,
+
+      hochgeladenDatum:
+        new Date(jetzt)
           .toLocaleString("de-DE"),
 
-        uploader:
-          aktuellerName
-      }
-    );
+      uploader: aktuellerName
+
+    });
 
     await push(
-      ref(
-        db,
-        "benachrichtigungen"
-      ),
+      ref(db, "benachrichtigungen"),
       {
-        titel:
-          "Neuer Dienstbericht",
 
-        name:
-          mitarbeiter,
+        titel: "Neuer Dienstbericht",
 
-        typ:
-          "Dienstbericht",
+        name: mitarbeiter,
+
+        typ: "Dienstbericht",
 
         text:
-          `${mitarbeiter} hat den Bericht "${titel}" hochgeladen`,
+          `${mitarbeiter} hat den Bericht \"${titel}\" hochgeladen`,
 
-        zeit:
-          jetzt
+        zeit: jetzt
+
       }
     );
 
-    alert(
-      "Dienstbericht gespeichert"
-    );
+    alert("Dienstbericht gespeichert");
 
     location.reload();
 
-  }catch(error){
+  } catch (error) {
 
     console.error(error);
 
-    alert(
-      "Fehler beim Speichern"
-    );
+    alert("Fehler beim Speichern");
 
   }
 
 };
 
-/* AUTO VERSCHIEBEN */
-async function pruefeBerichte(){
+/* ===========================
+   7 TAGE -> PAPIERKORB
+=========================== */
 
-  const jetzt =
-    Date.now();
+async function pruefeBerichte() {
 
-  for(const eintrag of liste){
+  const jetzt = Date.now();
 
-    const siebenTage =
-      7 * 24 * 60 * 60 * 1000;
+  const siebenTage =
+    7 * 24 * 60 * 60 * 1000;
+
+  for (const eintrag of liste) {
 
     const alter =
-      jetzt -
-      (
-        eintrag.hochgeladenAm || 0
-      );
+      jetzt - (eintrag.hochgeladenAm || 0);
 
-    if(alter >= siebenTage){
+    if (alter >= siebenTage) {
 
-      try{
+      try {
 
         await push(
           papierkorbRef,
@@ -551,8 +496,7 @@ async function pruefeBerichte(){
             originalPfad:
               "dienstberichte",
 
-            geloeschtAm:
-              jetzt
+            geloeschtAm: jetzt
           }
         );
 
@@ -564,7 +508,7 @@ async function pruefeBerichte(){
           )
         );
 
-      }catch(error){
+      } catch (error) {
 
         console.error(error);
 
@@ -576,93 +520,77 @@ async function pruefeBerichte(){
 
 }
 
-/* PAPIERKORB LEEREN */
-async function pruefePapierkorb(){
+/* ===========================
+   PAPIERKORB NACH 10 TAGEN
+   ENDGÜLTIG LÖSCHEN
+=========================== */
 
-  onValue(
+async function pruefePapierkorb() {
 
-    papierkorbRef,
+  onValue(papierkorbRef, async (snapshot) => {
 
-    async (snapshot) => {
+    const jetzt = Date.now();
 
-      const jetzt =
-        Date.now();
+    snapshot.forEach(async (child) => {
 
-      snapshot.forEach(
-        async (child) => {
+      const daten = child.val();
 
-          const daten =
-            child.val();
+      const zehnTage =
+        10 * 24 * 60 * 60 * 1000;
 
-          const zweiTage =
-            2 * 24 * 60 * 60 * 1000;
+      const alter =
+        jetzt - (daten.geloeschtAm || 0);
 
-          const alter =
-            jetzt -
-            (
-              daten.geloeschtAm || 0
-            );
+      if (
+        daten.originalPfad ===
+          "dienstberichte" &&
+        alter >= zehnTage
+      ) {
 
-          if(
-            daten.originalPfad ===
-              "dienstberichte" &&
-            alter >= zweiTage
-          ){
+        try {
 
-            try{
+          if (daten.storagePath) {
 
-              if(
+            const fileRef =
+              storageRef(
+                storage,
                 daten.storagePath
-              ){
-
-                const fileRef =
-                  storageRef(
-                    storage,
-                    daten.storagePath
-                  );
-
-                await deleteObject(
-                  fileRef
-                );
-
-              }
-
-              await remove(
-                ref(
-                  db,
-                  "papierkorb/" +
-                  child.key
-                )
               );
 
-            }catch(error){
-
-              console.error(error);
-
-            }
+            await deleteObject(fileRef);
 
           }
 
+          await remove(
+            ref(
+              db,
+              "papierkorb/" +
+              child.key
+            )
+          );
+
+        } catch (error) {
+
+          console.error(error);
+
         }
-      );
 
-    },
+      }
 
-    {
-      onlyOnce:true
-    }
+    });
 
-  );
+  }, { onlyOnce: true });
 
 }
 
-/* RENDER */
-function render(){
+/* ===========================
+   RENDER
+=========================== */
+
+function render() {
 
   const c =
-    document.getElementById(
-      "container"
-    );
+    document.getElementById("container");
 
   c.innerHTML = "";
 
@@ -671,21 +599,15 @@ function render(){
     c.innerHTML += `
       <div class="card">
 
-        ${
-          userRolle === "admin"
-
-          ?
-
-          `<button
+        ${userRolle === "admin"
+          ? `
+          <button
             class="remove-btn"
             onclick="loescheDienstbericht(${i})"
           >
             X
           </button>`
-
-          :
-
-          ""
+          : ""
         }
 
         <div class="left">
@@ -721,7 +643,7 @@ function render(){
             target="_blank"
             class="admin-btn"
           >
-            Herunterladen
+            PDF öffnen
           </a>
 
         </div>
@@ -733,15 +655,16 @@ function render(){
 
 }
 
-/* MANUELL LÖSCHEN */
+/* ===========================
+   MANUELL LÖSCHEN
+=========================== */
+
 window.loescheDienstbericht =
-async function(index){
+async function (index) {
 
-  if(userRolle !== "admin"){
+  if (userRolle !== "admin") {
 
-    alert(
-      "Nur Admins dürfen löschen"
-    );
+    alert("Nur Admins dürfen löschen");
 
     return;
 
@@ -752,12 +675,11 @@ async function(index){
       "Wirklich löschen?"
     );
 
-  if(!ok) return;
+  if (!ok) return;
 
-  const eintrag =
-    liste[index];
+  const eintrag = liste[index];
 
-  try{
+  try {
 
     await push(
       papierkorbRef,
@@ -784,7 +706,7 @@ async function(index){
       "In Papierkorb verschoben"
     );
 
-  }catch(error){
+  } catch (error) {
 
     console.error(error);
 
@@ -796,32 +718,29 @@ async function(index){
 
 };
 
-/* LADEN */
-onValue(
+/* ===========================
+   LADEN
+=========================== */
 
-  dienstberichteRef,
+onValue(dienstberichteRef, async (snapshot) => {
 
-  async (snapshot) => {
+  liste = [];
 
-    liste = [];
+  snapshot.forEach((child) => {
 
-    snapshot.forEach((child) => {
-
-      liste.push({
-        id: child.key,
-        ...child.val()
-      });
-
+    liste.push({
+      id: child.key,
+      ...child.val()
     });
 
-    await pruefeBerichte();
+  });
 
-    await pruefePapierkorb();
+  await pruefeBerichte();
 
-    render();
+  await pruefePapierkorb();
 
-  }
+  render();
 
-);
+});
 
 </script>
