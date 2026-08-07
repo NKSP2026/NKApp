@@ -254,11 +254,20 @@ input{
 
     <input id="mitarbeiter" placeholder="Mitarbeiter">
 
-    <input
-      type="file"
-      id="datei"
-      accept="application/pdf"
-    >
+    <label>Datum des Dienstes</label>
+
+<input
+  type="date"
+  id="dienstDatum"
+>
+
+<label>PDF-Dienstbericht</label>
+
+<input
+  type="file"
+  id="datei"
+  accept="application/pdf"
+>
 
     <div class="button-row">
 
@@ -353,12 +362,26 @@ onAuthStateChanged(auth, (user) => {
    PDF FORMULAR ÖFFNEN
 =========================== */
 
-window.formularOeffnen = function () {
+window.formularOeffnen = async function () {
 
-  window.open(
-    "dienstbericht_vorlage.pdf",
-    "_blank"
-  );
+  try {
+
+    const pdfRef = storageRef(
+      storage,
+      "vorlage/dienstbericht_vorlage.pdf"
+    );
+
+    const url = await getDownloadURL(pdfRef);
+
+    window.open(url, "_blank");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("Vorlage konnte nicht geöffnet werden.");
+
+  }
 
 };
 
@@ -402,14 +425,40 @@ window.speichern = async function () {
 
     const jetzt = Date.now();
 
-    const dateiname =
-      jetzt + "_" + datei.name;
+const dienstDatum =
+  document.getElementById("dienstDatum").value;
 
-    const fileRef = storageRef(
-      storage,
-      "dienstberichte/" + dateiname
-    );
+if (!dienstDatum) {
+  alert("Bitte das Datum des Dienstes auswählen.");
+  return;
+}
 
+// Name bereinigen
+const saubererName = mitarbeiter
+  .replace(/\s+/g, "_")
+  .replace(/[^a-zA-Z0-9_äöüÄÖÜß-]/g, "");
+
+// Dateiendung übernehmen
+const endung = datei.name.split(".").pop();
+
+// Datum von YYYY-MM-DD in DD-MM-YYYY umwandeln
+const teile = dienstDatum.split("-");
+const datumFormatiert = `${teile[2]}-${teile[1]}-${teile[0]}`;
+
+// Dateiname: z.B. 08-08-2026_Ronny_Winkler.pdf
+const zeit = new Date();
+const uhrzeit =
+  String(zeit.getHours()).padStart(2, "0") +
+  "-" +
+  String(zeit.getMinutes()).padStart(2, "0");
+
+const dateiname =
+`${datumFormatiert}_${saubererName}_${uhrzeit}.${endung}`;
+
+const fileRef = storageRef(
+  storage,
+  "dienstberichte/" + dateiname
+);
     await uploadBytes(fileRef, datei);
 
     const downloadURL =
@@ -420,6 +469,7 @@ window.speichern = async function () {
       titel,
       dienst,
       mitarbeiter,
+      dienstDatum,
 
       datei: downloadURL,
 
@@ -625,9 +675,14 @@ function render() {
           </p>
 
           <p>
-            <strong>Hochgeladen:</strong>
-            ${x.hochgeladenDatum || "-"}
-          </p>
+  <strong>Dienstdatum:</strong>
+  ${x.dienstDatum || "-"}
+</p>
+
+<p>
+  <strong>Hochgeladen:</strong>
+  ${x.hochgeladenDatum || "-"}
+</p>
 
           <p>
             <strong>Von:</strong>
@@ -734,6 +789,11 @@ onValue(dienstberichteRef, async (snapshot) => {
     });
 
   });
+
+  // Nach Dienstdatum sortieren (neueste Dienste zuerst)
+  liste.sort((a, b) =>
+    (b.dienstDatum || "").localeCompare(a.dienstDatum || "")
+  );
 
   await pruefeBerichte();
 
