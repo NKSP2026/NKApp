@@ -255,8 +255,9 @@ input{
     <label>Datum des Dienstes</label>
 
 <input
-  type="date"
+  type="text"
   id="dienstDatum"
+  placeholder="TT.MM.JJJJ"
 >
 
 <label>PDF-Dienstbericht</label>
@@ -408,7 +409,7 @@ window.speichern = async function () {
   const datei =
     document.getElementById("datei").files[0];
 
-  if (!titel || !dienst || !mitarbeiter || !datei) {
+  if (!dienst titel || !mitarbeiter || !datei) {
 
     alert("Bitte alles ausfüllen");
 
@@ -421,12 +422,23 @@ window.speichern = async function () {
     const jetzt = Date.now();
 
 const dienstDatum =
-  document.getElementById("dienstDatum").value;
+  document.getElementById("dienstDatum").value.trim();
 
 if (!dienstDatum) {
-  alert("Bitte das Datum des Dienstes auswählen.");
+  alert("Bitte das Datum des Dienstes eingeben.");
   return;
 }
+
+// Erwartetes Format: TT.MM.JJJJ
+const teile = dienstDatum.split(".");
+
+if (teile.length !== 3) {
+  alert("Bitte das Datum im Format TT.MM.JJJJ eingeben.");
+  return;
+}
+
+// Dateiname: TT-MM-JJJJ
+const datumFormatiert = `${teile[0]}-${teile[1]}-${teile[2]}`;
 
 // Name bereinigen
 const saubererName = mitarbeiter
@@ -435,10 +447,6 @@ const saubererName = mitarbeiter
 
 // Dateiendung übernehmen
 const endung = datei.name.split(".").pop();
-
-// Datum von YYYY-MM-DD in DD-MM-YYYY umwandeln
-const teile = dienstDatum.split("-");
-const datumFormatiert = `${teile[2]}-${teile[1]}-${teile[0]}`;
 
 // Dateiname: z.B. 08-08-2026_Ronny_Winkler.pdf
 const zeit = new Date();
