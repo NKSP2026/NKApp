@@ -317,10 +317,9 @@ window.schliessen = function () {
   document.getElementById("modal").style.display = "none";
 };
 
-window.fertig = function () {
-  speichern(true);
+window.fertig = async function () {
+  await window.speichern(true);
 };
-
 /* =========================
    FORMAT
 ========================= */
@@ -434,23 +433,26 @@ window.speichern = async function (schliessenNachSpeichern = false) {
 
     await push(diensteRef, daten);
 
-    zeigeMeldung(
-      `Dienst am <strong>${formatDatum(daten.datum)}</strong> gespeichert.`
-    );
+zeigeMeldung(
+  `Dienst am <strong>${formatDatum(daten.datum)}</strong> erfolgreich gespeichert.`
+);
 
-    if (schliessenNachSpeichern) {
-      schliessen();
-    } else {
-      document.getElementById("datum").value = "";
-      document.getElementById("von").value = "";
-      document.getElementById("bis").value = "";
-      document.getElementById("ort").value = "";
-      document.getElementById("art").value = "";
-      document.getElementById("auftraggeber").value = "";
-      document.getElementById("verantwortlich").value = "";
-      document.getElementById("personal").value = "";
-      document.getElementById("datum").focus();
-    }
+if (schliessenNachSpeichern) {
+  setTimeout(() => {
+    window.schliessen();
+    location.reload();
+  }, 2000);
+} else {
+  document.getElementById("datum").value = "";
+  document.getElementById("von").value = "";
+  document.getElementById("bis").value = "";
+  document.getElementById("ort").value = "";
+  document.getElementById("art").value = "";
+  document.getElementById("auftraggeber").value = "";
+  document.getElementById("verantwortlich").value = "";
+  document.getElementById("personal").value = "";
+  document.getElementById("datum").focus();
+}
 
   } catch (error) {
     console.error(error);
