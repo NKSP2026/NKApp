@@ -428,7 +428,6 @@ window.speichern = async function () {
 
     await push(diensteRef, daten);
 
-    alert("Dienst gespeichert");
 
     /* Felder leeren → Modal bleibt offen */
     document.getElementById("datum").value = "";
@@ -489,8 +488,6 @@ window.loeschen = async function (i) {
 
     await remove(ref(db, "dienste/" + eintrag.id));
 
-    alert("Dienst gelöscht");
-
   } catch (error) {
     console.error(error);
     alert("Fehler beim Löschen");
@@ -543,10 +540,7 @@ window.antworten = async function (id, typ) {
     zeit: Date.now()
   });
 
-  alert("Antwort gespeichert");
-};
-
-/* =========================
+  /* =========================
    RENDER
 ========================= */
 function render() {
