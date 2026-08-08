@@ -655,34 +655,29 @@ function render() {
 
         <div class="left">
 
-          <h2>${x.titel}</h2>
+  <h2>${x.titel}</h2>
 
-          <p>
-            <strong>Dienst:</strong>
-            ${x.dienst}
-          </p>
+  <p>
+    <strong>Mitarbeiter:</strong>
+    ${x.mitarbeiter}
+  </p>
 
-          <p>
-            <strong>Mitarbeiter:</strong>
-            ${x.mitarbeiter}
-          </p>
+  <p>
+    <strong>Dienstdatum:</strong>
+    ${x.dienstDatum || "-"}
+  </p>
 
-          <p>
-  <strong>Dienstdatum:</strong>
-  ${x.dienstDatum || "-"}
-</p>
+  <p>
+    <strong>Hochgeladen:</strong>
+    ${x.hochgeladenDatum || "-"}
+  </p>
 
-<p>
-  <strong>Hochgeladen:</strong>
-  ${x.hochgeladenDatum || "-"}
-</p>
+  <p>
+    <strong>Von:</strong>
+    ${x.uploader || "-"}
+  </p>
 
-          <p>
-            <strong>Von:</strong>
-            ${x.uploader || "-"}
-          </p>
-
-        </div>
+</div>
 
         <div class="right">
 
