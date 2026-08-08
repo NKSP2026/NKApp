@@ -184,15 +184,15 @@ window.entfernen = async function(dienstId, typ, key){
   if(userRolle !== "admin") return;
 
   const ok = confirm("Eintrag wirklich entfernen?");
-  if(!ok) return;
+if (!ok) return;
 
-  try{
-    await remove(ref(db, `dienste/${dienstId}/${typ}/${key}`));
-    alert("Eintrag entfernt");
-  }catch(error){
-    console.error(error);
-    alert("Fehler beim Entfernen");
-  }
+try {
+  await remove(ref(db, `dienste/${dienstId}/${typ}/${key}`));
+  // keine Erfolgsmeldung
+} catch (error) {
+  console.error(error);
+  alert("Fehler beim Entfernen");
+}
 };
 
 async function alteEintraegePruefen(){
