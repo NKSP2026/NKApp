@@ -248,7 +248,7 @@ input{
 
   <div class="modal-content">
 
-    <input id="dienst titel" placeholder="Titel des Berichtes">
+    <input id="dienst titel" placeholder="Ort/ Gebäude/ Veranstaltung">
 
     <input id="mitarbeiter" placeholder="Mitarbeiter">
 
@@ -401,67 +401,59 @@ window.schliessen = function () {
 window.speichern = async function () {
 
   const dienst_titel =
-    document.getElementById("titel").value;
+    document.getElementById("dienst titel").value.trim();
 
-    const mitarbeiter =
-    document.getElementById("mitarbeiter").value;
+  const mitarbeiter =
+    document.getElementById("mitarbeiter").value.trim();
+
+  const dienstDatum =
+    document.getElementById("dienstDatum").value.trim();
 
   const datei =
     document.getElementById("datei").files[0];
 
-  if (!dienst titel || !mitarbeiter || !datei) {
-
-    alert("Bitte alles ausfüllen");
-
+  if (!dienst_titel || !mitarbeiter || !dienstDatum || !datei) {
+    alert("Bitte alles ausfüllen.");
     return;
-
   }
 
   try {
 
     const jetzt = Date.now();
 
-const dienstDatum =
-  document.getElementById("dienstDatum").value.trim();
+    // Erwartetes Format: TT.MM.JJJJ
+    const teile = dienstDatum.split(".");
 
-if (!dienstDatum) {
-  alert("Bitte das Datum des Dienstes eingeben.");
-  return;
-}
+    if (teile.length !== 3) {
+      alert("Bitte das Datum im Format TT.MM.JJJJ eingeben.");
+      return;
+    }
 
-// Erwartetes Format: TT.MM.JJJJ
-const teile = dienstDatum.split(".");
+    const datumFormatiert =
+      `${teile[0]}-${teile[1]}-${teile[2]}`;
 
-if (teile.length !== 3) {
-  alert("Bitte das Datum im Format TT.MM.JJJJ eingeben.");
-  return;
-}
+    const saubererName = mitarbeiter
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9_äöüÄÖÜß-]/g, "");
 
-// Dateiname: TT-MM-JJJJ
-const datumFormatiert = `${teile[0]}-${teile[1]}-${teile[2]}`;
+    const endung =
+      datei.name.split(".").pop();
 
-// Name bereinigen
-const saubererName = mitarbeiter
-  .replace(/\s+/g, "_")
-  .replace(/[^a-zA-Z0-9_äöüÄÖÜß-]/g, "");
+    const zeit = new Date();
 
-// Dateiendung übernehmen
-const endung = datei.name.split(".").pop();
+    const uhrzeit =
+      String(zeit.getHours()).padStart(2, "0") +
+      "-" +
+      String(zeit.getMinutes()).padStart(2, "0");
 
-// Dateiname: z.B. 08-08-2026_Ronny_Winkler.pdf
-const zeit = new Date();
-const uhrzeit =
-  String(zeit.getHours()).padStart(2, "0") +
-  "-" +
-  String(zeit.getMinutes()).padStart(2, "0");
+    const dateiname =
+      `${datumFormatiert}_${saubererName}_${uhrzeit}.${endung}`;
 
-const dateiname =
-`${datumFormatiert}_${saubererName}_${uhrzeit}.${endung}`;
+    const fileRef = storageRef(
+      storage,
+      "dienstberichte/" + dateiname
+    );
 
-const fileRef = storageRef(
-  storage,
-  "dienstberichte/" + dateiname
-);
     await uploadBytes(fileRef, datei);
 
     const downloadURL =
@@ -469,7 +461,7 @@ const fileRef = storageRef(
 
     await push(dienstberichteRef, {
 
-      dienst_titel,
+      titel: dienst_titel,
       mitarbeiter,
       dienstDatum,
 
@@ -481,8 +473,7 @@ const fileRef = storageRef(
       hochgeladenAm: jetzt,
 
       hochgeladenDatum:
-        new Date(jetzt)
-          .toLocaleString("de-DE"),
+        new Date(jetzt).toLocaleString("de-DE"),
 
       uploader: aktuellerName
 
@@ -499,7 +490,7 @@ const fileRef = storageRef(
         typ: "Dienstbericht",
 
         text:
-          `${mitarbeiter} hat den Bericht \"${titel}\" hochgeladen`,
+          `${mitarbeiter} hat den Bericht "${dienst_titel}" hochgeladen`,
 
         zeit: jetzt
 
