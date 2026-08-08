@@ -248,9 +248,7 @@ input{
 
   <div class="modal-content">
 
-    <input id="titel" placeholder="Titel des Berichtes">
-
-    <input id="dienst" placeholder="Dienst">
+    <input id="dienst titel" placeholder="Titel des Berichtes">
 
     <input id="mitarbeiter" placeholder="Mitarbeiter">
 
@@ -401,13 +399,10 @@ window.schliessen = function () {
 
 window.speichern = async function () {
 
-  const titel =
+  const dienst_titel =
     document.getElementById("titel").value;
 
-  const dienst =
-    document.getElementById("dienst").value;
-
-  const mitarbeiter =
+    const mitarbeiter =
     document.getElementById("mitarbeiter").value;
 
   const datei =
@@ -466,8 +461,7 @@ const fileRef = storageRef(
 
     await push(dienstberichteRef, {
 
-      titel,
-      dienst,
+      dienst_titel,
       mitarbeiter,
       dienstDatum,
 
