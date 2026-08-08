@@ -1037,112 +1037,60 @@ window.bearbeiteMitarbeiter = function(index){
 /* SPEICHERN */
 /* ===================================================== */
 
-window.speichereMitarbeiter = async function(){
-
-  try{
-
-    let bildURL = aktuellesBild;
-
-    const file =
-      document.getElementById("formBild").files[0];
-
-    if(file){
-
-      const bildRef = storageRef(
-        storage,
-        "mitarbeiterbilder/" +
-        Date.now() +
-        "_" +
-        file.name
-      );
-
-      await uploadBytes(bildRef,file);
-
-      bildURL = await getDownloadURL(bildRef);
-
-    }
-
-    const daten = {
-
-      name:
-        document.getElementById("formName").value || "",
-
-      geburtsdatum:
-        document.getElementById("formGeburtsdatum").value || "",
-
-      wannNK:
-        document.getElementById("formWannNK").value || "",
-
-      funktion:
-        document.getElementById("formFunktion").value || "",
-
-      beruf:
-        document.getElementById("formBeruf").value || "",
-
-      ausbildung:
-        document.getElementById("formAusbildung").value || "",
-
-      sicherheit:
-        document.getElementById("formSicherheit").value || "",
-
-      ersthelfer:
-        document.getElementById("formErsthelfer").value || "",
-
-      brandschutz:
-        document.getElementById("formBrandschutzhelfer").value || "",
-
-      datenschutz:
-        document.getElementById("formDatenschutzbeauftragter").value || "",
-
-      detektivschein:
-        document.getElementById("formDetektivschein").value || "",
-
-      firma:
-        document.getElementById("formFirma").value || "",
-
-      fuehrerschein:
-        document.getElementById("formFuehrerschein").value || "",
-
-      chef:
-        document.getElementById("formChef").value || "",
-
-      bild:
-        bildURL
-
-    };
-
-    if(bearbeiteID){
-
-      await update(
-        ref(db, "mitarbeiter/" + bearbeiteID),
-        daten
-      );
-
-      alert("Mitarbeiter aktualisiert");
-
-    }else{
-
-      await push(
-        mitarbeiterRef,
-        daten
-      );
-
-      alert("Mitarbeiter gespeichert");
-
-    }
-
-    schliesseFormular();
-
-  }catch(error){
-
-    console.error(error);
-
-    alert("Fehler beim Speichern");
-
+window.speichern = async function () {
+  if (userRolle !== "admin") {
+    zeigeMeldung("Nur Admins dürfen Dienste speichern.", "error");
+    return;
   }
 
-};
+  const daten = {
+    datum: document.getElementById("datum").value,
+    von: document.getElementById("von").value,
+    bis: document.getElementById("bis").value,
+    ort: document.getElementById("ort").value || "",
+    art: document.getElementById("art").value || "",
+    auftraggeber: document.getElementById("auftraggeber").value || "",
+    verantwortlich: document.getElementById("verantwortlich").value || "",
+    personal: document.getElementById("personal").value || ""
+  };
 
+  if (!daten.datum || !daten.von || !daten.bis) {
+    zeigeMeldung("Bitte Datum und Uhrzeit ausfüllen.", "error");
+    return;
+  }
+
+  try {
+    if (bearbeiteID) {
+      await update(ref(db, "dienste/" + bearbeiteID), daten);
+
+      zeigeMeldung(
+        `Dienst am <strong>${formatDatum(daten.datum)}</strong> erfolgreich aktualisiert.`
+      );
+
+      setTimeout(() => {
+        schliessen();
+        location.reload();
+      }, 2000);
+
+      return;
+    }
+
+    await push(diensteRef, daten);
+
+    zeigeMeldung(
+      `Dienst für <strong>${daten.verantwortlich || "Mitarbeiter"}</strong> erfolgreich angelegt.`
+    );
+
+    setTimeout(() => {
+      schliessen();
+      location.reload();
+    }, 2000);
+
+  } catch (error) {
+    console.error(error);
+    zeigeMeldung("Fehler beim Speichern des Dienstes.", "error");
+  }
+};
 /* ===================================================== */
 /* LÖSCHEN */
 /* ===================================================== */
