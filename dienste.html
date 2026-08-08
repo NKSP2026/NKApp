@@ -461,7 +461,6 @@ window.speichern = async function (schliessenNachSpeichern = false) {
   }, 2000);
 } else {
   // Felder leeren und offen lassen
-  ...
 }
 
       bearbeiteID = null;
@@ -470,16 +469,27 @@ window.speichern = async function (schliessenNachSpeichern = false) {
 
     await push(diensteRef, daten);
 
-zeigeMeldung(
-  `Dienst am <strong>${formatDatum(daten.datum)}</strong> erfolgreich gespeichert.`
-);
-
 if (schliessenNachSpeichern) {
+  // Modal sofort schließen
+  window.schliessen();
+
+  // Erfolgsmeldung anzeigen
+  zeigeMeldung(
+    `Dienst am <strong>${formatDatum(daten.datum)}</strong> erfolgreich gespeichert.`
+  );
+
+  // Nach 2 Sekunden neu laden
   setTimeout(() => {
-    window.schliessen();
     location.reload();
   }, 2000);
+
 } else {
+  // Erfolgsmeldung anzeigen
+  zeigeMeldung(
+    `Dienst am <strong>${formatDatum(daten.datum)}</strong> erfolgreich gespeichert.`
+  );
+
+  // Felder leeren und Modal offen lassen
   document.getElementById("datum").value = "";
   document.getElementById("von").value = "";
   document.getElementById("bis").value = "";
