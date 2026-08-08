@@ -318,7 +318,7 @@ window.schliessen = function () {
 };
 
 window.fertig = function () {
-  schliessen();
+  speichern(true);
 };
 
 /* =========================
@@ -394,9 +394,9 @@ async function alteDiensteEntfernen() {
 /* =========================
    SPEICHERN
 ========================= */
-window.speichern = async function () {
+window.speichern = async function (schliessenNachSpeichern = false) {
   if (userRolle !== "admin") {
-    alert("Nur Admins dürfen speichern");
+    zeigeMeldung("Nur Admins dürfen speichern.", "error");
     return;
   }
 
@@ -412,7 +412,7 @@ window.speichern = async function () {
   };
 
   if (!daten.datum || !daten.von || !daten.bis) {
-    alert("Bitte Datum + Uhrzeit ausfüllen");
+    zeigeMeldung("Bitte Datum und Uhrzeit ausfüllen.", "error");
     return;
   }
 
@@ -420,31 +420,43 @@ window.speichern = async function () {
     if (bearbeiteID) {
       await update(ref(db, "dienste/" + bearbeiteID), daten);
 
-      alert("Dienst aktualisiert");
-      schliessen();
-      location.reload();
+      zeigeMeldung(
+        `Dienst am <strong>${formatDatum(daten.datum)}</strong> aktualisiert.`
+      );
+
+      if (schliessenNachSpeichern) {
+        schliessen();
+      }
+
+      bearbeiteID = null;
       return;
     }
 
     await push(diensteRef, daten);
 
+    zeigeMeldung(
+      `Dienst am <strong>${formatDatum(daten.datum)}</strong> gespeichert.`
+    );
 
-    /* Felder leeren → Modal bleibt offen */
-    document.getElementById("datum").value = "";
-    document.getElementById("von").value = "";
-    document.getElementById("bis").value = "";
-    document.getElementById("ort").value = "";
-    document.getElementById("art").value = "";
-    document.getElementById("auftraggeber").value = "";
-    document.getElementById("verantwortlich").value = "";
-    document.getElementById("personal").value = "";
+    if (schliessenNachSpeichern) {
+      schliessen();
+    } else {
+      document.getElementById("datum").value = "";
+      document.getElementById("von").value = "";
+      document.getElementById("bis").value = "";
+      document.getElementById("ort").value = "";
+      document.getElementById("art").value = "";
+      document.getElementById("auftraggeber").value = "";
+      document.getElementById("verantwortlich").value = "";
+      document.getElementById("personal").value = "";
+      document.getElementById("datum").focus();
+    }
 
   } catch (error) {
     console.error(error);
-    alert("Fehler beim Speichern");
+    zeigeMeldung("Fehler beim Speichern.", "error");
   }
 };
-
 /* =========================
    BEARBEITEN
 ========================= */
