@@ -318,6 +318,32 @@ window.schliessen = function () {
 };
 
 window.fertig = async function () {
+  const datum = document.getElementById("datum").value;
+  const von = document.getElementById("von").value;
+  const bis = document.getElementById("bis").value;
+  const ort = document.getElementById("ort").value;
+  const art = document.getElementById("art").value;
+  const auftraggeber = document.getElementById("auftraggeber").value;
+  const verantwortlich = document.getElementById("verantwortlich").value;
+  const personal = document.getElementById("personal").value;
+
+  // Wenn wirklich alles leer ist → einfach schließen
+  if (!datum && !von && !bis && !ort && !art &&
+      !auftraggeber && !verantwortlich && !personal) {
+    window.schliessen();
+    return;
+  }
+
+  // Wenn etwas eingetragen wurde, aber Pflichtfelder fehlen
+  if (!datum || !von || !bis) {
+    zeigeMeldung(
+      "Bitte Datum sowie Beginn und Ende vollständig ausfüllen.",
+      "error"
+    );
+    return;
+  }
+
+  // Speichern und danach schließen
   await window.speichern(true);
 };
 /* =========================
@@ -424,8 +450,19 @@ window.speichern = async function (schliessenNachSpeichern = false) {
       );
 
       if (schliessenNachSpeichern) {
-        schliessen();
-      }
+  window.schliessen(); // sofort schließen
+
+  zeigeMeldung(
+    `Dienst am <strong>${formatDatum(daten.datum)}</strong> erfolgreich gespeichert.`
+  );
+
+  setTimeout(() => {
+    location.reload();
+  }, 2000);
+} else {
+  // Felder leeren und offen lassen
+  ...
+}
 
       bearbeiteID = null;
       return;
