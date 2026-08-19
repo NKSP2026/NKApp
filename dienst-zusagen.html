@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Dienst-Zusagen</title>
 
 <style>
+
 *{
   margin:0;
   padding:0;
@@ -19,11 +21,19 @@ body{
   padding:20px;
 }
 
+/* =========================
+   ÜBERSCHRIFT
+========================= */
+
 h1{
   text-align:center;
   font-size:42px;
   margin-bottom:30px;
 }
+
+/* =========================
+   TOP BAR
+========================= */
 
 .top-bar{
   display:flex;
@@ -43,223 +53,880 @@ h1{
   font-size:16px;
   font-weight:bold;
   text-decoration:none;
+  transition:0.15s;
 }
+
+.admin-btn:hover{
+  background:#1d4ed8;
+  transform:translateY(-2px);
+}
+
+.admin-btn:active{
+  transform:translateY(1px);
+}
+
+/* =========================
+   GRID
+========================= */
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-  gap:20px;
-  max-width:1200px;
-  margin:auto;
+
+  /* IMMER 3 BOXEN NEBENEINANDER */
+  grid-template-columns:repeat(3,minmax(0,1fr));
+
+  gap:25px;
+
+  width:100%;
+  max-width:1500px;
+
+  margin:0 auto;
+
+  align-items:stretch;
 }
+
+/* =========================
+   CARD
+========================= */
 
 .card{
+
   background:#1c1c1f;
+
   border-radius:22px;
+
   padding:20px;
+
+  width:100%;
+
+  /* ALLE BOXEN GLEICH HOCH */
+  height:380px;
+
+  min-height:380px;
+  max-height:380px;
+
+  display:flex;
+  flex-direction:column;
+
+  overflow:hidden;
+
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.25);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
+
+.card:hover{
+  transform:translateY(-2px);
+
+  box-shadow:
+    0 14px 30px rgba(0,0,0,0.35);
+}
+
+/* =========================
+   DIENST-ÜBERSCHRIFT
+========================= */
 
 .card h2{
+
   font-size:24px;
+
   margin-bottom:10px;
+
+  line-height:1.25;
+
+  color:white;
+
+  /* WICHTIG:
+     NICHT MEHR UMBRECHEN */
+  white-space:nowrap;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+
+  /* feste Höhe */
+  height:30px;
+
+  min-height:30px;
 }
+
+/* =========================
+   ART
+========================= */
+
+.card > p{
+
+  font-size:18px;
+
+  line-height:1.4;
+
+  color:#f1f1f1;
+
+  min-height:26px;
+
+  margin-bottom:5px;
+}
+
+/* =========================
+   ABSCHNITTSÜBERSCHRIFT
+========================= */
 
 .card h3{
+
   margin-top:18px;
+
   margin-bottom:10px;
+
   font-size:18px;
+
+  line-height:1.2;
+
+  flex-shrink:0;
 }
+
+/* =========================
+   PERSONEN-BEREICH
+========================= */
 
 .person-row{
+
   display:flex;
+
   justify-content:space-between;
+
   align-items:center;
+
   background:#151518;
+
   padding:10px 12px;
+
   border-radius:12px;
+
   margin-bottom:8px;
+
+  min-height:42px;
+
+  flex-shrink:0;
 }
+
+.person-row span{
+
+  font-size:17px;
+
+  color:white;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+
+  white-space:nowrap;
+
+  padding-right:10px;
+}
+
+/* =========================
+   ENTFERNEN BUTTON
+========================= */
 
 .remove-btn{
+
   background:#dc2626;
+
   color:white;
+
   border:none;
+
   border-radius:8px;
+
   padding:6px 10px;
+
   cursor:pointer;
+
   font-weight:bold;
+
+  flex-shrink:0;
+
+  transition:0.15s;
 }
 
-.empty{
-  color:#aaa;
-  margin-bottom:8px;
+.remove-btn:hover{
+  background:#b91c1c;
 }
+
+.remove-btn:active{
+  transform:scale(0.95);
+}
+
+/* =========================
+   LEER
+========================= */
+
+.empty{
+
+  color:#aaa;
+
+  margin-bottom:8px;
+
+  font-size:16px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+/* 2 BOXEN */
+
+@media(max-width:1100px){
+
+  .grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+}
+
+/* 1 BOX */
+
+@media(max-width:700px){
+
+  body{
+    padding:15px;
+  }
+
+  h1{
+    font-size:34px;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+    gap:20px;
+  }
+
+  .card{
+    height:380px;
+    min-height:380px;
+    max-height:380px;
+  }
+
+  .card h2{
+    font-size:23px;
+  }
+
+}
+
+/* SEHR KLEINE HANDYS */
+
+@media(max-width:400px){
+
+  h1{
+    font-size:30px;
+  }
+
+  .card{
+    padding:16px;
+  }
+
+  .card h2{
+    font-size:21px;
+  }
+
+}
+
+/* =========================
+   PERSONEN-LISTEN
+========================= */
+
+/*
+   Die Karte bleibt immer gleich groß.
+   Wenn sehr viele Personen vorhanden sind,
+   wird innerhalb der Karte gescrollt.
+*/
+
+.card{
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+/* Scrollbar */
+
+.card::-webkit-scrollbar{
+  width:6px;
+}
+
+.card::-webkit-scrollbar-track{
+  background:#151518;
+  border-radius:10px;
+}
+
+.card::-webkit-scrollbar-thumb{
+  background:#444;
+  border-radius:10px;
+}
+
+.card::-webkit-scrollbar-thumb:hover{
+  background:#555;
+}
+
 </style>
 </head>
+
 <body>
 
 <h1>Dienst-Zusagen</h1>
 
 <div class="top-bar">
-  <a href="startseite.html" class="admin-btn">Zurück</a>
-  <a href="dienste.html" class="admin-btn">Zu den Diensten</a>
+
+  <a
+    href="startseite.html"
+    class="admin-btn"
+  >
+    Zurück
+  </a>
+
+  <a
+    href="dienste.html"
+    class="admin-btn"
+  >
+    Zu den Diensten
+  </a>
+
 </div>
 
-<div class="grid" id="container"></div>
+<div
+  class="grid"
+  id="container"
+></div>
+
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  onValue,
+  remove
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+
+/* =========================
+   FIREBASE
+========================= */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
-  authDomain: "nksp-app.firebaseapp.com",
-  databaseURL: "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "nksp-app",
-  storageBucket: "nksp-app.firebasestorage.app",
-  messagingSenderId: "328702502215",
-  appId: "1:328702502215:web:080148f3e768bfafc29862"
+
+  apiKey:
+    "AIzaSyBiKHmV0HEBB2Gr74VOgbosxRGs9MDa7uQ",
+
+  authDomain:
+    "nksp-app.firebaseapp.com",
+
+  databaseURL:
+    "https://nksp-app-default-rtdb.europe-west1.firebasedatabase.app",
+
+  projectId:
+    "nksp-app",
+
+  storageBucket:
+    "nksp-app.firebasestorage.app",
+
+  messagingSenderId:
+    "328702502215",
+
+  appId:
+    "1:328702502215:web:080148f3e768bfafc29862"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-const diensteRef = ref(db, "dienste");
+
+const app =
+  initializeApp(firebaseConfig);
+
+const auth =
+  getAuth(app);
+
+const db =
+  getDatabase(app);
+
+const diensteRef =
+  ref(db,"dienste");
+
+
+/* =========================
+   VARIABLEN
+========================= */
 
 let userRolle = "";
+
 let liste = [];
 
-onAuthStateChanged(auth, (user) => {
+
+/* =========================
+   LOGIN
+========================= */
+
+onAuthStateChanged(auth,(user)=>{
+
   if(!user){
-    window.location.href = "index.html";
+
+    window.location.href =
+      "index.html";
+
     return;
   }
 
-  onValue(ref(db, "benutzer"), (snapshot) => {
-    snapshot.forEach((child) => {
-      const daten = child.val();
-      if(daten.uid === user.uid){
-        userRolle = daten.rolle || "";
-      }
-    });
 
-    render();
-  }, {
-    onlyOnce:true
-  });
+  onValue(
+    ref(db,"benutzer"),
+    (snapshot)=>{
+
+      snapshot.forEach((child)=>{
+
+        const daten =
+          child.val();
+
+        if(daten.uid === user.uid){
+
+          userRolle =
+            String(
+              daten.rolle || ""
+            )
+            .toLowerCase()
+            .trim();
+
+        }
+
+      });
+
+
+      render();
+
+    },
+    {
+      onlyOnce:true
+    }
+  );
+
 });
 
+
+/* =========================
+   DATUM FORMATIEREN
+========================= */
+
 function formatDatum(datum){
-  if(!datum) return "";
-  const t = datum.split("-");
-  if(t.length !== 3) return datum;
+
+  if(!datum)
+    return "";
+
+  const t =
+    datum.split("-");
+
+  if(t.length !== 3)
+    return datum;
+
   return `${t[2]}.${t[1]}.${t[0]}`;
+
 }
 
-function renderPersonen(obj, typ, dienstId){
-  if(!obj) return `<p class="empty">-</p>`;
 
-  const eintraege = Object.entries(obj);
-  if(eintraege.length === 0) return `<p class="empty">-</p>`;
+/* =========================
+   PERSONEN RENDERN
+========================= */
+
+function renderPersonen(
+  obj,
+  typ,
+  dienstId
+){
+
+  if(!obj){
+
+    return `
+      <p class="empty">
+        -
+      </p>
+    `;
+
+  }
+
+
+  const eintraege =
+    Object.entries(obj);
+
+
+  if(eintraege.length === 0){
+
+    return `
+      <p class="empty">
+        -
+      </p>
+    `;
+
+  }
+
 
   let html = "";
 
-  eintraege.forEach(([key, person]) => {
-    html += `
-      <div class="person-row">
-        <span>${person.name || "Unbekannt"}</span>
-        ${userRolle === "admin"
-          ? `<button class="remove-btn" onclick="entfernen('${dienstId}','${typ}','${key}')">X</button>`
-          : ""
-        }
-      </div>
-    `;
-  });
+
+  eintraege.forEach(
+    ([key,person])=>{
+
+      html += `
+
+        <div class="person-row">
+
+          <span>
+            ${person.name || "Unbekannt"}
+          </span>
+
+          ${
+            userRolle === "admin"
+
+              ? `
+
+                <button
+                  class="remove-btn"
+                  onclick="entfernen(
+                    '${dienstId}',
+                    '${typ}',
+                    '${key}'
+                  )"
+                >
+                  X
+                </button>
+
+              `
+
+              : ""
+          }
+
+        </div>
+
+      `;
+
+    }
+  );
+
 
   return html;
+
 }
 
-window.entfernen = async function(dienstId, typ, key){
-  if(userRolle !== "admin") return;
 
-  const ok = confirm("Eintrag wirklich entfernen?");
-if (!ok) return;
+/* =========================
+   PERSON ENTFERNEN
+========================= */
 
-try {
-  await remove(ref(db, `dienste/${dienstId}/${typ}/${key}`));
-  // keine Erfolgsmeldung
-} catch (error) {
-  console.error(error);
-  alert("Fehler beim Entfernen");
-}
+window.entfernen =
+async function(
+  dienstId,
+  typ,
+  key
+){
+
+  if(
+    userRolle !== "admin"
+  ){
+
+    return;
+
+  }
+
+
+  const ok =
+    confirm(
+      "Eintrag wirklich entfernen?"
+    );
+
+
+  if(!ok)
+    return;
+
+
+  try{
+
+    await remove(
+      ref(
+        db,
+        `dienste/${dienstId}/${typ}/${key}`
+      )
+    );
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    alert(
+      "Fehler beim Entfernen"
+    );
+
+  }
+
 };
 
+
+/* =========================
+   ALTE EINTRÄGE PRÜFEN
+========================= */
+
 async function alteEintraegePruefen(){
-  const jetzt = new Date();
 
-  for(const dienst of liste){
-    if(!dienst.datum) continue;
+  const jetzt =
+    new Date();
 
-    const dienstDatum = new Date(dienst.datum);
-    dienstDatum.setDate(dienstDatum.getDate() + 2);
-    dienstDatum.setHours(23,59,59,999);
 
-    if(jetzt > dienstDatum){
+  for(
+    const dienst of liste
+  ){
+
+    if(!dienst.datum)
+      continue;
+
+
+    const dienstDatum =
+      new Date(
+        dienst.datum
+      );
+
+
+    dienstDatum.setDate(
+      dienstDatum.getDate() + 2
+    );
+
+
+    dienstDatum.setHours(
+      23,
+      59,
+      59,
+      999
+    );
+
+
+    if(
+      jetzt > dienstDatum
+    ){
+
       try{
+
+        /* ZUSAGEN */
+
         if(dienst.zusagen){
-          for(const key of Object.keys(dienst.zusagen)){
-            await remove(ref(db, `dienste/${dienst.id}/zusagen/${key}`));
+
+          for(
+            const key of
+            Object.keys(
+              dienst.zusagen
+            )
+          ){
+
+            await remove(
+              ref(
+                db,
+                `dienste/${dienst.id}/zusagen/${key}`
+              )
+            );
+
           }
+
         }
+
+
+        /* ABSAGEN */
 
         if(dienst.absagen){
-          for(const key of Object.keys(dienst.absagen)){
-            await remove(ref(db, `dienste/${dienst.id}/absagen/${key}`));
+
+          for(
+            const key of
+            Object.keys(
+              dienst.absagen
+            )
+          ){
+
+            await remove(
+              ref(
+                db,
+                `dienste/${dienst.id}/absagen/${key}`
+              )
+            );
+
           }
+
         }
-      }catch(error){
-        console.error(error);
+
       }
+
+      catch(error){
+
+        console.error(error);
+
+      }
+
     }
+
   }
+
 }
+
+
+/* =========================
+   RENDER
+========================= */
 
 function render(){
-  const c = document.getElementById("container");
+
+  const c =
+    document.getElementById(
+      "container"
+    );
+
+
+  if(!c)
+    return;
+
+
   c.innerHTML = "";
 
-  liste.forEach((x) => {
-    c.innerHTML += `
-      <div class="card">
-        <h2>${formatDatum(x.datum)} — ${x.ort || "Dienst"}</h2>
-        <p>${x.art || ""}</p>
 
-        <h3>✅ Zugesagt</h3>
-        ${renderPersonen(x.zusagen, "zusagen", x.id)}
+  if(
+    liste.length === 0
+  ){
 
-        <h3>❌ Abgesagt</h3>
-        ${renderPersonen(x.absagen, "absagen", x.id)}
+    c.innerHTML = `
+
+      <div
+        style="
+          grid-column:1/-1;
+          text-align:center;
+          padding:40px;
+          color:#aaa;
+          font-size:18px;
+        "
+      >
+        Keine Dienste vorhanden
       </div>
+
     `;
-  });
+
+    return;
+
+  }
+
+
+  liste.forEach(
+    (x)=>{
+
+      c.innerHTML += `
+
+        <div class="card">
+
+          <h2
+            title="${formatDatum(x.datum)} — ${x.ort || "Dienst"}"
+          >
+            ${formatDatum(x.datum)}
+            — 
+            ${x.ort || "Dienst"}
+          </h2>
+
+
+          <p>
+            ${x.art || ""}
+          </p>
+
+
+          <h3>
+            ✅ Zugesagt
+          </h3>
+
+
+          ${renderPersonen(
+            x.zusagen,
+            "zusagen",
+            x.id
+          )}
+
+
+          <h3>
+            ❌ Abgesagt
+          </h3>
+
+
+          ${renderPersonen(
+            x.absagen,
+            "absagen",
+            x.id
+          )}
+
+        </div>
+
+      `;
+
+    }
+  );
+
 }
 
-onValue(diensteRef, (snapshot) => {
-  liste = [];
 
-  snapshot.forEach((child) => {
-    liste.push({
-      id: child.key,
-      ...child.val()
-    });
-  });
+/* =========================
+   DIENSTE LADEN
+========================= */
 
-  liste.sort((a,b) => new Date(a.datum) - new Date(b.datum));
+onValue(
+  diensteRef,
+  async(snapshot)=>{
 
-  render();
-  alteEintraegePruefen();
-});
+    liste = [];
+
+
+    snapshot.forEach(
+      (child)=>{
+
+        liste.push({
+
+          id:
+            child.key,
+
+          ...child.val()
+
+        });
+
+      }
+    );
+
+
+    /* NACH DATUM SORTIEREN */
+
+    liste.sort(
+      (a,b)=>
+        new Date(a.datum)
+        -
+        new Date(b.datum)
+    );
+
+
+    /* SOFORT ANZEIGEN */
+
+    render();
+
+
+    /* ALTE EINTRÄGE PRÜFEN */
+
+    await alteEintraegePruefen();
+
+  }
+);
+
 </script>
 
 </body>
